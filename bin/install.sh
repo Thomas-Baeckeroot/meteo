@@ -1,3 +1,7 @@
 #!/usr/bin/env bash
 
-apt install -y postgresql libpq-dev psycopg2
+sudo apt install -y postgresql libpq-dev python-psycopg2 && pip install psycopg2
+
+# As detailed https://www.raspberrypi.org/documentation/usage/camera/raspicam/raspivid.md
+# to get 'MP4Box' command:
+sudo apt install -y gpac
