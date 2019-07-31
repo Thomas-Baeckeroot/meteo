@@ -10,6 +10,7 @@ import sys
 import time
 import tsl2561  # If failing: pip install: Adafruit_GPIO tsl2561 (and also RPi.GPIO ?)
 from gpiozero import CPUTemperature  # If failing: "pip install gpiozero"
+import Adafruit_BMP.BMP085 as BMP085
 
 
 # path_to_pydevd = "home/pi/.local/bin/pydevd"  # found by 'find / -name pydevd'
@@ -20,6 +21,7 @@ from gpiozero import CPUTemperature  # If failing: "pip install gpiozero"
 
 METEO_FOLDER = "/home/pi/meteo/"
 DB_NAME = METEO_FOLDER + "meteo.db"
+SENSOR_KNOWN_ALTITUDE = 230.0  # estimated for St Benoit
 
 
 def epoch_now():
@@ -41,6 +43,13 @@ def value_CPU_temp():
 def value_luminosity():
     tsl = tsl2561.TSL2561(debug=True)
     return tsl.lux()
+
+
+def value_temp_and_sealevelpressure():
+    sensor = BMP085.BMP085()
+    temp = sensor.read_temperature()
+    sealevelpressure = sensor.read_sealevel_pressure(SENSOR_KNOWN_ALTITUDE)/100.0
+    return (temp, sealevelpressure)
 
 
 def consolidate_from_raw(curs, sensor, period):
@@ -104,6 +113,7 @@ def main():  # Expected to be called once per minute
     conn = sqlite3.connect(DB_NAME)
     curs = conn.cursor()
     
+    
     sensor = "CPU_temp"
     period = 900
     raw_table = "raw_measures_" + sensor
@@ -115,6 +125,7 @@ def main():  # Expected to be called once per minute
 
     print("Added value for " + sensor + "; commiting...")
     conn.commit()
+    
     
     sensor = "luminosity"
     period = 900
@@ -128,6 +139,26 @@ def main():  # Expected to be called once per minute
     print("Added value for " + sensor + "; commiting...")
     conn.commit()
 
+
+    sensor1 = "temperature"
+    sensor2 = "pressure"
+    period = 900
+    raw_table1 = "raw_measures_" + sensor1
+    raw_table2 = "raw_measures_" + sensor2
+    consolidated_table1 = "consolidated" + str(period) + "_measures_" + sensor1
+    consolidated_table2 = "consolidated" + str(period) + "_measures_" + sensor2
+
+    sql_insert1 = "INSERT INTO " + raw_table1 + "(epochtimestamp,value) VALUES(?,?);"
+    sql_insert2 = "INSERT INTO " + raw_table2 + "(epochtimestamp,value) VALUES(?,?);"
+    (temp, sealevelpressure) = value_temp_and_sealevelpressure()
+    measure1 = (epoch_now(), temp)
+    measure2 = (epoch_now(), sealevelpressure)
+    curs.execute(sql_insert1, measure1)
+    curs.execute(sql_insert2, measure2)
+
+    print("Added value for " + sensor1 + " and " + sensor2 + "; commiting...")
+    conn.commit()
+    
     
     is300mult = is_multiple(main_call_epoch, 300)  # is True every 5 minutes (300 s.)
     if is300mult:

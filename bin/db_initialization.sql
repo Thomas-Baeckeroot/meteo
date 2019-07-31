@@ -58,3 +58,33 @@ CREATE TABLE consolidated900_measures_luminosity  -- consolidated on period of 9
     );
 
 
+INSERT INTO sensors VALUES('temperature', 'false', '°C', '900'); -- later, consolidated should be like '900 86400'
+CREATE TABLE raw_measures_temperature
+    (   epochtimestamp  INTEGER,  -- seconds since 1970/01/01, https://www.sqlite.org/draft/lang_datefunc.html
+        value           REAL
+    );
+CREATE TABLE consolidated900_measures_temperature  -- consolidated on period of 900 s. (=15 minutes)
+    (   minepochtime    INTEGER,
+        maxepochtime    INTEGER,
+        num_values      INTEGER,
+        minvalue        REAL,
+        maxvalue        REAL,
+        meanvalue       REAL,
+        totalvalues     REAL
+    );
+
+    
+INSERT INTO sensors VALUES('pressure', 'false', 'hPa', '900'); -- later, consolidated should be like '900 86400'
+CREATE TABLE raw_measures_pressure
+    (   epochtimestamp  INTEGER,  -- seconds since 1970/01/01, https://www.sqlite.org/draft/lang_datefunc.html
+        value           REAL
+    );
+CREATE TABLE consolidated900_measures_pressure  -- consolidated on period of 900 s. (=15 minutes)
+    (   minepochtime    INTEGER,
+        maxepochtime    INTEGER,
+        num_values      INTEGER,
+        minvalue        REAL,
+        maxvalue        REAL,
+        meanvalue       REAL,
+        totalvalues     REAL
+    );

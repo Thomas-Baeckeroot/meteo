@@ -35,3 +35,9 @@ mkdir /home/pi/meteo/captures/
 pip install RPi.GPIO  # Possibly not necessary
 python -m pip install Adafruit_GPIO  # Don't know why it was not working without calling by 'python -m'
 pip install tsl2561
+
+
+mkdir ~/workspace/meteo/src/lib 
+git clone https://github.com/adafruit/Adafruit_Python_BMP.git
+
+
