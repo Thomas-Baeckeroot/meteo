@@ -48,7 +48,8 @@ def value_luminosity():
 def value_temp_and_sealevelpressure():
     sensor = BMP085.BMP085()
     temp = sensor.read_temperature()
-    sealevelpressure = sensor.read_sealevel_pressure(SENSOR_KNOWN_ALTITUDE)/100.0
+    # round() added to truncate insignificant values to save db space
+    sealevelpressure = round(sensor.read_sealevel_pressure(SENSOR_KNOWN_ALTITUDE))/100.0
     return (temp, sealevelpressure)
 
 
@@ -86,6 +87,17 @@ def take_picture():
         capture_tentatives = capture_tentatives + 1
         try:
             camera = picamera.PiCamera()
+            # camera.awb_mode = 'sunlight'
+            # camera.awb_mode = 'cloudy'
+            # camera.awb_mode = 'tungsten'
+            camera.awb_mode = 'off'
+            # camera.awb_gains = (0.9, 1.9)  # Default (red, blue); each between 0.0 and 8.0
+            # camera.awb_gains = (2.0, 1.9) trop rouge
+            camera.awb_gains = (1.6, 1.0)
+            # camera.awb_gains = (1.6, 1.9) pas assez vert?
+            # camera.awb_gains = (1.4, 1.9) un peu trop bleu
+            # camera.awb_gains = (1.0, 1.9) trop bleu
+            camera.brightness = 46
             camera.resolution = (1296, 972)  # binned mode below 1296x972
             # camera.resolution = (1920, 1080)  # FullHD (unbinned)
             # camera.resolution = (2592, 1944)  # Max. resolution
@@ -107,7 +119,7 @@ def take_picture():
 
 def main():  # Expected to be called once per minute
     main_call_epoch = epoch_now()
-    print(datetime.datetime.utcfromtimestamp(main_call_epoch).isoformat() + "\tStarting on " + socket.gethostname())
+    print(datetime.datetime.utcfromtimestamp(main_call_epoch).isoformat() + " - Starting on " + socket.gethostname() + "-----------------------------------")
 
     # Connect or Create DB File
     conn = sqlite3.connect(DB_NAME)
@@ -126,20 +138,23 @@ def main():  # Expected to be called once per minute
     print("Added value for " + sensor + "; commiting...")
     conn.commit()
     
-    
+    # Next sensor:
     sensor = "luminosity"
     period = 900
     raw_table = "raw_measures_" + sensor
     consolidated_table = "consolidated" + str(period) + "_measures_" + sensor
 
     sql_insert = "INSERT INTO " + raw_table + "(epochtimestamp,value) VALUES(?,?);"
-    measure = (epoch_now(), value_luminosity())
-    curs.execute(sql_insert, measure)
-
-    print("Added value for " + sensor + "; commiting...")
-    conn.commit()
-
-
+    
+    try:
+        measure = (epoch_now(), value_luminosity())
+        curs.execute(sql_insert, measure)
+        print("Added value for " + sensor + "; commiting...")
+        conn.commit()
+    except IOError:
+        print("IOError occurred when reading " + sensor + "!")
+    
+    # Next sensor:
     sensor1 = "temperature"
     sensor2 = "pressure"
     period = 900
@@ -150,14 +165,18 @@ def main():  # Expected to be called once per minute
 
     sql_insert1 = "INSERT INTO " + raw_table1 + "(epochtimestamp,value) VALUES(?,?);"
     sql_insert2 = "INSERT INTO " + raw_table2 + "(epochtimestamp,value) VALUES(?,?);"
-    (temp, sealevelpressure) = value_temp_and_sealevelpressure()
-    measure1 = (epoch_now(), temp)
-    measure2 = (epoch_now(), sealevelpressure)
-    curs.execute(sql_insert1, measure1)
-    curs.execute(sql_insert2, measure2)
 
-    print("Added value for " + sensor1 + " and " + sensor2 + "; commiting...")
-    conn.commit()
+    try:    
+        (temp, sealevelpressure) = value_temp_and_sealevelpressure()
+        measure1 = (epoch_now(), temp)
+        measure2 = (epoch_now(), sealevelpressure)
+        curs.execute(sql_insert1, measure1)
+        curs.execute(sql_insert2, measure2)
+    
+        print("Added value for " + sensor1 + " and " + sensor2 + "; commiting...")
+        conn.commit()
+    except IOError:
+        print("IOError occurred when reading " + sensor1 + " and " + sensor2 + "!")
     
     
     is300mult = is_multiple(main_call_epoch, 300)  # is True every 5 minutes (300 s.)

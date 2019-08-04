@@ -41,3 +41,5 @@ mkdir ~/workspace/meteo/src/lib
 git clone https://github.com/adafruit/Adafruit_Python_BMP.git
 
 
+echo "Add below line at the end of /etc/rc.local, before last 'exit 0':"
+echo "/home/pi/meteo/src/main/py/watchdog_gpio.py >> /var/log/watchdog_gpio.log 2>&1 &"

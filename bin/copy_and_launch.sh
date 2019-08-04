@@ -9,5 +9,6 @@ echo
 echo "Launching python..."
 echo "--------------------------------------------------------------------------------"
 ssh -tt pi@${raspberry_ip_address} /home/pi/meteo/src/main/py/test_remote_interp.py
+# ssh -tt pi@${raspberry_ip_address} /home/pi/meteo/src/main/py/watchdog_gpio.py
 echo "--------------------------------------------------------------------------------"
 echo "ssh/python returned $?"

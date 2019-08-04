@@ -45,7 +45,7 @@ COMMIT;
 INSERT INTO sensors VALUES('luminosity', 'false', 'lux', '900'); -- later, consolidated should be like '900 86400'
 CREATE TABLE raw_measures_luminosity
     (   epochtimestamp  INTEGER,  -- seconds since 1970/01/01, https://www.sqlite.org/draft/lang_datefunc.html
-        value           REAL
+        value           REAL      -- INTEGER might be more compact in DB but REAL kept for consistency with other sensors
     );
 CREATE TABLE consolidated900_measures_luminosity  -- consolidated on period of 900 s. (=15 minutes)
     (   minepochtime    INTEGER,
