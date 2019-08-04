@@ -1,0 +1,102 @@
+#!/usr/bin/env python
+
+import os
+import picamera
+import RPi.GPIO as GPIO    # Import Raspberry Pi GPIO library
+# import subprocess
+import sys
+import time     # Import the sleep function from the time module
+
+import sensors_functions as func
+
+
+METEO_FOLDER = "/home/pi/meteo/"
+VIDEOS_FOLDER = METEO_FOLDER + "videos/"
+
+GPIO_MVT_DETECTOR_IN = 18
+
+# GPIO_YYY_LED = 23
+# GPIO_ZZZ_LED = 24
+GPIO_WATCHDOG_LED = 25
+
+GPIO_XXX_BTN_IN = 12
+GPIO_YYY_BTN_IN = 16
+GPIO_ZZZ_BTN_IN = 20
+# GPIO_SHUTDOW_BTN_IN = 21
+
+GPIO_XXX_RELAY_OUT = 6
+GPIO_YYY_RELAY_OUT = 13
+GPIO_ZZZ_RELAY_OUT = 19
+GPIO_IR_LIGHTS_RELAY_OUT = 26
+
+MIN_LUMINOSITY_WITHOUT_IR = 30
+
+
+def start_video_capture():
+    print(func.iso_timestamp() + " - Movement detected, should start a thread for camera filming")
+    if func.value_luminosity() < MIN_LUMINOSITY_WITHOUT_IR:
+        low_light = True
+        GPIO.output(GPIO_IR_LIGHTS_RELAY_OUT, GPIO.HIGH)
+    else:
+        low_light = False
+        GPIO.output(GPIO_IR_LIGHTS_RELAY_OUT, GPIO.LOW)  # should not be necessary
+    print(func.iso_timestamp() + " - low_light = " + str(low_light))
+
+    captured_sucess = False
+    capture_tentatives = 0
+    while captured_sucess==False and capture_tentatives<23:
+        capture_tentatives = capture_tentatives + 1
+        try:
+            camera = picamera.PiCamera()
+            camera.awb_mode = 'off'
+            camera.awb_gains = (1.6, 1.0)
+            camera.brightness = 46
+            camera.resolution = (1296, 972)  # binned mode below 1296x972
+            camera.start_preview()
+            time.sleep(5)
+            dt_now = func.iso_timestamp4files()
+            filename = VIDEOS_FOLDER + "camera1_" + dt_now + ".h264"  # fixme improve with os.path.join
+            print(filename)
+            camera.start_recording(filename)
+            time.sleep(10)
+            print("Stop recording")
+            camera.stop_recording()
+            camera.stop_preview()
+            camera.close()
+            time.sleep(1)
+            captured_sucess=True
+        except picamera.exc.PiCameraMMALError:
+            sys.stdout.write(".")
+            time.sleep(capture_tentatives)
+
+    if captured_sucess == False:
+        print("failed " + capture_tentatives + " times to take picture. Gave up!")
+
+    GPIO.output(GPIO_IR_LIGHTS_RELAY_OUT, GPIO.LOW)
+    return
+    
+
+def main():  # Expected to be launched at startup
+    print(func.iso_timestamp() + " - Waiting for movement to trigger video capture...")
+    # GPIO.setwarnings(False)    # Ignore warning for now
+    GPIO.setmode(GPIO.BCM)   # Use GPIO numbering
+    
+    GPIO.setup(GPIO_MVT_DETECTOR_IN, GPIO.IN) # movement detector
+    GPIO.setup(GPIO_IR_LIGHTS_RELAY_OUT, GPIO.OUT, initial=GPIO.LOW)
+
+    waiting_time = 0
+    while True: # Run forever
+        
+        if GPIO.input(GPIO_MVT_DETECTOR_IN):
+            start_video_capture()
+        
+        time.sleep(0.1)  # length of cycle
+        waiting_time = waiting_time + 1
+        if waiting_time > (10*10):  # (10*60*60) -> 1 hour
+            print(func.iso_timestamp() + " - one hour and still waiting...")
+            waiting_time = 0
+            
+
+
+if __name__ == "__main__":
+    main()

@@ -1,17 +1,18 @@
 #!/usr/bin/env python
 
-import calendar
-import datetime
+# import calendar
+# import datetime
 import picamera
 import socket
 import sqlite3
 import sys
 # import pydevd  # If failing: "pip install pydevd"
 import time
-import tsl2561  # If failing: pip install: Adafruit_GPIO tsl2561 (and also RPi.GPIO ?)
-from gpiozero import CPUTemperature  # If failing: "pip install gpiozero"
-import Adafruit_BMP.BMP085 as BMP085
+# import tsl2561  # If failing: pip install: Adafruit_GPIO tsl2561 (and also RPi.GPIO ?)
+# from gpiozero import CPUTemperature  # If failing: "pip install gpiozero"
+# import Adafruit_BMP.BMP085 as BMP085
 
+import sensors_functions as func
 
 # path_to_pydevd = "home/pi/.local/bin/pydevd"  # found by 'find / -name pydevd'
 # sys.path.append(path_to_pydevd)
@@ -21,11 +22,7 @@ import Adafruit_BMP.BMP085 as BMP085
 
 METEO_FOLDER = "/home/pi/meteo/"
 DB_NAME = METEO_FOLDER + "meteo.db"
-SENSOR_KNOWN_ALTITUDE = 230.0  # estimated for St Benoit
-
-
-def epoch_now():
-    return calendar.timegm(time.gmtime())
+CAPTURES_FOLDER = METEO_FOLDER + "captures/"
 
 
 def is_multiple(value, mult):
@@ -34,23 +31,6 @@ def is_multiple(value, mult):
         return True
     else:
         return False
-
-
-def value_CPU_temp():
-    return CPUTemperature().temperature
-
-
-def value_luminosity():
-    tsl = tsl2561.TSL2561(debug=True)
-    return tsl.lux()
-
-
-def value_temp_and_sealevelpressure():
-    sensor = BMP085.BMP085()
-    temp = sensor.read_temperature()
-    # round() added to truncate insignificant values to save db space
-    sealevelpressure = round(sensor.read_sealevel_pressure(SENSOR_KNOWN_ALTITUDE))/100.0
-    return (temp, sealevelpressure)
 
 
 def consolidate_from_raw(curs, sensor, period):
@@ -80,10 +60,9 @@ def consolidate_from_raw(curs, sensor, period):
 
 def take_picture():
     sys.stdout.write("Take picture:\t")
-    CAPTURES_FOLDER = METEO_FOLDER + "captures/"
     captured_sucess = False
     capture_tentatives = 0
-    while captured_sucess==False and capture_tentatives<10:
+    while captured_sucess==False and capture_tentatives<23:
         capture_tentatives = capture_tentatives + 1
         try:
             camera = picamera.PiCamera()
@@ -103,11 +82,12 @@ def take_picture():
             # camera.resolution = (2592, 1944)  # Max. resolution
             camera.start_preview()
             time.sleep(5)
-            dt_now = datetime.datetime.utcfromtimestamp(epoch_now()).isoformat().replace(':', '-')
+            dt_now = func.iso_timestamp4files()
             filename = CAPTURES_FOLDER + "camera1_" + dt_now + ".jpg"
             print(filename)
             camera.capture(filename)
             camera.stop_preview()
+            camera.close()
             captured_sucess=True
         except picamera.exc.PiCameraMMALError:
             sys.stdout.write(".")
@@ -118,8 +98,8 @@ def take_picture():
 
 
 def main():  # Expected to be called once per minute
-    main_call_epoch = epoch_now()
-    print(datetime.datetime.utcfromtimestamp(main_call_epoch).isoformat() + " - Starting on " + socket.gethostname() + "-----------------------------------")
+    main_call_epoch = func.epoch_now()
+    print(func.iso_timestamp() + " - Starting on " + socket.gethostname() + "-----------------------------------")
 
     # Connect or Create DB File
     conn = sqlite3.connect(DB_NAME)
@@ -132,7 +112,7 @@ def main():  # Expected to be called once per minute
     consolidated_table = "consolidated" + str(period) + "_measures_" + sensor
 
     sql_insert = "INSERT INTO " + raw_table + "(epochtimestamp,value) VALUES(?,?);"
-    measure = (epoch_now(), value_CPU_temp())
+    measure = (func.epoch_now(), func.value_CPU_temp())
     curs.execute(sql_insert, measure)
 
     print("Added value for " + sensor + "; commiting...")
@@ -147,7 +127,7 @@ def main():  # Expected to be called once per minute
     sql_insert = "INSERT INTO " + raw_table + "(epochtimestamp,value) VALUES(?,?);"
     
     try:
-        measure = (epoch_now(), value_luminosity())
+        measure = (func.epoch_now(), func.value_luminosity())
         curs.execute(sql_insert, measure)
         print("Added value for " + sensor + "; commiting...")
         conn.commit()
@@ -167,9 +147,9 @@ def main():  # Expected to be called once per minute
     sql_insert2 = "INSERT INTO " + raw_table2 + "(epochtimestamp,value) VALUES(?,?);"
 
     try:    
-        (temp, sealevelpressure) = value_temp_and_sealevelpressure()
-        measure1 = (epoch_now(), temp)
-        measure2 = (epoch_now(), sealevelpressure)
+        (temp, sealevelpressure) = func.value_temp_and_sealevelpressure()
+        measure1 = (func.epoch_now(), temp)
+        measure2 = (func.epoch_now(), sealevelpressure)
         curs.execute(sql_insert1, measure1)
         curs.execute(sql_insert2, measure2)
     
@@ -201,7 +181,7 @@ def main():  # Expected to be called once per minute
     # Close DB
     # print("closing db...")
     conn.close()
-    print(datetime.datetime.utcfromtimestamp(epoch_now()).isoformat() + " - Terminates " + "_"*47)
+    print(func.iso_timestamp() + " - Terminates " + "_"*47)
 
 
 if __name__ == "__main__":
