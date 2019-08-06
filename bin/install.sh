@@ -40,6 +40,11 @@ pip install tsl2561
 mkdir ~/workspace/meteo/src/lib 
 git clone https://github.com/adafruit/Adafruit_Python_BMP.git
 
-
-echo "Add below line at the end of /etc/rc.local, before last 'exit 0':"
+echo "-"
+echo "Add below line to crontab of user 'pi':"
+echo "* * * * *  /home/pi/meteo/src/main/py/periodical_sensor_reading.py >> /var/log/meteo.log 2>&1"
+echo "-"
+echo "Add below 2 lines at the end of /etc/rc.local, before last 'exit 0':"
 echo "/home/pi/meteo/src/main/py/watchdog_gpio.py >> /var/log/watchdog_gpio.log 2>&1 &"
+echo "sudo su - pi -c \"/home/pi/meteo/src/main/py/video_capture_on_motion.py >> /home/pi/meteo/video.log 2>&1\" &"
+echo "-"

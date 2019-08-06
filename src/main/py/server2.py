@@ -11,7 +11,7 @@ server_address = ("", PORT)
 server = BaseHTTPServer.HTTPServer
 handler = CGIHTTPServer.CGIHTTPRequestHandler
 handler.cgi_directories = ["/"]
-print "Serveur actif sur le port :", PORT
+print("Serveur actif sur le port :" + str(PORT))
 
 httpd = server(server_address, handler)
 httpd.serve_forever()
