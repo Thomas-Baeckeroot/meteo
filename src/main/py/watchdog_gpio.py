@@ -49,6 +49,7 @@ def start_shutdown_process():
         GPIO.output(GPIO_WATCHDOG_LED, GPIO.HIGH)
         time.sleep(0.1)
     os.system("/sbin/shutdown -P now")
+    # In practice, below code is never reached since os.system only returns once "shutdown" is done...
 
     # subprocess.run(["/sbin/shutdown", "-P", "now"])  # Python 3
     # subprocess.call(["/sbin/shutdown", "-P", "now"])  # Python 2
@@ -57,8 +58,7 @@ def start_shutdown_process():
         time.sleep(0.1)
         GPIO.output(GPIO_WATCHDOG_LED, GPIO.HIGH)
         time.sleep(0.1)
-    exit()
-    
+
 
 def main():  # Expected to be launched at startup
     print(iso_timestamp() + " - Starting watchdog...")
@@ -71,14 +71,14 @@ def main():  # Expected to be launched at startup
     cycle_length = 5  # time keep watchdog led on off in deciseconds (5 -> 0.5s on / 0.5s off)
     watchdog_led_status = False
     cycle_count = 0
-    while True: # Run forever
+    while True:  # Run forever
         cycle_count = cycle_count + 1
         
         # blink watchdog:
         if cycle_count >= cycle_length:
             cycle_count = 0
             if watchdog_led_status:
-                GPIO.output(GPIO_WATCHDOG_LED, GPIO.LOW) # Turn off
+                GPIO.output(GPIO_WATCHDOG_LED, GPIO.LOW)  # Turn off
                 watchdog_led_status = False
             else:
                 GPIO.output(GPIO_WATCHDOG_LED, GPIO.HIGH)  # Turn on
