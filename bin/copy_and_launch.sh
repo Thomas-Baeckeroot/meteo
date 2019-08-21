@@ -1,13 +1,13 @@
 source /home/thomas/.basheditor/remote-debugging-v1.sh localhost 33333 #BASHEDITOR-TMP-REMOTE-DEBUGGING-END|Origin line:#!/usr/bin/env bash
 
 # set -x
-raspberry_ip_address=192.168.0.169
+raspberry_ip_address=192.168.1.169
 echo "Copying all files to Raspberry PI at ${raspberry_ip_address}..."
 rsync -r /home/thomas/workspace/meteo pi@${raspberry_ip_address}:/home/pi
 echo "Copy/rsync returned $?"
 echo
 echo "Copying web files to Raspberry PI at ${raspberry_ip_address}..."
-rsync -r /home/thomas/workspace/meteo/src/main/py/home_web web@${raspberry_ip_address}:/home/web
+rsync -r /home/thomas/workspace/meteo/src/main/py/home_web/ web@${raspberry_ip_address}:/home/web
 echo "Copy/rsync returned $?"
 echo
 echo "Launching python..."

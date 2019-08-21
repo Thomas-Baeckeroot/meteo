@@ -43,10 +43,10 @@ def start_video_capture():
 
     if luminosity < MIN_LUMINOSITY_WITHOUT_IR:
         low_light = True
-        GPIO.output(GPIO_IR_LIGHTS_RELAY_OUT, GPIO.HIGH)
+        GPIO.output(GPIO_IR_LIGHTS_RELAY_OUT, GPIO.LOW)
     else:
         low_light = False
-        GPIO.output(GPIO_IR_LIGHTS_RELAY_OUT, GPIO.LOW)  # should not be necessary
+        GPIO.output(GPIO_IR_LIGHTS_RELAY_OUT, GPIO.HIGH)  # should not be necessary
     print(func.iso_timestamp() + " - low_light = " + str(low_light))
     sys.stdout.flush()
 
@@ -81,7 +81,7 @@ def start_video_capture():
         print("failed " + capture_tentatives + " times to take picture. Gave up!")
         sys.stdout.flush()
 
-    GPIO.output(GPIO_IR_LIGHTS_RELAY_OUT, GPIO.LOW)
+    GPIO.output(GPIO_IR_LIGHTS_RELAY_OUT, GPIO.HIGH)
     return
     
 
@@ -92,7 +92,7 @@ def main():  # Expected to be launched at startup
     GPIO.setmode(GPIO.BCM)   # Use GPIO numbering
     
     GPIO.setup(GPIO_MVT_DETECTOR_IN, GPIO.IN) # movement detector
-    GPIO.setup(GPIO_IR_LIGHTS_RELAY_OUT, GPIO.OUT, initial=GPIO.LOW)
+    GPIO.setup(GPIO_IR_LIGHTS_RELAY_OUT, GPIO.OUT, initial=GPIO.HIGH)  # high/low (possibly because of the way the input button is read...)
 
     waiting_time = 0
     while True: # Run forever
@@ -102,7 +102,7 @@ def main():  # Expected to be launched at startup
         
         time.sleep(0.1)  # length of cycle
         waiting_time = waiting_time + 1
-        if waiting_time > (10*10):  # (10*60*60) -> 1 hour
+        if waiting_time > (10*60*60):  # (10*60*60) -> 1 hour
             print(func.iso_timestamp() + " - one hour and still waiting...")
             sys.stdout.flush()
             waiting_time = 0

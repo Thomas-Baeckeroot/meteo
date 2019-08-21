@@ -3,7 +3,7 @@
 import calendar
 import datetime
 import time
-import tsl2561  # If failing: pip install: Adafruit_GPIO tsl2561 (and also RPi.GPIO ?)
+import tsl2561  # If failing, run: pip install Adafruit_GPIO tsl2561 (and also RPi.GPIO ?)
 import Adafruit_BMP.BMP085 as BMP085
 
 from gpiozero import CPUTemperature  # If failing: "pip install gpiozero"

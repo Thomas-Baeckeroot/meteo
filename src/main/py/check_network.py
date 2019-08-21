@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 
+from os import system
 from sensors_functions import iso_timestamp
 from time import sleep
 
 
 def wifi_test():
-    # ping -c 1 192.168.1.3 | grep " bytes from "
-    # ping -c 1 192.168.1.1 | grep " bytes from "
-    # ping -c 1 www.free.fr | grep " bytes from "
+    system("ping -c 1 192.168.1.3 | grep \" bytes from \"")
+    system("ping -c 1 192.168.1.1 | grep \" bytes from \"")
+    system("ping -c 1 www.free.fr | grep \" bytes from \"")
+    system("sudo iwlist wlp2s0 scan | grep 'Quality=\\|ESSID:\\|Address:\\|Frequency:'")
     return True
 
 
