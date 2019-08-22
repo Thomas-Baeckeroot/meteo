@@ -6,7 +6,7 @@ import RPi.GPIO as GPIO    # Import Raspberry Pi GPIO library
 import sys
 import time     # Import the sleep function from the time module
 
-from sensors_functions import iso_timestamp
+from utils import iso_timestamp
 # GPIO_YYY_LED = 23
 # GPIO_ZZZ_LED = 24
 GPIO_WATCHDOG_LED = 25

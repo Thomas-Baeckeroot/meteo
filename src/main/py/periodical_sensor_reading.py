@@ -13,6 +13,7 @@ import time
 # import Adafruit_BMP.BMP085 as BMP085
 
 import sensors_functions as func
+import utils
 
 # path_to_pydevd = "home/pi/.local/bin/pydevd"  # found by 'find / -name pydevd'
 # sys.path.append(path_to_pydevd)
@@ -82,7 +83,7 @@ def take_picture():
             # camera.resolution = (2592, 1944)  # Max. resolution
             camera.start_preview()
             time.sleep(5)
-            dt_now = func.iso_timestamp4files()
+            dt_now = utils.iso_timestamp4files()
             filename = CAPTURES_FOLDER + "camera1_" + dt_now + ".jpg"
             print(filename)
             camera.capture(filename)
@@ -98,8 +99,8 @@ def take_picture():
 
 
 def main():  # Expected to be called once per minute
-    main_call_epoch = func.epoch_now()
-    print(func.iso_timestamp() + " - Starting on " + socket.gethostname() + "-----------------------------------")
+    main_call_epoch = utils.epoch_now()
+    print(utils.iso_timestamp() + " - Starting on " + socket.gethostname() + "-----------------------------------")
 
     # Connect or Create DB File
     conn = sqlite3.connect(DB_NAME)
@@ -112,7 +113,7 @@ def main():  # Expected to be called once per minute
     consolidated_table = "consolidated" + str(period) + "_measures_" + sensor
 
     sql_insert = "INSERT INTO " + raw_table + "(epochtimestamp,value) VALUES(?,?);"
-    measure = (func.epoch_now(), func.value_CPU_temp())
+    measure = (utils.epoch_now(), func.value_CPU_temp())
     curs.execute(sql_insert, measure)
 
     print("Added value for " + sensor + "; commiting...")
@@ -127,7 +128,7 @@ def main():  # Expected to be called once per minute
     sql_insert = "INSERT INTO " + raw_table + "(epochtimestamp,value) VALUES(?,?);"
     
     try:
-        measure = (func.epoch_now(), func.value_luminosity())
+        measure = (utils.epoch_now(), func.value_luminosity())
         curs.execute(sql_insert, measure)
         print("Added value for " + sensor + "; commiting...")
         conn.commit()
@@ -148,8 +149,8 @@ def main():  # Expected to be called once per minute
 
     try:    
         (temp, sealevelpressure) = func.value_temp_and_sealevelpressure()
-        measure1 = (func.epoch_now(), temp)
-        measure2 = (func.epoch_now(), sealevelpressure)
+        measure1 = (utils.epoch_now(), temp)
+        measure2 = (utils.epoch_now(), sealevelpressure)
         curs.execute(sql_insert1, measure1)
         curs.execute(sql_insert2, measure2)
     
@@ -181,7 +182,7 @@ def main():  # Expected to be called once per minute
     # Close DB
     # print("closing db...")
     conn.close()
-    print(func.iso_timestamp() + " - Terminates " + "_"*47)
+    print(utils.iso_timestamp() + " - Terminates " + "_"*47)
 
 
 if __name__ == "__main__":

@@ -8,6 +8,7 @@ import sys
 import time     # Import the sleep function from the time module
 
 import sensors_functions as func
+import utils
 
 
 METEO_FOLDER = "/home/pi/meteo/"
@@ -33,7 +34,7 @@ MIN_LUMINOSITY_WITHOUT_IR = 30
 
 
 def start_video_capture():
-    print(func.iso_timestamp() + " - Movement detected, should start a thread for camera filming")
+    print(utils.iso_timestamp() + " - Movement detected, should start a thread for camera filming")
     
     try:
         luminosity = func.value_luminosity()
@@ -47,7 +48,7 @@ def start_video_capture():
     else:
         low_light = False
         GPIO.output(GPIO_IR_LIGHTS_RELAY_OUT, GPIO.HIGH)  # should not be necessary
-    print(func.iso_timestamp() + " - low_light = " + str(low_light))
+    print(utils.iso_timestamp() + " - low_light = " + str(low_light))
     sys.stdout.flush()
 
     captured_sucess = False
@@ -62,7 +63,7 @@ def start_video_capture():
             camera.resolution = (1296, 972)  # binned mode below 1296x972
             camera.start_preview()
             time.sleep(5)
-            dt_now = func.iso_timestamp4files()
+            dt_now = utils.iso_timestamp4files()
             filename = VIDEOS_FOLDER + "camera1_" + dt_now + ".h264"  # fixme improve with os.path.join
             print(filename)
             camera.start_recording(filename)
@@ -86,7 +87,7 @@ def start_video_capture():
     
 
 def main():  # Expected to be launched at startup
-    print(func.iso_timestamp() + " - Waiting for movement to trigger video capture...")
+    print(utils.iso_timestamp() + " - Waiting for movement to trigger video capture...")
     sys.stdout.flush()
     # GPIO.setwarnings(False)    # Ignore warning for now
     GPIO.setmode(GPIO.BCM)   # Use GPIO numbering
@@ -103,7 +104,7 @@ def main():  # Expected to be launched at startup
         time.sleep(0.1)  # length of cycle
         waiting_time = waiting_time + 1
         if waiting_time > (10*60*60):  # (10*60*60) -> 1 hour
-            print(func.iso_timestamp() + " - one hour and still waiting...")
+            print(utils.iso_timestamp() + " - one hour and still waiting...")
             sys.stdout.flush()
             waiting_time = 0
             

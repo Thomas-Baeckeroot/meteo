@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from os import system
-from sensors_functions import iso_timestamp
+from utils import iso_timestamp
 from time import sleep
 
 

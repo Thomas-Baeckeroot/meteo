@@ -4,7 +4,7 @@
 import cgi
 import sqlite3
 
-# from sensors_functions import iso_timestamp
+# from utils import iso_timestamp
 
 METEO_FOLDER = "/home/pi/meteo/"
 DB_NAME = METEO_FOLDER + "meteo.db"
