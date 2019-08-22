@@ -5,11 +5,20 @@ from utils import iso_timestamp
 from time import sleep
 
 
+def log_ping(host):
+    rc = system("ping -c 1 " + host + " | grep \" bytes from \"")
+    if rc != 0:
+        print("ERROR! Ping to " + host + " failed with return code " + str(rc) + ".")
+    return rc
+
+
 def wifi_test():
-    system("ping -c 1 192.168.1.3 | grep \" bytes from \"")
-    system("ping -c 1 192.168.1.1 | grep \" bytes from \"")
-    system("ping -c 1 www.free.fr | grep \" bytes from \"")
     system("sudo iwlist wlp2s0 scan | grep 'Quality=\\|ESSID:\\|Address:\\|Frequency:'")
+    log_ping("192.168.1.3")
+    log_ping("192.168.1.1")
+    if log_ping("www.free.fr") != 0:
+        # print("Ping to internet FAILED. Raspberry should change network (SSID/antena) here...")
+        return False
     return True
 
 
