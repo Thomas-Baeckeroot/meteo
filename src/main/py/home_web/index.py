@@ -4,7 +4,7 @@
 import cgi
 import sqlite3
 
-# from utils import iso_timestamp
+from utils import iso_timestamp
 
 METEO_FOLDER = "/home/pi/meteo/"
 DB_NAME = METEO_FOLDER + "meteo.db"
@@ -22,9 +22,12 @@ sensor_list = "<table><tr><th>Capteur</th><th>valeur</th></tr>"
 for sensor in sensors:
     (sensor_name, unit) = sensor
     curs.execute("SELECT MAX(epochtimestamp), value FROM raw_measures_" + sensor_name + ";")
-    last_date_and_value = curs.fetchall()
-    
-    sensor_list = sensor_list + "<tr><td>" + sensor_name + "</td><td>" + str(last_date_and_value) + unit + " (date)</td></tr>"
+    # last_date_and_value = curs.fetchall()
+    # sensor_list = sensor_list + "<tr><td>" + sensor_name + "</td><td>" + str(last_date_and_value) + unit + " (date)</td></tr>"
+    (epochtimestamp, value) = curs
+    sensor_list = sensor_list + "<tr><td>" + sensor_name
+    sensor_list = sensor_list + "</td><td>" + str(value) + " " + unit + " (" + str(iso_timestamp(epochtimestamp)) + ")</td></tr>"
+    sensor_list = sensor_list + "<td><img href=\"graph.svg?sensor=" + sensor_name + "\"></td>"
 sensor_list = sensor_list + "</table>"
 
 html = """<!DOCTYPE html>
