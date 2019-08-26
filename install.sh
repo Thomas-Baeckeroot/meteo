@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 sudo apt install -y postgresql libpq-dev python-psycopg2 && pip install psycopg2
 
