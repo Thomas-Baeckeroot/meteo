@@ -27,7 +27,7 @@ GPIO_ZZZ_BTN_IN = 20
 
 GPIO_XXX_RELAY_OUT = 6
 GPIO_YYY_RELAY_OUT = 13
-GPIO_ZZZ_RELAY_OUT = 19
+GPIO_CPU_FAN_RELAY_OUT = 19
 GPIO_IR_LIGHTS_RELAY_OUT = 26
 
 MIN_LUMINOSITY_WITHOUT_IR = 30
@@ -92,7 +92,7 @@ def main():  # Expected to be launched at startup
     # GPIO.setwarnings(False)    # Ignore warning for now
     GPIO.setmode(GPIO.BCM)   # Use GPIO numbering
     
-    GPIO.setup(GPIO_MVT_DETECTOR_IN, GPIO.IN) # movement detector
+    GPIO.setup(GPIO_MVT_DETECTOR_IN, GPIO.IN)  # movement detector
     GPIO.setup(GPIO_IR_LIGHTS_RELAY_OUT, GPIO.OUT, initial=GPIO.HIGH)  # high/low (possibly because of the way the input button is read...)
 
     waiting_time = 0
