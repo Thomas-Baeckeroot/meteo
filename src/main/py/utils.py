@@ -18,4 +18,4 @@ def iso_timestamp(epoch):
 
 
 def iso_timestamp4files():
-    return iso_timestamp().replace(':', '-')
+    return iso_timestamp_now().replace(':', '-')

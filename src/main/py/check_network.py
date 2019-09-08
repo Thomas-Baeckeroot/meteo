@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from os import system
-from utils import iso_timestamp
+from utils import iso_timestamp_now
 from time import sleep
 
 
@@ -23,7 +23,7 @@ def wifi_test():
 
 
 def main():  # Expected to be launched at startup
-    print(iso_timestamp() + " - Starting network test...")
+    print(iso_timestamp_now() + " - Starting network test...")
     successful_tests = 0
     failed_tests = 0
     failures_in_a_row = 0

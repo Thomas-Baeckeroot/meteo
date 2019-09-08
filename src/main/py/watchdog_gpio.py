@@ -6,7 +6,7 @@ import RPi.GPIO as GPIO    # Import Raspberry Pi GPIO library
 import sys
 import time     # Import the sleep function from the time module
 
-from utils import iso_timestamp
+from utils import iso_timestamp_now
 # GPIO_YYY_LED = 23
 # GPIO_ZZZ_LED = 24
 GPIO_WATCHDOG_LED = 25
@@ -18,7 +18,7 @@ GPIO_SHUTDOW_BTN_IN = 21
 
 
 def start_shutdown_process():
-    print(iso_timestamp() + " - Will now blink fast for 1 sec., stop for 1 s. and light on for 1 s.,")
+    print(iso_timestamp_now() + " - Will now blink fast for 1 sec., stop for 1 s. and light on for 1 s.,")
     print("\texpecting no button pressed at end of led off,")
     print("\tand expecting button pressed at end of led on.")
     sys.stdout.flush()
@@ -61,7 +61,7 @@ def start_shutdown_process():
 
 
 def main():  # Expected to be launched at startup
-    print(iso_timestamp() + " - Starting watchdog...")
+    print(iso_timestamp_now() + " - Starting watchdog...")
     # GPIO.setwarnings(False)    # Ignore warning for now
     GPIO.setmode(GPIO.BCM)   # Use GPIO numbering
     

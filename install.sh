@@ -67,3 +67,5 @@ echo "With 'sudo raspi-config', you can configure to start without graphical GUI
 ## echo "filetype plugin indent on" >> ~/.vimrc
 ## cd ~/.vim/bundle
 ## git clone https://github.com/klen/python-mode.git
+
+chmod +x ~/meteo/src/main/py/server3.py

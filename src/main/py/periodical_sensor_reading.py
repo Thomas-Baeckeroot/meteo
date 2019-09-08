@@ -102,7 +102,7 @@ def take_picture():
 
 def main():  # Expected to be called once per minute
     main_call_epoch = utils.epoch_now()
-    print(utils.iso_timestamp() + " - Starting on " + socket.gethostname() + "-----------------------------------")
+    print(utils.iso_timestamp_now() + " - Starting on " + socket.gethostname() + "-----------------------------------")
 
     # Connect or Create DB File
     conn = sqlite3.connect(DB_NAME)
@@ -184,7 +184,7 @@ def main():  # Expected to be called once per minute
     # Close DB
     # print("closing db...")
     conn.close()
-    print(utils.iso_timestamp() + " - Terminates " + "_" * 47)
+    print(utils.iso_timestamp_now() + " - Terminates " + "_" * 47)
 
 
 if __name__ == "__main__":

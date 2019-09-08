@@ -34,7 +34,7 @@ MIN_LUMINOSITY_WITHOUT_IR = 30
 
 
 def start_video_capture():
-    print(utils.iso_timestamp() + " - Movement detected, should start a thread for camera filming")
+    print(utils.iso_timestamp_now() + " - Movement detected, should start a thread for camera filming")
     
     try:
         luminosity = func.value_luminosity()
@@ -48,7 +48,7 @@ def start_video_capture():
     else:
         low_light = False
         GPIO.output(GPIO_IR_LIGHTS_RELAY_OUT, GPIO.HIGH)  # should not be necessary
-    print(utils.iso_timestamp() + " - low_light = " + str(low_light))
+    print(utils.iso_timestamp_now() + " - low_light = " + str(low_light))
     sys.stdout.flush()
 
     captured_sucess = False
@@ -87,7 +87,7 @@ def start_video_capture():
     
 
 def main():  # Expected to be launched at startup
-    print(utils.iso_timestamp() + " - Waiting for movement to trigger video capture...")
+    print(utils.iso_timestamp_now() + " - Waiting for movement to trigger video capture...")
     sys.stdout.flush()
     # GPIO.setwarnings(False)    # Ignore warning for now
     GPIO.setmode(GPIO.BCM)   # Use GPIO numbering
@@ -104,7 +104,7 @@ def main():  # Expected to be launched at startup
         time.sleep(0.1)  # length of cycle
         waiting_time = waiting_time + 1
         if waiting_time > (10*60*60):  # (10*60*60) -> 1 hour
-            print(utils.iso_timestamp() + " - one hour and still waiting...")
+            print(utils.iso_timestamp_now() + " - one hour and still waiting...")
             sys.stdout.flush()
             waiting_time = 0
             
