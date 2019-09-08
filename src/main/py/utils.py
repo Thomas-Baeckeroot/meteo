@@ -9,7 +9,7 @@ def epoch_now():
     return calendar.timegm(time.gmtime())
 
 
-def iso_timestamp():
+def iso_timestamp_now():
     return datetime.datetime.utcfromtimestamp(epoch_now()).isoformat()
 
 
