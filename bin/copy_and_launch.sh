@@ -1,4 +1,4 @@
-source /home/thomas/.basheditor/remote-debugging-v1.sh localhost 33333 #BASHEDITOR-TMP-REMOTE-DEBUGGING-END|Origin line:#!/usr/bin/env bash
+#!/usr/bin/env bash
 
 # set -x
 raspberry_ip_address=192.168.0.174

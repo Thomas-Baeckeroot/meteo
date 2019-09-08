@@ -24,11 +24,13 @@ import utils
 METEO_FOLDER = "/home/pi/meteo/"
 DB_NAME = METEO_FOLDER + "meteo.db"
 CAPTURES_FOLDER = METEO_FOLDER + "captures/"
+CAMERA_ENABLED = False
+CONSOLIDATE_VAL = False
 
 
-def is_multiple(value, mult):
-    margin = 30  # 30
-    if (int(value / margin) % (mult / margin)) == 0:
+def is_multiple(value, multiple):
+    margin = 30  # 30 s is used as default (script should be launched once per minute)
+    if (int(value / margin) % (multiple / margin)) == 0:
         return True
     else:
         return False
@@ -61,9 +63,9 @@ def consolidate_from_raw(curs, sensor, period):
 
 def take_picture():
     sys.stdout.write("Take picture:\t")
-    captured_sucess = False
+    captured_success = False
     capture_tentatives = 0
-    while captured_sucess==False and capture_tentatives<23:
+    while captured_success == False and capture_tentatives < 23:
         capture_tentatives = capture_tentatives + 1
         try:
             camera = picamera.PiCamera()
@@ -89,13 +91,13 @@ def take_picture():
             camera.capture(filename)
             camera.stop_preview()
             camera.close()
-            captured_sucess=True
+            captured_success = True
         except picamera.exc.PiCameraMMALError:
             sys.stdout.write(".")
             time.sleep(capture_tentatives)
 
-    if captured_sucess == False:
-        print("failed " + capture_tentatives + " times to take picture. Gave up!")
+    if not captured_success:
+        print("Failed " + str(capture_tentatives) + " times to take picture. Gave up!")
 
 
 def main():  # Expected to be called once per minute
@@ -105,8 +107,7 @@ def main():  # Expected to be called once per minute
     # Connect or Create DB File
     conn = sqlite3.connect(DB_NAME)
     curs = conn.cursor()
-    
-    
+
     sensor = "CPU_temp"
     period = 900
     raw_table = "raw_measures_" + sensor
@@ -118,7 +119,7 @@ def main():  # Expected to be called once per minute
 
     print("Added value for " + sensor + "; commiting...")
     conn.commit()
-    
+
     # Next sensor:
     sensor = "luminosity"
     period = 900
@@ -126,7 +127,7 @@ def main():  # Expected to be called once per minute
     consolidated_table = "consolidated" + str(period) + "_measures_" + sensor
 
     sql_insert = "INSERT INTO " + raw_table + "(epochtimestamp,value) VALUES(?,?);"
-    
+
     try:
         measure = (utils.epoch_now(), func.value_luminosity())
         curs.execute(sql_insert, measure)
@@ -134,7 +135,7 @@ def main():  # Expected to be called once per minute
         conn.commit()
     except IOError:
         print("IOError occurred when reading " + sensor + "!")
-    
+
     # Next sensor:
     sensor1 = "temperature"
     sensor2 = "pressure"
@@ -147,42 +148,43 @@ def main():  # Expected to be called once per minute
     sql_insert1 = "INSERT INTO " + raw_table1 + "(epochtimestamp,value) VALUES(?,?);"
     sql_insert2 = "INSERT INTO " + raw_table2 + "(epochtimestamp,value) VALUES(?,?);"
 
-    try:    
+    try:
         (temp, sealevelpressure) = func.value_temp_and_sealevelpressure()
         measure1 = (utils.epoch_now(), temp)
         measure2 = (utils.epoch_now(), sealevelpressure)
         curs.execute(sql_insert1, measure1)
         curs.execute(sql_insert2, measure2)
-    
+
         print("Added value for " + sensor1 + " and " + sensor2 + "; commiting...")
         conn.commit()
     except IOError:
         print("IOError occurred when reading " + sensor1 + " and " + sensor2 + "!")
-    
-    
-    is300mult = is_multiple(main_call_epoch, 300)  # is True every 5 minutes (300 s.)
-    if is300mult:
-        print("Once every 5 minutes: Capture picture")
-        take_picture()
-    
-    sql_req = "SELECT MAX(epochtimestamp) FROM " + raw_table + ";"
-    curs.execute(sql_req)
-    max_epoch_from_raw = curs.fetchall()[0][0]
 
-    sql_req = "SELECT MAX(maxepochtime) FROM " + consolidated_table + ";"
-    curs.execute(sql_req)
-    max_epoch_from_consolidated = curs.fetchall()[0][0]
+    if CAMERA_ENABLED:
+        is300mult = is_multiple(main_call_epoch, 300)  # is True every 5 minutes (300 s.)
+        if is300mult:
+            print("Once every 5 minutes: Capture picture")
+            take_picture()
 
-    if (max_epoch_from_consolidated is None) or (max_epoch_from_consolidated + period) < max_epoch_from_raw:
-        consolidate_from_raw(curs, sensor, period)
-    
+    if CONSOLIDATE_VAL:
+        sql_req = "SELECT MAX(epochtimestamp) FROM " + raw_table + ";"
+        curs.execute(sql_req)
+        max_epoch_from_raw = curs.fetchall()[0][0]
+
+        sql_req = "SELECT MAX(maxepochtime) FROM " + consolidated_table + ";"
+        curs.execute(sql_req)
+        max_epoch_from_consolidated = curs.fetchall()[0][0]
+
+        if (max_epoch_from_consolidated is None) or (max_epoch_from_consolidated + period) < max_epoch_from_raw:
+            consolidate_from_raw(curs, sensor, period)
+
     # print("closing cursor...")
     curs.close()
 
     # Close DB
     # print("closing db...")
     conn.close()
-    print(utils.iso_timestamp() + " - Terminates " + "_"*47)
+    print(utils.iso_timestamp() + " - Terminates " + "_" * 47)
 
 
 if __name__ == "__main__":

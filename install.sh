@@ -55,3 +55,15 @@ echo "sudo su - pi -c \"/home/pi/meteo/src/main/py/video_capture_on_motion.py >>
 echo "sudo su - web -c \"/home/pi/meteo/src/main/py/server3.py >> /home/web/server3.log\" &"
 echo "-"
 echo "With 'sudo raspi-config', you can configure to start without graphical GUI"
+
+## Also useful for developping from ssh command-line:
+
+# sudo apt install vim vim-addon-manager
+
+## mkdir -p ~/.vim/autoload ~/.vim/bundle
+## curl -LSso ~/.vim/autoload/pathogen.cim https://tpo.pe/pathogen.vim
+## echo "execute pathogen#infect()" >> ~/.vimrc
+## echo "syntax on" >> ~/.vimrc
+## echo "filetype plugin indent on" >> ~/.vimrc
+## cd ~/.vim/bundle
+## git clone https://github.com/klen/python-mode.git

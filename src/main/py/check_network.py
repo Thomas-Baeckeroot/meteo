@@ -17,7 +17,7 @@ def wifi_test():
     log_ping("192.168.1.3")
     log_ping("192.168.1.1")
     if log_ping("www.free.fr") != 0:
-        # print("Ping to internet FAILED. Raspberry should change network (SSID/antena) here...")
+        # print("Ping to internet FAILED. Raspberry should change network (SSID/antenna) here...")
         return False
     return True
 
