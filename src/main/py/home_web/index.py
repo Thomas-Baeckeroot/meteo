@@ -3,8 +3,9 @@
 
 import cgi
 import sqlite3
+import time
 
-from utils import iso_timestamp
+# from sensors_functions import iso_timestamp
 
 METEO_FOLDER = "/home/pi/meteo/"
 DB_NAME = METEO_FOLDER + "meteo.db"
@@ -22,12 +23,10 @@ sensor_list = "<table><tr><th>Capteur</th><th>valeur</th></tr>"
 for sensor in sensors:
     (sensor_name, unit) = sensor
     curs.execute("SELECT MAX(epochtimestamp), value FROM raw_measures_" + sensor_name + ";")
-    # last_date_and_value = curs.fetchall()
-    # sensor_list = sensor_list + "<tr><td>" + sensor_name + "</td><td>" + str(last_date_and_value) + unit + " (date)</td></tr>"
-    (epochtimestamp, value) = curs
-    sensor_list = sensor_list + "<tr><td>" + sensor_name
-    sensor_list = sensor_list + "</td><td>" + str(value) + " " + unit + " (" + str(iso_timestamp(epochtimestamp)) + ")</td></tr>"
-    sensor_list = sensor_list + "<td><img href=\"graph.svg?sensor=" + sensor_name + "\"></td>"
+    last_date_and_value = curs.fetchall()
+    (epochdate, value) = last_date_and_value[0]
+    datestr = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(epochdate))
+    sensor_list = sensor_list + "<tr><td>" + sensor_name + "</td><td>" + str(value) + " " + unit + "</td><td>" + datestr + "</td><td><img src=\"graph.svg\" /></td></tr>"
 sensor_list = sensor_list + "</table>"
 
 html = """<!DOCTYPE html>
