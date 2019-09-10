@@ -4,6 +4,7 @@
 import cgi
 import sqlite3
 import time
+import locale
 
 # from sensors_functions import iso_timestamp
 
@@ -12,6 +13,7 @@ DB_NAME = METEO_FOLDER + "meteo.db"
 CAPTURES_FOLDER = METEO_FOLDER + "captures/"
 
 form = cgi.FieldStorage()
+locale.getdefaultlocale()
 print("Content-type: text/html; charset=utf-8\n")
 
 # Connect or Create DB File
@@ -36,6 +38,10 @@ html = """<!DOCTYPE html>
 <body>
 <h2>Dernières valeurs:</h2>
 """ + sensor_list + """
+<br/>
+<form action="index.py">
+  <input type="submit" value="Rafraichir" />
+</form>
 <br/>
 </body>
 </html>
