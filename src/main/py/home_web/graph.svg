@@ -7,8 +7,8 @@ form = cgi.FieldStorage()
 print("Content-type: image/svg+xml; charset=utf-8\n")
 
 # Connect or Create DB File
-html="""<svg xmlns="http://www.w3.org/2000/svg" width="80" height="22">
-  <rect width="60" height="20" style="fill:rgb(0,0,255);stroke-width:3;stroke:rgb(0,0,0)" />
+html="""<svg xmlns="http://www.w3.org/2000/svg" width="5em" height="2em">
+  <rect width="5em" height="2em" style="fill:rgb(196,196,255);stroke-width:1;stroke:rgb(64,64,64)" />
   Sorry, your browser does not support inline SVG.  
 </svg>
 """
