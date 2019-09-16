@@ -25,26 +25,35 @@ oldest_date = 2000000000
 sensor_list = "<table style=\"border: .069em solid black;\"><tr><th style=\"padding-left: 1em;padding-right: 2em;\">Capteur</th><th style=\"padding-left: 1em;padding-right: 2em;\">valeur</th><td style=\"padding-left: 1em;padding-right: 2em;\">date</td><td style=\"padding-left: 1em;padding-right: 2em;\"></td></tr>"
 for sensor in sensors:
     (sensor_name, priority, sensor_label, unit) = sensor
-    if priority<35:
-        style_value="font-weight: bold;"
+    if priority < 35:
+        style_value = "font-weight: bold;"
     else:
-        style_value=""
-    if priority>70:
-        style_row=" style=\"color: Silver;\""
+        style_value = ""
+    if priority > 70:
+        style_row = " style=\"color: Silver;\""
     else:
-        style_row=""
+        style_row = ""
     curs.execute("SELECT MAX(epochtimestamp), value FROM raw_measures_" + sensor_name + ";")
     last_date_and_value = curs.fetchall()
     (epochdate, value) = last_date_and_value[0]
-    if oldest_date>epochdate:
+    if oldest_date > epochdate:
         oldest_date = epochdate
-    datestr = time.strftime('%-d/%m/%Y<br/>%H:%M:%S', time.localtime(epochdate))
-    sensor_list = sensor_list + "<tr" + style_row + "><td style=\"padding-left: 1em;padding-right: 2em;\">" + sensor_label + "</td><td style=\"text-align: center;padding-left: 1em;padding-right: 2em;" + style_value + "\">" + str(value) + " " + unit + "</td><td style=\"padding-left: 1em;padding-right: 2em;font-size: x-small;text-align: center;\">" + datestr + "</td><td style=\"padding-left: 1em;padding-right: 2em;\"><img src=\"graph.svg\" style=\"width:5em;height:2em;\" /></td></tr>"
+    # locale.getdefaultlocale()
+    date_str = time.strftime('%-d/%m/%Y<br/>%H:%M:%S', time.localtime(epochdate))
+    sensor_list = sensor_list + "<tr" + style_row + ">"
+    sensor_list = sensor_list + "<td style=\"padding-left: 1em;padding-right: 2em;\">" + sensor_label
+    sensor_list = sensor_list + "</td><td style=\"text-align: center;padding-left: 1em;padding-right: 2em;" \
+                  + style_value + "\">" + str(value) + " " + unit
+    sensor_list = sensor_list\
+                  + "</td><td style=\"padding-left: 1em;padding-right: 2em;font-size: x-small;text-align: center;\">"\
+                  + date_str
+    sensor_list = sensor_list\
+                  + "</td><td style=\"padding-left: 1em;padding-right: 2em;\"><img src=\"graph.svg\" style=\"width:5em;height:2em;\" /></td></tr>"
 sensor_list = sensor_list + "</table>"
 
 if oldest_date != 2000000000:
-    datestr = time.strftime('%A %-d %B - %H:%M', time.localtime(oldest_date))
-    date_readings = "Relevés le " + datestr + "<br/>"
+    date_str = time.strftime('%A %-d %B - %H:%M', time.localtime(oldest_date))
+    date_readings = "Relevés le " + date_str + "<br/>"
 else:
     date_readings = "Erreur de lecture de date!"
 html = """<!DOCTYPE html>
@@ -56,7 +65,7 @@ html = """<!DOCTYPE html>
 """ + sensor_list + """
 <br/>""" + date_readings + """<br/>
 <form action="index.py">
-  <input type="submit" style=\"padding: 1em;\" value="Rafraichir" />
+  <input type="submit" style=\"padding: 1.2em;\" value="Rafraichir" />
 </form>
 <br/>
 </body>
