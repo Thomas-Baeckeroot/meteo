@@ -14,6 +14,7 @@ import time
 
 import sensors_functions as func
 import utils
+import start_cpu_fan
 
 # path_to_pydevd = "home/pi/.local/bin/pydevd"  # found by 'find / -name pydevd'
 # sys.path.append(path_to_pydevd)
@@ -114,11 +115,16 @@ def main():  # Expected to be called once per minute
     consolidated_table = "consolidated" + str(period) + "_measures_" + sensor
 
     sql_insert = "INSERT INTO " + raw_table + "(epochtimestamp,value) VALUES(?,?);"
-    measure = (utils.epoch_now(), func.value_CPU_temp())
+    cpu_temp = func.value_CPU_temp()
+    measure = (utils.epoch_now(), cpu_temp)
     curs.execute(sql_insert, measure)
 
     print("Added value for " + sensor + "; commiting...")
     conn.commit()
+    if cpu_temp > 40:
+        start_cpu_fan.start_cpu_fan()
+    if cpu_temp < 20:
+        start_cpu_fan.stop_cpu_fan()
 
     # Next sensor:
     sensor = "luminosity"

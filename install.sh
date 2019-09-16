@@ -69,3 +69,8 @@ echo "With 'sudo raspi-config', you can configure to start without graphical GUI
 ## git clone https://github.com/klen/python-mode.git
 
 chmod +x ~/meteo/src/main/py/server3.py
+chmod +x ~/meteo/src/main/py/start_cpu_fan.py
+chmod +x ~/meteo/src/main/py/home_web/index.py
+# sudo su - web
+sudo runuser -l -c 'ln /home/pi/meteo/src/main/py/home_web/index.py /home/web/index.html'
+sudo runuser -l -c 'ln /home/pi/meteo/src/main/py/home_web/graph.svg /home/web/graph.svg'

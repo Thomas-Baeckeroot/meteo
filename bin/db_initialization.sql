@@ -5,11 +5,29 @@
 BEGIN;
 CREATE TABLE sensors
     (   names           TEXT,
+        priority        INTEGER,  -- priority value: from 0 to 100; ie: 20 for main values (temp.)
+        label           TEXT,
+        decimals        INTEGER,  -- decimal places: 0 = rounded at unit, 1 = 1/10th of unit, ...
         cumulative      BOOLEAN,  -- ie: True for mm of water, false for temperature
         unit            TEXT,
-        consolidated    TEXT
+        consolidated    TEXT  -- time-range (in s.) for consolidation; ie: 900 -> data consolidated per 15 minutes
     );
 COMMIT;
+
+
+-- DROP TABLE TempOldTable;
+-- ALTER TABLE sensors RENAME TO TempOldTable;
+-- CREATE TABLE sensors
+--     (   names           TEXT,
+--         priority        INTEGER,  -- priority value: from 0 to 100; ie: 20 for main values (temp.)
+--         label           TEXT,
+--         decimals        INTEGER,  -- decimal places: 0 = rounded at unit, 1 = 1/10th of unit, ...
+--         cumulative      BOOLEAN,  -- ie: True for mm of water, false for temperature
+--         unit            TEXT,
+--         consolidated    TEXT  -- time-range (in s.) for consolidation; ie: 900 -> data consolidated per 15 minutes
+--     );
+-- INSERT INTO sensors (names, label, cumulative, unit, consolidated) SELECT names, label, cumulative, unit, consolidated FROM TempOldTable;
+-- UPDATE sensors SET decimals=1 WHERE names="CPU_temp";
 
 BEGIN;
 INSERT INTO sensors VALUES('CPU_temp', 'false', '°C', '900'); -- later, consolidated should be like '900 86400'
