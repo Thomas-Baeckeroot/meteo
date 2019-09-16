@@ -25,7 +25,7 @@ import start_cpu_fan
 METEO_FOLDER = "/home/pi/meteo/"
 DB_NAME = METEO_FOLDER + "meteo.db"
 CAPTURES_FOLDER = METEO_FOLDER + "captures/"
-CAMERA_ENABLED = False
+CAMERA_ENABLED = True
 CONSOLIDATE_VAL = False
 
 
@@ -167,7 +167,7 @@ def main():  # Expected to be called once per minute
         print("IOError occurred when reading " + sensor1 + " and " + sensor2 + "!")
 
     if CAMERA_ENABLED:
-        is300mult = is_multiple(main_call_epoch, 300)  # is True every 5 minutes (300 s.)
+        is300mult = is_multiple(main_call_epoch, 900)  # is True every 5 minutes (300 s.)
         if is300mult:
             print("Once every 5 minutes: Capture picture")
             take_picture()
