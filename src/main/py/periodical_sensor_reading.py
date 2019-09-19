@@ -121,10 +121,10 @@ def main():  # Expected to be called once per minute
 
     print("Added value for " + sensor + "; commiting...")
     conn.commit()
-    if cpu_temp > 40:
-        start_cpu_fan.start_cpu_fan()
-    if cpu_temp < 20:
-        start_cpu_fan.stop_cpu_fan()
+    # if cpu_temp > 40:
+    #     start_cpu_fan.start_cpu_fan()
+    # if cpu_temp < 20:
+    #     start_cpu_fan.stop_cpu_fan()
 
     # Next sensor:
     sensor = "luminosity"

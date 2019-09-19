@@ -17,8 +17,8 @@ def start_cpu_fan():
 
 def stop_cpu_fan():
     GPIO.setmode(GPIO.BCM)  # Use GPIO numbering
-    GPIO.setup(GPIO_CPU_FAN_RELAY_OUT, GPIO.OUT, initial=GPIO.LOW)  # low = fan is running
-    print("CPU fan started.")
+    GPIO.setup(GPIO_CPU_FAN_RELAY_OUT, GPIO.OUT, initial=GPIO.HIGH)  # high = fan is stopped
+    print("CPU fan stopped.")
 
 
 def main():
