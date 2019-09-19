@@ -17,10 +17,6 @@ from svg.charts import line
 
 
 def generate_samples():
-    yield 'VerticalBar', SampleBar.vertical()
-    yield 'HorizontalBar', SampleBar.horizontal()
-    yield 'VerticalBarLarge', SampleBar.vertical_large()
-    yield 'VerticalBarStackTop', SampleBar.vertical_top()
     yield 'Line', sample_Line()
 
 
@@ -37,17 +33,22 @@ def sample_Line():
         no_css=False,
     )
     g.__dict__.update(options)
-    g.add_data({'data': [-2, 3, 1, 3, 1]})  # , 'title': 'Female'
+    g.add_data({'data': [-2, 3, 1, 3, 1], 'title': 'Female'})  # , 'title': 'Female'
     # g.add_data({'data': [0, 2, 1, 5, 4], 'title': 'Male'})
     return g
+
+
+def gen_sample():
+    yield sample_Line()
 
 
 def save_samples():
     root = os.path.dirname(__file__)
     for sample_name, sample in generate_samples():
+    #sample = gen_sample()
+
         res = sample.burn()
-        with open(os.path.join(root, sample_name + '.py.svg'), 'w') as f:
-            f.write(res)
+        print(res)
 
 
 if __name__ == '__main__':
