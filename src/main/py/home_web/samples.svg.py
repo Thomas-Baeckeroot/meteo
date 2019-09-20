@@ -28,7 +28,6 @@ def sample_Line():
         width=640,  # calculations done with width and height, must be integer in pixel ('em' not accepted...)
         height=480,
         fields=['18:00', '', '0:00', '', '6:00', '', '12:00', '', '18:00'],
-        # fields=['Internet', 'TV', 'Newspaper', 'Magazine', 'Radio'],
         graph_title='Question 7',
         show_graph_title=False,
         no_css=False,
@@ -36,7 +35,7 @@ def sample_Line():
     g.__dict__.update(options)
     # g.add_data({'data': [-2, 3, 1, 3, 1], 'title': 'Female'})  # , 'title': 'Female'
     # g.add_data({'data': [11, 10, 9, 9, 9, 9, 10, 11, 14], 'title': 'Temperature'})  # , 'title': 'Female'
-    g.add_data({'data': [11.6, 10.4, 9.6, 9.1, 9.3, 9.7, 10.3, 11.7, 14.0], 'title': 'Temperature'})
+    g.add_data({'data': [11.6, 10.4, 9.6, 9.1, 9.3, 9.7, 10.3, 11.7, 14.0], 'title': ''})
     # g.add_data({'data': [0, 2, 1, 5, 4], 'title': 'Male'})
     return g
 
@@ -55,4 +54,7 @@ def save_samples():
 
 
 if __name__ == '__main__':
+    print("Content-type: text/html; charset=utf-8\n")
+    print("""<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+        "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">""")
     save_samples()
