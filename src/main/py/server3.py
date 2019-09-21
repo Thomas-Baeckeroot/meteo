@@ -4,7 +4,13 @@
 
 import http.server
 import cgitb
+import logging
 
+print = logging.info
+
+logging.basicConfig(filename='/home/web/server3.log',level=logging.DEBUG)
+logging.info('log started - INFO level')
+logging.error('log started - ERROR level')
 cgitb.enable()
 
 PORT = 49107
