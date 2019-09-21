@@ -2,11 +2,11 @@
 # coding: utf-8
 
 """
-Samples of the various charts. Run this script to generate the reference
-samples.
+Serves SVG chart of requested sensor.
 """
 
-import os
+import cgi
+# import os
 
 # from svg.charts.plot import Plot
 # from svg.charts import bar
@@ -21,6 +21,12 @@ def generate_samples():
 
 
 def sample_Line():
+    form = cgi.FieldStorage()
+    sensor = form.getvalue("sensor")
+    maxepoch = form.getvalue("maxepoch")
+    if maxepoch is None:
+        maxepoch = 20000
+    
     g = line.Line()
     options = dict(
         scale_integers=True,
@@ -35,7 +41,7 @@ def sample_Line():
     g.__dict__.update(options)
     # g.add_data({'data': [-2, 3, 1, 3, 1], 'title': 'Female'})  # , 'title': 'Female'
     # g.add_data({'data': [11, 10, 9, 9, 9, 9, 10, 11, 14], 'title': 'Temperature'})  # , 'title': 'Female'
-    g.add_data({'data': [11.6, 10.4, 9.6, 9.1, 9.3, 9.7, 10.3, 11.7, 14.0], 'title': ''})
+    g.add_data({'data': [11.6, 10.4, 9.6, 9.0, 9.3, 9.7, 10.3, 11.7, 14.0], 'title': ''})
     # g.add_data({'data': [0, 2, 1, 5, 4], 'title': 'Male'})
     return g
 
@@ -45,7 +51,7 @@ def gen_sample():
 
 
 def save_samples():
-    root = os.path.dirname(__file__)
+    # root = os.path.dirname(__file__)
     for sample_name, sample in generate_samples():
     # sample = gen_sample()
 

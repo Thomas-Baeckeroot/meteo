@@ -12,12 +12,16 @@ if param is None:
 else:
   blue = str(param)
 sensor = form.getvalue("sensor")
+width = form.getvalue("width")
+if width is None:
+	width = 500.
+
+height = float(width) * 2. / 5.
 
 # Connect or Create DB File
-html="""<svg xmlns="http://www.w3.org/2000/svg" width="5em" height="2em">
-  <rect width="5em" height="2em" style="fill:rgb(196,196,""" + blue + """);stroke-width:1;stroke:rgb(64,64,64)" />
-  Sorry, your browser does not support inline SVG.  
-</svg>
-"""
+body = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"" + str(width) + "\" height=\"" + str(height) + "\">"
+body = body + "  <rect width=\"" + str(width) + "\" height=\"" + str(height) + "\" style=\"fill:rgb(196,196," + blue + ");stroke-width:1;stroke:rgb(64,64,64)\" />"
+body = body + "  Sorry, your browser does not support inline SVG."
+body = body + "</svg>"
 
-print(html)
+print(body)

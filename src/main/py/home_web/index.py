@@ -42,13 +42,13 @@ for sensor in sensors:
     date_str = time.strftime('%-d/%m/%Y<br/>%H:%M:%S', time.localtime(epochdate))
     sensor_list = sensor_list + "<tr" + style_row + ">"
     sensor_list = sensor_list + "<td style=\"padding-left: 1em;padding-right: 2em;\">" + sensor_label
-    sensor_list = sensor_list + "</td><td style=\"text-align: center;padding-left: 1em;padding-right: 2em;" \
+    sensor_list = sensor_list + "</td>\n<td style=\"text-align: center;padding-left: 1em;padding-right: 2em;" \
                   + style_value + "\">" + str(value) + " " + unit
     sensor_list = sensor_list\
-                  + "</td><td style=\"padding-left: 1em;padding-right: 2em;font-size: x-small;text-align: center;\">"\
+                  + "</td>\n<td style=\"padding-left: 1em;padding-right: 2em;font-size: x-small;text-align: center;\">"\
                   + date_str
     sensor_list = sensor_list\
-                  + "</td><td style=\"padding-left: 1em;padding-right: 2em;\"><img src=\"graph.svg?param=242&sensor=" + sensor_name + "\" style=\"width:5em;height:2em;\" /></td></tr>"
+                  + "</td>\n<td style=\"padding-left: 1em;padding-right: 2em;\"><img src=\"graph.svg?param=242&sensor=" + sensor_name + "&width=100\" style=\"width:100px;height:40px;\" /></td></tr>\n"
 sensor_list = sensor_list + "</table>"
 
 if oldest_date != 2000000000:
