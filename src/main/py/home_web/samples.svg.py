@@ -15,6 +15,16 @@ import cgi
 # from svg.charts import schedule
 from svg.charts import line
 
+import sqlite3
+# import time
+
+
+SECONDS_IN_ONE_DAY = 86400
+METEO_FOLDER = "/home/pi/meteo/"
+DB_NAME = METEO_FOLDER + "meteo.db"
+CAPTURES_FOLDER = METEO_FOLDER + "captures/"
+# START_TIME = time.time()
+
 
 def generate_samples():
     yield 'Line', sample_Line()
@@ -22,18 +32,51 @@ def generate_samples():
 
 def sample_Line():
     form = cgi.FieldStorage()
-    sensor = form.getvalue("sensor")
+    sensor_name = form.getvalue("sensor")
+
+    width = form.getvalue("width")
+    if width is None:
+        width = 500.
+        # Measured widths: phones=980, Mc=1440
+    else:
+        width = float(width)
+    height = width * 2. / 5.
+    scale_hours = int(2700. / width)
+
     maxepoch = form.getvalue("maxepoch")
     if maxepoch is None:
-        maxepoch = 20000
+        maxepoch = 2000000000
+    maxepoch = int(maxepoch)
     
+    minepoch = maxepoch - SECONDS_IN_ONE_DAY
+
+    conn = sqlite3.connect(DB_NAME)
+    curs = conn.cursor()
+    curs.execute("SELECT epochtimestamp, value FROM raw_measures_" + sensor_name + " WHERE epochtimestamp<" + str(maxepoch) + " AND epochtimestamp>" + str(minepoch) + ";")
+
+    date_and_value = curs.fetchall()
+    epochdates = list()
+    values = list()
+    for i in list(range(len(date_and_value))):
+        epoch = date_and_value[i][0]
+        epoch_minutes = round(epoch/60.)
+        if (epoch_minutes % (60 * scale_hours)) == 0:
+            epoch_hours = epoch_minutes / 60
+            hour_in_day = int(epoch_hours % 24)
+            epochdates.append(str(hour_in_day) + ":00")
+        else:
+            epochdates.append('')
+        # epochdates.append(date_and_value[i][0])
+        values.append(date_and_value[i][1])
+
     g = line.Line()
     options = dict(
         scale_integers=True,
         area_fill=True,
-        width=640,  # calculations done with width and height, must be integer in pixel ('em' not accepted...)
-        height=480,
-        fields=['18:00', '', '0:00', '', '6:00', '', '12:00', '', '18:00'],
+        width=int(width),  # calculations done with width and height, must be integer in pixel ('em' not accepted...)
+        height=int(height),
+        fields=epochdates,
+        # fields=['18:00', '', '0:00', '', '6:00', '', '12:00', '', '18:00'],
         graph_title='Question 7',
         show_graph_title=False,
         no_css=False,
@@ -41,7 +84,8 @@ def sample_Line():
     g.__dict__.update(options)
     # g.add_data({'data': [-2, 3, 1, 3, 1], 'title': 'Female'})  # , 'title': 'Female'
     # g.add_data({'data': [11, 10, 9, 9, 9, 9, 10, 11, 14], 'title': 'Temperature'})  # , 'title': 'Female'
-    g.add_data({'data': [11.6, 10.4, 9.6, 9.0, 9.3, 9.7, 10.3, 11.7, 14.0], 'title': ''})
+    g.add_data({'data': values, 'title': ''})
+    # g.add_data({'data': [11.6, 10.4, 9.6, 9.0, 9.3, 9.7, 10.3, 11.7, 14.0], 'title': ''})
     # g.add_data({'data': [0, 2, 1, 5, 4], 'title': 'Male'})
     return g
 

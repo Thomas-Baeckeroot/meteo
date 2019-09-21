@@ -15,6 +15,7 @@ sensor = form.getvalue("sensor")
 width = form.getvalue("width")
 if width is None:
 	width = 500.
+	# Measured widths: phones=980, Mc=1440
 
 height = float(width) * 2. / 5.
 
