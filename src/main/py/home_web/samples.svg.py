@@ -43,6 +43,11 @@ def sample_Line():
     height = width * 2. / 5.
     scale_hours = int(2700. / width)
 
+    if width < 350:
+        tiny_graph=True
+    else:
+        tiny_graph=False
+        
     maxepoch = form.getvalue("maxepoch")
     if maxepoch is None:
         maxepoch = 2000000000
@@ -72,13 +77,27 @@ def sample_Line():
     g = line.Line()
     options = dict(
         scale_integers=True,
-        area_fill=True,
+        area_fill= True,
         width=int(width),  # calculations done with width and height, must be integer in pixel ('em' not accepted...)
         height=int(height),
         fields=epochdates,
         # fields=['18:00', '', '0:00', '', '6:00', '', '12:00', '', '18:00'],
-        graph_title='Question 7',
+        graph_title=sensor_name,
+        # right_align=False,  # no effect?!
+        right_font=False,
+        scale_divisions=2,
         show_graph_title=False,
+        show_y_labels=not(tiny_graph),
+        show_x_labels=not(tiny_graph),  # Hours below
+        # show_x_title=not(tiny_graph),  # Default False, "X Field names" below
+        # show_y_title=not(tiny_graph),  # Default False, "Y Scale" on left
+        show_graph_subtitle=False,
+        show_x_guidelines=False,  # vertical dot lines: One per *value*
+        show_y_guidelines=not(tiny_graph),  # horizontal dot lines
+        stagger_y_labels=False,  # Default False (shift values for readibility if too many)
+        step_include_first_y_label=False,
+        show_legend=False,
+        top_font=False,
         no_css=False,
     )
     g.__dict__.update(options)
