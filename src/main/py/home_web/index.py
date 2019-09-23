@@ -47,8 +47,10 @@ for sensor in sensors:
     sensor_list = sensor_list\
                   + "</td>\n<td style=\"padding-left: 1em;padding-right: 2em;font-size: x-small;text-align: center;\">"\
                   + date_str
-    sensor_list = sensor_list\
-                  + "</td>\n<td style=\"padding-left: 1em;padding-right: 2em;\"><img src=\"graph.svg?param=242&sensor=" + sensor_name + "&width=100\" style=\"width:100px;height:40px;\" /></td></tr>\n"
+    sensor_list = sensor_list + "</td>\n<td style=\"padding-left: 1em;padding-right: 2em;\">"
+    sensor_list = sensor_list + "<a href=\"graph.svg?sensor=" + sensor_name + "&maxepoch=" + str(oldest_date) + "&width=980\">"
+    sensor_list = sensor_list + "<img src=\"graph.svg?sensor=" + sensor_name + "&maxepoch=" + str(oldest_date) + "&width=100\" style=\"width:100px;height:40px;\" /></a><etd></tr>\n"
+
 sensor_list = sensor_list + "</table>"
 
 if oldest_date != 2000000000:

@@ -123,7 +123,7 @@ def save_samples():
 
 
 if __name__ == '__main__':
-    print("Content-type: text/html; charset=utf-8\n")
+    print("Content-type: image/svg+xml; charset=utf-8\r\n\r\n")
     print("""<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
-        "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">""")
+        "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\r\n""")
     save_samples()
