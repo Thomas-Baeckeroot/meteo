@@ -167,9 +167,9 @@ def main():  # Expected to be called once per minute
         print("IOError occurred when reading " + sensor1 + " and " + sensor2 + "!")
 
     if CAMERA_ENABLED:
-        is300mult = is_multiple(main_call_epoch, 900)  # is True every 5 minutes (300 s.)
-        if is300mult:
-            print("Once every 5 minutes: Capture picture")
+        is_camera_mult = is_multiple(main_call_epoch, 900)  # is True every 900 s / 15 min
+        if is_camera_mult:
+            print("Once every 15 minutes: Capture picture")
             take_picture()
 
     if CONSOLIDATE_VAL:
@@ -190,6 +190,14 @@ def main():  # Expected to be called once per minute
     # Close DB
     # print("closing db...")
     conn.close()
+    
+    is_daily_run = is_multiple(main_call_epoch, 86400)  # 60x60x24 s = 1 day
+    if is_daily_run:
+        print("Midnight run: trigger the pictures sorting...")
+        # launch_daily_jobs(main_call_epoch)
+    else:
+        print("(not midnight run)")
+    
     print(utils.iso_timestamp_now() + " - Terminates " + "_" * 47)
 
 

@@ -40,12 +40,17 @@ sudo apt install -y libmicrohttpd12
 #echo "\n\n*** Install pi_stretch_motion for ?video-motion-detection?... ***"
 #sudo dpkg -i pi_stretch_motion_4.2.2-1_armhf.deb
 
-printf '\n\n*** Create forlder where images will be saved... ***\n'
+printf '\n\n*** Create folder where images will be saved... ***\n'
 mkdir /home/pi/meteo/captures/
 
 # Executed on dev machine / includes GitHub projet:
 # mkdir ~/workspace/meteo/src/lib 
 # git clone https://github.com/adafruit/Adafruit_Python_BMP.git
+
+printf '\n\n*** Create user to run web-server from... ***\n'
+sudo adduser web
+# extra option can be used: [--disabled-password]
+# This wil be the user running the web server, with the bare minimum to do so for security reasons.
 
 cat << EOF
 -

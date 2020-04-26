@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os
+# import os
 import picamera
 import RPi.GPIO as GPIO    # Import Raspberry Pi GPIO library
 # import subprocess
@@ -23,7 +23,7 @@ GPIO_WATCHDOG_LED = 25
 GPIO_XXX_BTN_IN = 12
 GPIO_YYY_BTN_IN = 16
 GPIO_ZZZ_BTN_IN = 20
-# GPIO_SHUTDOW_BTN_IN = 21
+# GPIO_SHUTDOWN_BTN_IN = 21
 
 GPIO_XXX_RELAY_OUT = 6
 GPIO_YYY_RELAY_OUT = 13
@@ -51,9 +51,9 @@ def start_video_capture():
     print(utils.iso_timestamp_now() + " - low_light = " + str(low_light))
     sys.stdout.flush()
 
-    captured_sucess = False
+    captured_success = False
     capture_tentatives = 0
-    while captured_sucess==False and capture_tentatives<23:
+    while not captured_success and capture_tentatives < 23:
         capture_tentatives = capture_tentatives + 1
         try:
             camera = picamera.PiCamera()
@@ -73,12 +73,12 @@ def start_video_capture():
             camera.stop_preview()
             camera.close()
             time.sleep(1)
-            captured_sucess=True
+            captured_success = True
         except picamera.exc.PiCameraMMALError:
             sys.stdout.write(".")
             time.sleep(capture_tentatives)
 
-    if captured_sucess == False:
+    if not captured_success:
         print("failed " + capture_tentatives + " times to take picture. Gave up!")
         sys.stdout.flush()
 
@@ -93,10 +93,11 @@ def main():  # Expected to be launched at startup
     GPIO.setmode(GPIO.BCM)   # Use GPIO numbering
     
     GPIO.setup(GPIO_MVT_DETECTOR_IN, GPIO.IN)  # movement detector
-    GPIO.setup(GPIO_IR_LIGHTS_RELAY_OUT, GPIO.OUT, initial=GPIO.HIGH)  # high/low (possibly because of the way the input button is read...)
+    GPIO.setup(GPIO_IR_LIGHTS_RELAY_OUT, GPIO.OUT, initial=GPIO.HIGH)
+    # high/low (possibly because of the way the input button is read...)
 
     waiting_time = 0
-    while True: # Run forever
+    while True:  # Run forever
         
         if GPIO.input(GPIO_MVT_DETECTOR_IN):
             start_video_capture()
@@ -108,7 +109,6 @@ def main():  # Expected to be launched at startup
             sys.stdout.flush()
             waiting_time = 0
             
-
 
 if __name__ == "__main__":
     main()
