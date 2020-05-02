@@ -8,6 +8,9 @@ sudo apt install -y python-pip
 # curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py
 # python /tmp/get-pip.py
 
+printf '\n\n*** Install Picamera Python module... ***\n'
+sudo apt install -y python-picamera python3-picamera
+
 printf '\n\n*** Install postgresql database... ***\n'
 sudo apt install -y postgresql libpq-dev python-psycopg2 && pip install psycopg2
 
@@ -24,8 +27,10 @@ pip install gpiozero
 # https://pypi.org/project/tsl2561/
 printf '\n\n*** Install RPi.GPIO for input/output management... ***\n'
 pip install RPi.GPIO
-# echo "\n\n*** Install Adafruit_GPIO for input/output management... ***"
-# python -m pip install Adafruit_GPIO  # Don't know why it was not working without calling by 'python -m'
+
+printf '\n\n*** Install Adafruit_GPIO for input/output management... ***'
+python -m pip install Adafruit_GPIO  # Was not working without calling by 'python -m'
+
 printf '\n\n*** Install tsl2561 for sensors reading... ***\n'
 pip install tsl2561
 
@@ -39,6 +44,13 @@ sudo apt install -y libmicrohttpd12
 ## from https://github.com/Motion-Project/motion/releases
 #echo "\n\n*** Install pi_stretch_motion for ?video-motion-detection?... ***"
 #sudo dpkg -i pi_stretch_motion_4.2.2-1_armhf.deb
+
+printf '\n\n*** Install BMP sensors library... ***\n'
+cd /tmp
+# sudo apt-get install git build-essential python-dev python-smbus
+git clone https://github.com/adafruit/Adafruit_Python_BMP.git
+cd Adafruit_Python_BMP
+sudo python setup.py install
 
 printf '\n\n*** Create folder where images will be saved... ***\n'
 mkdir /home/pi/meteo/captures/
