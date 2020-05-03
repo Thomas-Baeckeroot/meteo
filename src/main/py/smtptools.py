@@ -4,23 +4,28 @@
 import configparser
 import os
 import smtplib
-import traceback
+# import traceback
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 
-def send(receiver_address, subject_line, mail_content):
+def get_config_parser():
     config_file = os.path.abspath(__file__).replace("src/main/py/smtptools.py", "meteo.ini")
-    # print("DEBUG - smtp_config = " + smtp_config)
-    config = configparser.ConfigParser()
-    config.read(config_file)
+    config_parser = configparser.ConfigParser()
+    config_parser.read(config_file)
+    return config_parser
+
+
+def send(receiver_address, subject_line, mail_content):
+    config = get_config_parser()
 
     # The mail addresses and password
     smtp_server = config.get("SMTP", "server", fallback="smtp.gmail.com")  # default value for SMTP server
     smtp_port = int(config.get("SMTP", "port", fallback=587))  # default value for SMTP server port
     sender_address = config.get("SMTP", "sender_address", fallback="Sender.Username@gmail.com")
     sender_name = config.get("SMTP", "sender_name", fallback=None)
-    sender_pass = config.get("SMTP", "sender_pass", fallback="Sender address and password should be defined in meteo.ini")
+    sender_pass = config.get("SMTP", "sender_pass",
+                             fallback="Sender address and password should be defined in meteo.ini")
     # print("DEBUG - SMTP to " + sender_address + " at " + smtp_server + ":" + smtp_port)
     if sender_name is None:
         sender_name = sender_address
@@ -40,7 +45,7 @@ def send(receiver_address, subject_line, mail_content):
     try:
         session.login(sender_address, sender_pass)  # login with mail_id and password
     except smtplib.SMTPAuthenticationError:
-        print("Failed to connect with user '" + sender_address + "', check configuration in " + smtp_config)
+        print("Failed to connect with user '" + sender_address + "', check configuration file meteo.ini")
         # traceback.print_exc()
         return
     text = message.as_string()
@@ -50,19 +55,10 @@ def send(receiver_address, subject_line, mail_content):
 
 
 if __name__ == "__main__":
-    config_file = os.path.abspath(__file__).replace("src/main/py/smtptools.py", "meteo.ini")
-    # print("DEBUG - smtp_config = " + smtp_config)
-    config = configparser.ConfigParser()
-    config.read(config_file)
-
-    # The mail addresses and password
-    receiver_address = config.get("SMTP", "receiver_address", fallback="Recipient.Username@gmail.com")
-    sample_content = '''Hello,
-    This is a simple mail. There is only text, no attachments are there The mail is sent using Python SMTP library.
-    Thank You
-    '''
-
-    send(receiver_address,
-         "A test mail sent by Python. It has an attachment.",
-         sample_content
-         )
+    send(
+        get_config_parser().get("SMTP", "receiver_address", fallback="Recipient.Username@gmail.com"),
+        "A test mail sent by Python. It has an attachment.",
+        '''Hello,
+        This is a simple mail. There is only text, no attachments are there The mail is sent using Python SMTP library.
+        Thank You'''
+    )
