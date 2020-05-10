@@ -2,58 +2,39 @@
 set -e
 set -x
 
-printf '\n\n*** Install PIP (package manager)... ***\n'
-sudo apt install -y python-pip python3-pip
-# Former below method is not recommended anymore
-# curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py
-# python /tmp/get-pip.py
-
-printf '\n\n*** Install Picamera Python module... ***\n'
-sudo apt install -y python-picamera python3-picamera
-
-printf '\n\n*** Install postgresql database... ***\n'
-sudo apt install -y postgresql libpq-dev python-psycopg2
-pip install psycopg2
-pip3 install psycopg2
-
-# check https://raspberrypi.stackexchange.com/questions/70018/remotely-debug-python-code-on-pi-using-eclipse-in-windows for further details
-printf '\n\n*** Install pydevd for Python remote debugging... ***\n'
-sudo pip install pydevd
-
-printf '\n\n*** Install gpiozero for CPU temperature reading and other GPIO... ***\n'
-pip install gpiozero
-pip3 install gpiozero
-
-# A tutorial? about how to use the pressure/humidity/light/temperature sensors with I2C/SPI:
-# https://learn.sparkfun.com/tutorials/raspberry-pi-spi-and-i2c-tutorial/all
-
-# https://pypi.org/project/tsl2561/
-printf '\n\n*** Install RPi.GPIO for input/output management... ***\n'
-pip install RPi.GPIO
-pip3 install RPi.GPIO
-
-printf '\n\n*** Install Adafruit_GPIO for input/output management... ***'
-python -m pip install Adafruit_GPIO  # Was not working without calling by 'python -m'
-pip3 install Adafruit_GPIO  # Was not working without calling by 'python -m'
-
-printf '\n\n*** Install tsl2561 for sensors reading... ***\n'
-pip install tsl2561
-pip3 install tsl2561
-
-printf '\n\n*** Install bluetin.io for HC-SR04 sensor reading... ***\n'
-pip install Bluetin_Echo
-pip3 install Bluetin_Echo
-
+printf '\n\n*** APT installs for... ***\n'
+printf '- PIP (Python package manager)\n'
+printf '- Picamera Python module\n'
+printf '- postgresql database\n'
+printf '- gpac to get "MP4Box" command for webcam video captures\n'
 # As detailed https://www.raspberrypi.org/documentation/usage/camera/raspicam/raspivid.md
-printf '\n\n*** Install gpac to get 'MP4Box' command for webcam video captures... ***\n'
-sudo apt install -y gpac
-
-# it has been installed the 2019-06 version by:
-printf '\n\n*** Install libmicrohttpd12 for tests with 'motion'... ***\n'  # required yet?
-sudo apt install -y libmicrohttpd12
+printf '- libmicrohttpd12 for tests with "motion" (required yet?)\n'
 ## from https://github.com/Motion-Project/motion/releases
 #echo "\n\n*** Install pi_stretch_motion for ?video-motion-detection?... ***"
 #sudo dpkg -i pi_stretch_motion_4.2.2-1_armhf.deb
+
+sudo apt install -y \
+python-pip python3-pip \
+python-picamera python3-picamera \
+postgresql libpq-dev python-psycopg2 \
+gpac \
+libmicrohttpd12
+
+printf '\n\n*** PIP Installs: ***\n'
+printf '- postgresql for Python calls\n'
+printf '- pydevd for Python remote debugging\n'
+# check https://raspberrypi.stackexchange.com/questions/70018/remotely-debug-python-code-on-pi-using-eclipse-in-windows for further details
+printf '- gpiozero for CPU temperature reading and other GPIO\n'
+printf '- RPi.GPIO for input/output management\n'
+printf '- Adafruit_GPIO for input/output management\n'
+# note: if issues for Adafruit_GPIO install, launch with "python -m pip" instead of "pip"
+printf '- tsl2561 for sensors reading\n'
+# A tutorial? about how to use the pressure/humidity/light/temperature sensors with I2C/SPI:
+# https://learn.sparkfun.com/tutorials/raspberry-pi-spi-and-i2c-tutorial/all
+# https://pypi.org/project/tsl2561/
+printf '- bluetin.io for HC-SR04 distance sensor reading\n'
+pip install psycopg2 pydevd gpiozero RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo
+pip3 install psycopg2 pydevd gpiozero RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo
 
 printf '\n\n*** Install BMP sensors library... ***\n'
 cd /tmp
