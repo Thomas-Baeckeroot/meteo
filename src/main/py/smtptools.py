@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Expected to work with python2 also but using "3" for development...
+# Expected to work with python2 also, but using "3" for development...
 
 import configparser
 import os
@@ -18,6 +18,8 @@ def get_config_parser():
 
 
 def send(receiver_address, subject_line, mail_content):
+    print("DEBUG - send(receiver_address=" + str(receiver_address)
+          + ", subject_line='" + str(subject_line) + "', mail_content=...)")
     config = get_config_parser()
 
     # The mail addresses and password
@@ -30,8 +32,6 @@ def send(receiver_address, subject_line, mail_content):
     # print("DEBUG - SMTP to " + sender_address + " at " + smtp_server + ":" + smtp_port)
     if sender_name is None:
         sender_name = sender_address
-    else:
-        sender_name = sender_name + " <" + sender_address + ">"
 
     # Setup the MIME
     message = MIMEMultipart()
