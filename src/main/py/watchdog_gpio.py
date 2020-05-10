@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import os
 import RPi.GPIO as GPIO    # Import Raspberry Pi GPIO library

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # This script should be launched at startup with:
 # python ~/meteo/src/main/py/start_cpu_fan.py

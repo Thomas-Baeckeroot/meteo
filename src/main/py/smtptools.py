@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 # Expected to work with python2 also but using "3" for development...
 
 import configparser

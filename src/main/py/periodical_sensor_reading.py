@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # import calendar
 # import datetime
@@ -115,7 +116,7 @@ def main():  # Expected to be called once per minute
     consolidated_table = "consolidated" + str(period) + "_measures_" + sensor
 
     sql_insert = "INSERT INTO " + raw_table + "(epochtimestamp,value) VALUES(?,?);"
-    cpu_temp = func.value_CPU_temp()
+    cpu_temp = func.value_cpu_temp()
     measure = (utils.epoch_now(), cpu_temp)
     curs.execute(sql_insert, measure)
 

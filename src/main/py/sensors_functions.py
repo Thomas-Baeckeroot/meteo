@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import tsl2561  # If failing, run: pip install Adafruit_GPIO tsl2561 (and also RPi.GPIO ?)
 import Adafruit_BMP.BMP085 as BMP085
@@ -16,7 +17,7 @@ def round_value_decimals(value, decimals):
         return int(round(value, decimals))
 
 
-def value_CPU_temp():
+def value_cpu_temp():
     cpu_temp = CPUTemperature().temperature
     return round_value_decimals(cpu_temp, 1)
 
