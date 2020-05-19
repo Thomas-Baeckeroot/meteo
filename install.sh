@@ -2,13 +2,13 @@
 set -e
 set -x
 
-printf '\n\n*** APT installs for... ***\n'
-printf '- PIP (Python package manager)\n'
-printf '- Picamera Python module\n'
-printf '- postgresql database\n'
-printf '- gpac to get "MP4Box" command for webcam video captures\n'
+printf -- '\n\n*** APT installs for... ***\n'
+printf -- '- PIP (Python package manager)\n'
+printf -- '- Picamera Python module\n'
+printf -- '- postgresql database\n'
+printf -- '- gpac to get "MP4Box" command for webcam video captures\n'
 # As detailed https://www.raspberrypi.org/documentation/usage/camera/raspicam/raspivid.md
-printf '- libmicrohttpd12 for tests with "motion" (required yet?)\n'
+printf -- '- libmicrohttpd12 for tests with "motion" (required yet?)\n'
 ## from https://github.com/Motion-Project/motion/releases
 #echo "\n\n*** Install pi_stretch_motion for ?video-motion-detection?... ***"
 #sudo dpkg -i pi_stretch_motion_4.2.2-1_armhf.deb
@@ -20,23 +20,23 @@ postgresql libpq-dev python-psycopg2 \
 gpac \
 libmicrohttpd12
 
-printf '\n\n*** PIP Installs: ***\n'
-printf '- postgresql for Python calls\n'
-printf '- pydevd for Python remote debugging\n'
+printf -- '\n\n*** PIP Installs: ***\n'
+printf -- '- postgresql for Python calls\n'
+printf -- '- pydevd for Python remote debugging\n'
 # check https://raspberrypi.stackexchange.com/questions/70018/remotely-debug-python-code-on-pi-using-eclipse-in-windows for further details
-printf '- gpiozero for CPU temperature reading and other GPIO\n'
-printf '- RPi.GPIO for input/output management\n'
-printf '- Adafruit_GPIO for input/output management\n'
+printf -- '- gpiozero for CPU temperature reading and other GPIO\n'
+printf -- '- RPi.GPIO for input/output management\n'
+printf -- '- Adafruit_GPIO for input/output management\n'
 # note: if issues for Adafruit_GPIO install, launch with "python -m pip" instead of "pip"
-printf '- tsl2561 for sensors reading\n'
+printf -- '- tsl2561 for sensors reading\n'
 # A tutorial? about how to use the pressure/humidity/light/temperature sensors with I2C/SPI:
 # https://learn.sparkfun.com/tutorials/raspberry-pi-spi-and-i2c-tutorial/all
 # https://pypi.org/project/tsl2561/
-printf '- bluetin.io for HC-SR04 distance sensor reading\n'
+printf -- '- bluetin.io for HC-SR04 distance sensor reading\n'
 pip install psycopg2 pydevd gpiozero RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo
 pip3 install psycopg2 pydevd gpiozero RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo
 
-printf '\n\n*** Install BMP sensors library... ***\n'
+printf -- '\n\n*** Install BMP sensors library... ***\n'
 cd /tmp
 # sudo apt-get install git build-essential python-dev python-smbus
 git clone https://github.com/adafruit/Adafruit_Python_BMP.git
@@ -44,14 +44,14 @@ cd Adafruit_Python_BMP
 sudo python setup.py install
 sudo python3 setup.py install
 
-printf '\n\n*** Create folder where images will be saved... ***\n'
+printf -- '\n\n*** Create folder where images will be saved... ***\n'
 mkdir /home/pi/meteo/captures/
 
 # Executed on dev machine / includes GitHub projet:
 # mkdir ~/workspace/meteo/src/lib 
 # git clone https://github.com/adafruit/Adafruit_Python_BMP.git
 
-printf '\n\n*** Create user to run web-server from... ***\n'
+printf -- '\n\n*** Create user to run web-server from... ***\n'
 sudo adduser web
 # extra option can be used: [--disabled-password]
 # This wil be the user running the web server, with the bare minimum to do so for security reasons.
