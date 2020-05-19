@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 set -e
-set -x
+set +x
 
-printf -- '\n\n*** APT installs for... ***\n'
+printf -- '\n\n*** APT installs for:... ***\n'
 printf -- '- PIP (Python package manager)\n'
 printf -- '- Picamera Python module\n'
 printf -- '- postgresql database\n'
 printf -- '- gpac to get "MP4Box" command for webcam video captures\n'
 # As detailed https://www.raspberrypi.org/documentation/usage/camera/raspicam/raspivid.md
-printf -- '- libmicrohttpd12 for tests with "motion" (required yet?)\n'
+printf -- '- libmicrohttpd12 for tests with "motion" (required yet?)\n\n'
 ## from https://github.com/Motion-Project/motion/releases
 #echo "\n\n*** Install pi_stretch_motion for ?video-motion-detection?... ***"
 #sudo dpkg -i pi_stretch_motion_4.2.2-1_armhf.deb
@@ -32,7 +32,7 @@ printf -- '- tsl2561 for sensors reading\n'
 # A tutorial? about how to use the pressure/humidity/light/temperature sensors with I2C/SPI:
 # https://learn.sparkfun.com/tutorials/raspberry-pi-spi-and-i2c-tutorial/all
 # https://pypi.org/project/tsl2561/
-printf -- '- bluetin.io for HC-SR04 distance sensor reading\n'
+printf -- '- bluetin.io for HC-SR04 distance sensor reading\n\n'
 pip install psycopg2 pydevd gpiozero RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo
 pip3 install psycopg2 pydevd gpiozero RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo
 
@@ -41,9 +41,12 @@ cd /tmp
 # sudo apt-get install git build-essential python-dev python-smbus
 # Remove any pre-existing folder:
 sudo rm -rf /tmp/Adafruit_Python_BMP
+printf -- '*** cloning... ***\n\n'
 git clone https://github.com/adafruit/Adafruit_Python_BMP.git
 cd Adafruit_Python_BMP
+printf -- '\n*** Python 2... ***\n\n'
 sudo python setup.py install
+printf -- '\n*** Python 3... ***\n\n'
 sudo python3 setup.py install
 
 printf -- '\n\n*** Create folder where images will be saved... ***\n'
@@ -59,6 +62,11 @@ sudo adduser web || printf -- 'User "web" already exists\n'
 # This wil be the user running the web server, with the bare minimum to do so for security reasons.
 
 cat << EOF
+****************************************************************
+*** INSTRUCTIONS TO MANUALLY FINISH THE INSTALLATION PROCESS ***
+***  (all steps not yet automated but it should be easy...)  ***
+****************************************************************
+
 -
 Add below line to crontab of user '\''pi'\'':
 * * * * *  /home/pi/meteo/src/main/py/periodical_sensor_reading.py >> /var/log/meteo.log 2>&1
