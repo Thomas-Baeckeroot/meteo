@@ -39,6 +39,8 @@ pip3 install psycopg2 pydevd gpiozero RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Ech
 printf -- '\n\n*** Install BMP sensors library... ***\n'
 cd /tmp
 # sudo apt-get install git build-essential python-dev python-smbus
+# Remove any pre-existing folder:
+sudo rm -rf /tmp/Adafruit_Python_BMP
 git clone https://github.com/adafruit/Adafruit_Python_BMP.git
 cd Adafruit_Python_BMP
 sudo python setup.py install
