@@ -54,7 +54,7 @@ mkdir -p /home/pi/meteo/captures/
 # git clone https://github.com/adafruit/Adafruit_Python_BMP.git
 
 printf -- '\n\n*** Create user to run web-server from... ***\n'
-sudo adduser web
+sudo adduser web || printf -- 'User "web" already exists\n'
 # extra option can be used: [--disabled-password]
 # This wil be the user running the web server, with the bare minimum to do so for security reasons.
 
