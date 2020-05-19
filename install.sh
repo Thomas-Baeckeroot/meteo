@@ -45,10 +45,10 @@ sudo python setup.py install
 sudo python3 setup.py install
 
 printf -- '\n\n*** Create folder where images will be saved... ***\n'
-mkdir /home/pi/meteo/captures/
+mkdir -p /home/pi/meteo/captures/
 
 # Executed on dev machine / includes GitHub projet:
-# mkdir ~/workspace/meteo/src/lib 
+# mkdir -p ~/workspace/meteo/src/lib
 # git clone https://github.com/adafruit/Adafruit_Python_BMP.git
 
 printf -- '\n\n*** Create user to run web-server from... ***\n'
