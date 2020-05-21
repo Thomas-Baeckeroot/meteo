@@ -20,6 +20,18 @@ postgresql libpq-dev python-psycopg2 \
 gpac \
 libmicrohttpd12
 
+## Also useful for developing from ssh command-line:
+
+# sudo apt install vim vim-addon-manager
+
+## mkdir -p ~/.vim/autoload ~/.vim/bundle
+## curl -LSso ~/.vim/autoload/pathogen.cim https://tpo.pe/pathogen.vim
+## echo "execute pathogen#infect()" >> ~/.vimrc
+## echo "syntax on" >> ~/.vimrc
+## echo "filetype plugin indent on" >> ~/.vimrc
+## cd ~/.vim/bundle
+## git clone https://github.com/klen/python-mode.git
+
 printf -- '\n\n*** PIP Installs: ***\n'
 printf -- '- postgresql for Python calls\n'
 printf -- '- pydevd for Python remote debugging\n'
@@ -33,8 +45,8 @@ printf -- '- tsl2561 for sensors reading\n'
 # https://learn.sparkfun.com/tutorials/raspberry-pi-spi-and-i2c-tutorial/all
 # https://pypi.org/project/tsl2561/
 printf -- '- bluetin.io for HC-SR04 distance sensor reading\n\n'
-pip install psycopg2 pydevd gpiozero RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo
-pip3 install psycopg2 pydevd gpiozero RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo
+sudo pip install psycopg2 pydevd gpiozero RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo
+sudo pip3 install psycopg2 pydevd gpiozero RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo
 
 printf -- '\n\n*** Install BMP sensors library... ***\n'
 cd /tmp
@@ -61,6 +73,15 @@ sudo adduser web || printf -- 'User "web" already exists\n'
 # extra option can be used: [--disabled-password]
 # This wil be the user running the web server, with the bare minimum to do so for security reasons.
 
+
+chmod +x ~/meteo/src/main/py/server3.py
+chmod +x ~/meteo/src/main/py/start_cpu_fan.py
+chmod +x ~/meteo/src/main/py/home_web/index.py
+# sudo su - web
+sudo runuser -l -c 'ln /home/pi/meteo/src/main/py/home_web/index.py /home/web/index.html'
+sudo runuser -l -c 'ln /home/pi/meteo/src/main/py/home_web/graph.svg /home/web/graph.svg'
+
+
 cat << EOF
 ****************************************************************
 *** INSTRUCTIONS TO MANUALLY FINISH THE INSTALLATION PROCESS ***
@@ -71,28 +92,15 @@ cat << EOF
 Add below line to crontab of user '\''pi'\'':
 * * * * *  /home/pi/meteo/src/main/py/periodical_sensor_reading.py >> /var/log/meteo.log 2>&1
 -
-Add below 3 lines at the end of /etc/rc.local, before last '\''exit 0'\'':
+As admin, add below 3 lines at the end of /etc/rc.local, before last '\''exit 0'\'':
+$ sudo vi /etc/rc.local
+[...]
 /home/pi/meteo/src/main/py/watchdog_gpio.py >> /var/log/watchdog_gpio.log 2>&1 &
 sudo su - pi -c \"/home/pi/meteo/src/main/py/video_capture_on_motion.py >> /home/pi/meteo/video.log 2>&1\" &
 sudo su - web -c \"/home/pi/meteo/src/main/py/server3.py >> /home/web/server3.log\" &
+
+exit 0
 -
-With 'sudo raspi-config', you can configure to start without graphical GUI'
+
+Also, if willing to start without graphical GUI, this can be configured with 'sudo raspi-config'.
 EOF
-## Also useful for developing from ssh command-line:
-
-# sudo apt install vim vim-addon-manager
-
-## mkdir -p ~/.vim/autoload ~/.vim/bundle
-## curl -LSso ~/.vim/autoload/pathogen.cim https://tpo.pe/pathogen.vim
-## echo "execute pathogen#infect()" >> ~/.vimrc
-## echo "syntax on" >> ~/.vimrc
-## echo "filetype plugin indent on" >> ~/.vimrc
-## cd ~/.vim/bundle
-## git clone https://github.com/klen/python-mode.git
-
-chmod +x ~/meteo/src/main/py/server3.py
-chmod +x ~/meteo/src/main/py/start_cpu_fan.py
-chmod +x ~/meteo/src/main/py/home_web/index.py
-# sudo su - web
-sudo runuser -l -c 'ln /home/pi/meteo/src/main/py/home_web/index.py /home/web/index.html'
-sudo runuser -l -c 'ln /home/pi/meteo/src/main/py/home_web/graph.svg /home/web/graph.svg'
