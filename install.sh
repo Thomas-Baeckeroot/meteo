@@ -53,12 +53,12 @@ cd /tmp
 # sudo apt-get install git build-essential python-dev python-smbus
 # Remove any pre-existing folder:
 sudo rm -rf /tmp/Adafruit_Python_BMP
-printf -- '*** cloning... ***\n\n'
+printf -- '*** BMP sensors: cloning... ***\n\n'
 git clone https://github.com/adafruit/Adafruit_Python_BMP.git
 cd Adafruit_Python_BMP
-printf -- '\n*** Python 2... ***\n\n'
+printf -- '\n*** BMP sensors: Python 2... ***\n\n'
 sudo python setup.py install
-printf -- '\n*** Python 3... ***\n\n'
+printf -- '\n*** BMP sensors: Python 3... ***\n\n'
 sudo python3 setup.py install
 
 printf -- '\n\n*** Create folder where images will be saved... ***\n'
@@ -78,11 +78,13 @@ chmod +x ~/meteo/src/main/py/server3.py
 chmod +x ~/meteo/src/main/py/start_cpu_fan.py
 chmod +x ~/meteo/src/main/py/home_web/index.py
 # sudo su - web
-sudo runuser -l -c 'ln /home/pi/meteo/src/main/py/home_web/index.py /home/web/index.html'
-sudo runuser -l -c 'ln /home/pi/meteo/src/main/py/home_web/graph.svg /home/web/graph.svg'
+sudo runuser -l -c 'ln -f /home/pi/meteo/src/main/py/home_web/index.py /home/web/index.html'
+sudo runuser -l -c 'ln -f /home/pi/meteo/src/main/py/home_web/graph.svg /home/web/graph.svg'
 
 
 cat << EOF
+
+
 ****************************************************************
 *** INSTRUCTIONS TO MANUALLY FINISH THE INSTALLATION PROCESS ***
 ***  (all steps not yet automated but it should be easy...)  ***
