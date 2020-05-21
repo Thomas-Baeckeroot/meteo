@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import os
@@ -63,11 +63,14 @@ def start_shutdown_process():
 
 def main():  # Expected to be launched at startup
     print(iso_timestamp_now() + " - Starting watchdog...")
+    
     # GPIO.setwarnings(False)    # Ignore warning for now
     GPIO.setmode(GPIO.BCM)   # Use GPIO numbering
     
+    print("Using GPIO" + str(GPIO_SHUTDOW_BTN_IN) + " as input for shutdown button.")
     GPIO.setup(GPIO_SHUTDOW_BTN_IN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(GPIO_WATCHDOG_LED, GPIO.OUT, initial=GPIO.HIGH)   
+    print("Using GPIO" + str(GPIO_WATCHDOG_LED) + " as output for blinking LED.")
+    GPIO.setup(GPIO_WATCHDOG_LED, GPIO.OUT, initial=GPIO.HIGH)
      
     cycle_length = 5  # time keep watchdog led on off in deciseconds (5 -> 0.5s on / 0.5s off)
     watchdog_led_status = False
