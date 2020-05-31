@@ -15,11 +15,14 @@ printf -- '- libmicrohttpd12 for tests with "motion" (required yet?)\n\n'
 
 sudo apt install -y \
 python-pip python3-pip \
-python-picamera python3-picamera \
 postgresql libpq-dev python-psycopg2 \
+postgresql-client postgresql-client-common \
 gpac \
 libmicrohttpd12
 
+sudo apt install -y \
+python-picamera python3-picamera \
+|| printf -- 'Ignored errors. Ok if not run on Raspberry.\n'
 ## Also useful for developing from ssh command-line:
 
 # sudo apt install vim vim-addon-manager
@@ -45,8 +48,15 @@ printf -- '- tsl2561 for sensors reading\n'
 # https://learn.sparkfun.com/tutorials/raspberry-pi-spi-and-i2c-tutorial/all
 # https://pypi.org/project/tsl2561/
 printf -- '- bluetin.io for HC-SR04 distance sensor reading\n\n'
-sudo pip install psycopg2 pydevd gpiozero RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo
-sudo pip3 install psycopg2 pydevd gpiozero RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo
+sudo pip install pydevd gpiozero
+sudo pip install RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo || printf -- 'Ignored errors. Ok if not run on Raspberry.\n'
+sudo pip3 install pydevd gpiozero
+sudo pip3 install RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo || printf -- 'Ignored errors. Ok if not run on Raspberry.\n'
+
+
+# Replaced by apt install (preferable)
+# sudo pip install psycopg2
+# sudo pip3 install psycopg2
 
 printf -- '\n\n*** Install BMP sensors library... ***\n'
 cd /tmp
@@ -57,9 +67,9 @@ printf -- '*** BMP sensors: cloning... ***\n\n'
 git clone https://github.com/adafruit/Adafruit_Python_BMP.git
 cd Adafruit_Python_BMP
 printf -- '\n*** BMP sensors: Python 2... ***\n\n'
-sudo python setup.py install
+sudo python setup.py install || printf -- 'Ignored errors. Ok if not run on Raspberry.\n'
 printf -- '\n*** BMP sensors: Python 3... ***\n\n'
-sudo python3 setup.py install
+sudo python3 setup.py install || printf -- 'Ignored errors. Ok if not run on Raspberry.\n'
 
 printf -- '\n\n*** Create folder where images will be saved... ***\n'
 mkdir -p /home/pi/meteo/captures/
@@ -74,12 +84,18 @@ sudo adduser web || printf -- 'User "web" already exists\n'
 # This wil be the user running the web server, with the bare minimum to do so for security reasons.
 
 
-chmod +x ~/meteo/src/main/py/server3.py
-chmod +x ~/meteo/src/main/py/start_cpu_fan.py
-chmod +x ~/meteo/src/main/py/home_web/index.py
+printf -- '\n\n*** Create user to run web-server from... ***\n'
+chmod +x ~/meteo/src/main/py/*.py || printf -- 'chmod errors ignored\n'
+chmod +x ~/meteo/src/main/py/home_web/*.py || printf -- 'chmod errors ignored\n'
 # sudo su - web
 sudo runuser -l -c 'ln -f /home/pi/meteo/src/main/py/home_web/index.py /home/web/index.html'
 sudo runuser -l -c 'ln -f /home/pi/meteo/src/main/py/home_web/graph.svg /home/web/graph.svg'
+
+
+printf -- 'chmod errors ignored\n'
+sudo su - postgres -c "createuser pi --no-superuser --createdb --createrole" || printf -- 'Ignoring error and proceeding: already existing\n'
+sudo su - postgres -c "psql --command 'create database meteo;'" || printf -- 'Ignoring error and proceeding: database already existing?\n'
+psql --dbname meteo --file '/home/pi/meteo/bin/db_initialization.sql'  # || printf -- 'Ignoring error and proceeding...\n'
 
 
 cat << EOF
