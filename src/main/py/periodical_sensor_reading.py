@@ -16,6 +16,7 @@ import time
 import sensors_functions as func
 import utils
 import start_cpu_fan
+import Bluetin_Echo
 
 # path_to_pydevd = "home/pi/.local/bin/pydevd"  # found by 'find / -name pydevd'
 # sys.path.append(path_to_pydevd)
@@ -120,7 +121,7 @@ def main():  # Expected to be called once per minute
     measure = (utils.epoch_now(), cpu_temp)
     curs.execute(sql_insert, measure)
 
-    print("Added value for " + sensor + "; commiting...")
+    print("Added value for " + sensor + "; committing...")
     conn.commit()
     # if cpu_temp > 40:
     #     start_cpu_fan.start_cpu_fan()
@@ -138,7 +139,7 @@ def main():  # Expected to be called once per minute
     try:
         measure = (utils.epoch_now(), func.value_luminosity())
         curs.execute(sql_insert, measure)
-        print("Added value for " + sensor + "; commiting...")
+        print("Added value for " + sensor + "; committing...")
         conn.commit()
     except IOError:
         print("IOError occurred when reading " + sensor + "!")
@@ -155,17 +156,63 @@ def main():  # Expected to be called once per minute
     sql_insert1 = "INSERT INTO " + raw_table1 + "(epochtimestamp,value) VALUES(?,?);"
     sql_insert2 = "INSERT INTO " + raw_table2 + "(epochtimestamp,value) VALUES(?,?);"
 
+    temp = 15  # default value for later calculation of speed of sound
     try:
         (temp, sealevelpressure) = func.value_temp_and_sealevelpressure()
         measure1 = (utils.epoch_now(), temp)
         measure2 = (utils.epoch_now(), sealevelpressure)
         curs.execute(sql_insert1, measure1)
         curs.execute(sql_insert2, measure2)
-
-        print("Added value for " + sensor1 + " and " + sensor2 + "; commiting...")
+        print("Added value for " + sensor1 + " and " + sensor2 + "; committing...")
         conn.commit()
     except IOError:
         print("IOError occurred when reading " + sensor1 + " and " + sensor2 + "!")
+
+    # Next sensor:
+    sensor = "distance"
+    period = 900
+    raw_table = "raw_measures_" + sensor
+    consolidated_table = "consolidated" + str(period) + "_measures_" + sensor
+
+    sql_insert = "INSERT INTO " + raw_table + "(epochtimestamp,value) VALUES(?,?);"
+
+    # Calculate speed (celerity) of sound:
+    speed_of_sound = 331.5 + (0.6 * temp)
+    try:
+        dist = func.value_temp_and_sealevelpressure()
+        measure = (utils.epoch_now(), dist)
+        curs.execute(sql_insert, measure)
+        print("Added value for " + sensor1 + "; committing...")
+        conn.commit()
+    except IOError:
+        print("IOError occurred when reading " + sensor1 + " and " + sensor2 + "!")
+
+
+
+
+
+
+
+
+    TRIGGER_PIN = 22
+    ECHO_PIN = 23
+
+    # speed_of_sound = 352
+    echo = Bluetin_Echo.Echo(TRIGGER_PIN, ECHO_PIN, speed_of_sound)
+    # Measure Distance 5 times, return average.
+    samples = 5
+    result = echo.read('cm', samples)
+    # Print result.
+    print(result, 'cm')
+    # Reset GPIO Pins.
+    echo.stop()
+
+
+
+
+
+
+
 
     if CAMERA_ENABLED:
         is_camera_mult = is_multiple(main_call_epoch, 900)  # is True every 900 s / 15 min

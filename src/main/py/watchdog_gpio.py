@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import os
-import RPi.GPIO as GPIO    # Import Raspberry Pi GPIO library
+import RPi.GPIO as GPIO  # Import Raspberry Pi GPIO library
 # import subprocess
 import sys
-import time     # Import the sleep function from the time module
+import time  # Import the sleep function from the time module
 
 from utils import iso_timestamp_now
+
 # GPIO_YYY_LED = 23
 # GPIO_ZZZ_LED = 24
 GPIO_WATCHDOG_LED = 25
@@ -64,23 +65,23 @@ def start_shutdown_process():
 def main():  # Expected to be launched at startup
     print("_" * 80)
     print(iso_timestamp_now() + " - Starting watchdog...")
-    
+
     # GPIO.setwarnings(False)    # Ignore warning for now
-    GPIO.setmode(GPIO.BCM)   # Use GPIO numbering
-    
+    GPIO.setmode(GPIO.BCM)  # Use GPIO numbering
+
     print(iso_timestamp_now() + " - Using GPIO" + str(GPIO_SHUTDOW_BTN_IN) + " as input for shutdown button.")
     GPIO.setup(GPIO_SHUTDOW_BTN_IN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     print(iso_timestamp_now() + " - Using GPIO" + str(GPIO_WATCHDOG_LED) + " as output for blinking LED.")
     GPIO.setup(GPIO_WATCHDOG_LED, GPIO.OUT, initial=GPIO.HIGH)
-     
-    cycle_length = 5  # time keep watchdog led on off in deciseconds (5 -> 0.5s on / 0.5s off)
+
+    cycle_length = 5  # time keep watchdog led on off in deci-seconds (5 -> 0.5s on / 0.5s off)
     watchdog_led_status = False
     log_count = 0
     cycle_count = 0
     while True:  # Run forever
         log_count = log_count + 1
         cycle_count = cycle_count + 1
-        
+
         # blink watchdog:
         if cycle_count >= cycle_length:
             cycle_count = 0
@@ -90,14 +91,14 @@ def main():  # Expected to be launched at startup
             else:
                 GPIO.output(GPIO_WATCHDOG_LED, GPIO.HIGH)  # Turn on
                 watchdog_led_status = True
-        
+
         if not GPIO.input(GPIO_SHUTDOW_BTN_IN):
             start_shutdown_process()
 
         if log_count > 36000:  # One log line per hour...
             print(iso_timestamp_now() + " - still alive...")
             log_count = 0
-        
+
         time.sleep(0.1)  # length of cycle
 
 
