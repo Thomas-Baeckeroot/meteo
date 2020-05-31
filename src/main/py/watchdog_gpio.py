@@ -40,11 +40,11 @@ def start_shutdown_process():
         print("\tGot button unpressed at the end of 1s. LED on => cancel stop request")
         sys.stdout.flush()
         return
-    print("\t=> Calling for SHUTDOWN!")
+    print(iso_timestamp_now() + " - => Calling for SHUTDOWN!")
     sys.stdout.flush()
     # os.system("/sbin/shutdown -k now")
     # os.system("/sbin/shutdown -P 1")
-    for x in range(0, 5):  # blink fast for 1s
+    for x in range(0, 5):  # blink fast for 1s (visual confirmation of imminent shutdown)
         GPIO.output(GPIO_WATCHDOG_LED, GPIO.LOW)
         time.sleep(0.1)
         GPIO.output(GPIO_WATCHDOG_LED, GPIO.HIGH)
@@ -62,20 +62,23 @@ def start_shutdown_process():
 
 
 def main():  # Expected to be launched at startup
+    print("_" * 80)
     print(iso_timestamp_now() + " - Starting watchdog...")
     
     # GPIO.setwarnings(False)    # Ignore warning for now
     GPIO.setmode(GPIO.BCM)   # Use GPIO numbering
     
-    print("Using GPIO" + str(GPIO_SHUTDOW_BTN_IN) + " as input for shutdown button.")
+    print(iso_timestamp_now() + " - Using GPIO" + str(GPIO_SHUTDOW_BTN_IN) + " as input for shutdown button.")
     GPIO.setup(GPIO_SHUTDOW_BTN_IN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    print("Using GPIO" + str(GPIO_WATCHDOG_LED) + " as output for blinking LED.")
+    print(iso_timestamp_now() + " - Using GPIO" + str(GPIO_WATCHDOG_LED) + " as output for blinking LED.")
     GPIO.setup(GPIO_WATCHDOG_LED, GPIO.OUT, initial=GPIO.HIGH)
      
     cycle_length = 5  # time keep watchdog led on off in deciseconds (5 -> 0.5s on / 0.5s off)
     watchdog_led_status = False
+    log_count = 0
     cycle_count = 0
     while True:  # Run forever
+        log_count = log_count + 1
         cycle_count = cycle_count + 1
         
         # blink watchdog:
@@ -91,6 +94,10 @@ def main():  # Expected to be launched at startup
         if not GPIO.input(GPIO_SHUTDOW_BTN_IN):
             start_shutdown_process()
 
+        if log_count > 36000:  # One log line per hour...
+            print(iso_timestamp_now() + " - still alive...")
+            log_count = 0
+        
         time.sleep(0.1)  # length of cycle
 
 
