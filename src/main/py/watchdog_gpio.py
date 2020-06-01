@@ -33,13 +33,13 @@ def start_shutdown_process():
     time.sleep(1)
     if not GPIO.input(GPIO_SHUTDOW_BTN_IN):
         print("\tGot button pressed at the end of 1s. LED off => cancel stop request")
-        sys.stdout.flush()
+        # sys.stdout.flush()  # not necessary here, only if debug required
         return
     GPIO.output(GPIO_WATCHDOG_LED, GPIO.HIGH)
     time.sleep(1)
     if GPIO.input(GPIO_SHUTDOW_BTN_IN):  # Button NOT pressed
         print("\tGot button unpressed at the end of 1s. LED on => cancel stop request")
-        sys.stdout.flush()
+        # sys.stdout.flush()  # not necessary here, only if debug required
         return
     print(iso_timestamp_now() + " - => Calling for SHUTDOWN!")
     sys.stdout.flush()
@@ -50,8 +50,7 @@ def start_shutdown_process():
         time.sleep(0.1)
         GPIO.output(GPIO_WATCHDOG_LED, GPIO.HIGH)
         time.sleep(0.1)
-    os.system("/sbin/shutdown -P now")
-    # In practice, below code is never reached since os.system only returns once "shutdown" is done...
+    os.system("/sbin/shutdown -P now &")
 
     # subprocess.run(["/sbin/shutdown", "-P", "now"])  # Python 3
     # subprocess.call(["/sbin/shutdown", "-P", "now"])  # Python 2
