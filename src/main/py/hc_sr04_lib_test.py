@@ -21,7 +21,7 @@ def measure_distance(temp_celcius=20):
     echo = Bluetin_Echo.Echo(TRIGGER_PIN, ECHO_PIN, speed_of_sound)
     # echo.default_unit(UNIT)  # causes 'TypeError: 'str' object is not callable'
     echo.max_distance(value=MAX_DISTANCE, unit=UNIT)
-    
+
     # Measure Distance n times, return average.
     samples = 20
     result = echo.read(UNIT, samples)
@@ -31,6 +31,24 @@ def measure_distance(temp_celcius=20):
     return result
 
 
+def insert_raw_measures(timestamp, measure, sensor_short_name):
+    try:
+        connection = psycopg2.connect(database="meteo")
+        cursor = connection.cursor()
+        insert_query = "INSERT INTO raw_measures VALUES("\
+                       + str(timestamp) + "," + str(measure) + ", '" + sensor_short_name + "');"
+        cursor.execute(insert_query)
+        connection.commit()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print("Error while creating PostgreSQL table", error)
+    finally:
+        # closing database connection.
+        if (connection):
+            cursor.close()
+            connection.close()
+            print("PostgreSQL connection is closed")
+
+
 if __name__ == "__main__":
     print("_" * 80)
     if len(sys.argv) > 1:
@@ -38,7 +56,7 @@ if __name__ == "__main__":
     else:
         n_loop = 1
     print(utils.local_timestamp_now() + " - " + str(n_loop) + " loops to be performed...")
-    
+
     d_min = 99999
     d_max = -1
     d_total = 0
@@ -46,35 +64,23 @@ if __name__ == "__main__":
 
     for i in range(n_loop):
         d = measure_distance()
-        if d!=0 and d<=MAX_DISTANCE:  # ignore measures out of interval [0 MAX_DISTANCE]
+        if d != 0 and d <= MAX_DISTANCE:  # ignore measures out of interval [0 MAX_DISTANCE]
             n_measures = n_measures + 1
-            if d<d_min:
+            if d < d_min:
                 d_min = d
-            if d>d_max:
+            if d > d_max:
                 d_max = d
             d_total = d_total + d
 
         # Print result.
-        if n_measures!=0:
+        if n_measures != 0:
             print(utils.local_timestamp_now() + " - %.3f -> min-avg-max\t%.3f\t%.3f\t%.3f" % (d, d_min, d_total/n_measures, d_max))
 
-            try:
-                connection = psycopg2.connect(database="meteo")
-                cursor = connection.cursor()
-                insert_query = "INSERT INTO raw_measures VALUES(" + str(utils.epoch_now()) + "," + str(d) + ",'WaterRes');"
-                cursor.execute(insert_query)
-                connection.commit()
-            except (Exception, psycopg2.DatabaseError) as error :
-                print ("Error while creating PostgreSQL table", error)
-            finally:
-                # closing database connection.
-                if (connection):
-                    cursor.close()
-                    connection.close()
-                    print("PostgreSQL connection is closed")
+            insert_raw_measures(utils.epoch_now(), d, u'WaterRes')
 
             sys.stdout.flush()
 
     sys.stdout.flush()
     # time.sleep(1)
     # os.system("sudo /sbin/shutdown -P now &")
+    exit(0)
