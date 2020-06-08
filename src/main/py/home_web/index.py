@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# coding: utf-8
+# -*- coding: utf-8 -*-
 
 import cgi
 import sqlite3
@@ -66,7 +66,7 @@ html = """<!DOCTYPE html>
 <h2>Dernières valeurs:</h2>
 """ + sensor_list + """
 <br/>""" + date_readings + """<br/>
-<form action="index.py">
+<form action="index.html">
   <input type="submit" style=\"padding: 1.2em;\" value="Rafraichir" />
 </form>
 <br/>

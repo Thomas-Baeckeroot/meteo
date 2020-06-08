@@ -48,6 +48,9 @@ printf -- '- tsl2561 for sensors reading\n'
 # https://learn.sparkfun.com/tutorials/raspberry-pi-spi-and-i2c-tutorial/all
 # https://pypi.org/project/tsl2561/
 printf -- '- bluetin.io for HC-SR04 distance sensor reading\n\n'
+# Uncomment below to update all pip packages:
+# pip list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install -U
+
 sudo pip install pydevd gpiozero
 sudo pip install RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo || printf -- 'Ignored errors. Ok if not run on Raspberry.\n'
 sudo pip3 install pydevd gpiozero
@@ -94,7 +97,8 @@ sudo runuser -l -c 'ln -f /home/pi/meteo/src/main/py/home_web/graph.svg /home/we
 
 printf -- 'chmod errors ignored\n'
 sudo su - postgres -c "createuser pi --no-superuser --createdb --createrole" || printf -- 'Ignoring error and proceeding: already existing\n'
-sudo su - postgres -c "psql --command 'create database meteo;'" || printf -- 'Ignoring error and proceeding: database already existing?\n'
+# sudo su - postgres -c "createuser admin_debug --interactive --password"
+sudo su - postgres -c "psql --command 'CREATE DATABASE meteo;'" || printf -- 'Ignoring error and proceeding: database already existing?\n'
 psql --dbname meteo --file '/home/pi/meteo/bin/db_initialization.sql'  # || printf -- 'Ignoring error and proceeding...\n'
 
 
