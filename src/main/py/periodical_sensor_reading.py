@@ -1,11 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # import calendar
 # import datetime
 import picamera
+import psycopg2  # ProgreSQL library
 import socket
-import sqlite3
+# import sqlite3
 import sys
 # import pydevd  # If failing: "pip install pydevd"
 import time
@@ -17,6 +18,7 @@ import sensors_functions as func
 import utils
 import start_cpu_fan
 import Bluetin_Echo
+import hc_sr04_lib_test
 
 # path_to_pydevd = "home/pi/.local/bin/pydevd"  # found by 'find / -name pydevd'
 # sys.path.append(path_to_pydevd)
@@ -25,7 +27,7 @@ import Bluetin_Echo
 # pydevd.settrace(debugger_ip_address, port=5678)
 
 METEO_FOLDER = "/home/pi/meteo/"
-DB_NAME = METEO_FOLDER + "meteo.db"
+# DB_NAME = METEO_FOLDER + "meteo.db"  # SQLite DB File
 CAPTURES_FOLDER = METEO_FOLDER + "captures/"
 CAMERA_ENABLED = True
 CONSOLIDATE_VAL = False
@@ -68,7 +70,7 @@ def take_picture():
     sys.stdout.write("Take picture:\t")
     captured_success = False
     capture_tentatives = 0
-    while captured_success == False and capture_tentatives < 23:
+    while not captured_success and capture_tentatives < 23:
         capture_tentatives = capture_tentatives + 1
         try:
             camera = picamera.PiCamera()
@@ -106,113 +108,66 @@ def take_picture():
 def main():  # Expected to be called once per minute
     main_call_epoch = utils.epoch_now()
     print(utils.iso_timestamp_now() + " - Starting on " + socket.gethostname() + "-----------------------------------")
+    temp = 15  # default value for later calculation of speed of sound
 
-    # Connect or Create DB File
-    conn = sqlite3.connect(DB_NAME)
+    # conn = sqlite3.connect(DB_NAME)  # Connect or Create SQLite DB File
+    conn = psycopg2.connect(database="meteo")  # Connect to PostgreSQL DB
     curs = conn.cursor()
 
-    sensor = "CPU_temp"
-    period = 900
-    raw_table = "raw_measures_" + sensor
-    consolidated_table = "consolidated" + str(period) + "_measures_" + sensor
+    # name   | priority |        sensor_label         | decimals | cumulative | unit | consolidated | sensor_type
+    read_sensors_query = "SELECT name, decimals, consolidated, sensor_type FROM sensors;"
+    curs.execute(read_sensors_query)
+    sensors = curs.fetchall()
+    for sensor in sensors:
+        (sensor_name, decimals, consolidated, sensor_type) = sensor
 
-    sql_insert = "INSERT INTO " + raw_table + "(epochtimestamp,value) VALUES(?,?);"
-    cpu_temp = func.value_cpu_temp()
-    measure = (utils.epoch_now(), cpu_temp)
-    curs.execute(sql_insert, measure)
+        measure = None
+        # Below ifs to be replaced by function blocks and dictionary as described
+        # at https://stackoverflow.com/questions/11479816/what-is-the-python-equivalent-for-a-case-switch-statement
+        if sensor_type == "ignored":
+            print("Ignoring sensor '" + sensor_name + "'...")
+            # measure = None  # kept as None
 
-    print("Added value for " + sensor + "; committing...")
-    conn.commit()
-    # if cpu_temp > 40:
-    #     start_cpu_fan.start_cpu_fan()
-    # if cpu_temp < 20:
-    #     start_cpu_fan.stop_cpu_fan()
+        elif sensor_type == "CPU_temp":
+            measure = func.value_cpu_temp()
+            # if measure > 40:
+            #     start_cpu_fan.start_cpu_fan()
+            # if measure < 20:
+            #     start_cpu_fan.stop_cpu_fan()
 
-    # Next sensor:
-    sensor = "luminosity"
-    period = 900
-    raw_table = "raw_measures_" + sensor
-    consolidated_table = "consolidated" + str(period) + "_measures_" + sensor
+        elif sensor_type == "temperature":
+            temp = func.value_ext_temperature()
+            measure = temp
 
-    sql_insert = "INSERT INTO " + raw_table + "(epochtimestamp,value) VALUES(?,?);"
+        elif sensor_type == "pressure":
+            measure = func.value_sealevelpressure()
 
-    try:
-        measure = (utils.epoch_now(), func.value_luminosity())
-        curs.execute(sql_insert, measure)
-        print("Added value for " + sensor + "; committing...")
-        conn.commit()
-    except IOError:
-        print("IOError occurred when reading " + sensor + "!")
+        elif sensor_type == "luminosity":
+            measure = func.value_luminosity()
 
-    # Next sensor:
-    sensor1 = "temperature"
-    sensor2 = "pressure"
-    period = 900
-    raw_table1 = "raw_measures_" + sensor1
-    raw_table2 = "raw_measures_" + sensor2
-    consolidated_table1 = "consolidated" + str(period) + "_measures_" + sensor1
-    consolidated_table2 = "consolidated" + str(period) + "_measures_" + sensor2
+        elif sensor_type == "distance":
+            # Calculate speed (celerity) of sound:
+            measure = hc_sr04_lib_test.measure_distance(temp)
 
-    sql_insert1 = "INSERT INTO " + raw_table1 + "(epochtimestamp,value) VALUES(?,?);"
-    sql_insert2 = "INSERT INTO " + raw_table2 + "(epochtimestamp,value) VALUES(?,?);"
+        else:
+            print("ERROR! Unable to interpret '" + sensor_type + "' as a sensor type! Ignoring sensor '" + sensor_name
+                  + "'...")
+            # measure = None  # kept as None
 
-    temp = 15  # default value for later calculation of speed of sound
-    try:
-        (temp, sealevelpressure) = func.value_temp_and_sealevelpressure()
-        measure1 = (utils.epoch_now(), temp)
-        measure2 = (utils.epoch_now(), sealevelpressure)
-        curs.execute(sql_insert1, measure1)
-        curs.execute(sql_insert2, measure2)
-        print("Added value for " + sensor1 + " and " + sensor2 + "; committing...")
-        conn.commit()
-    except IOError:
-        print("IOError occurred when reading " + sensor1 + " and " + sensor2 + "!")
+        if measure is not None:
+            print("sensor '" + sensor_name + "' -> " + str(measure))
+            # sql_insert = "INSERT INTO " + raw_table + "(epochtimestamp,value) VALUES(?,?);"
+            # curs.execute(sql_insert, measure)  # not supported by PostgreSQL ?
+            sql_insert = "INSERT INTO raw_measures(epochtimestamp, measure, sensor) VALUES(" \
+                         + str(utils.epoch_now()) + "," \
+                         + str(func.round_value_decimals(measure, decimals)) + ", '" \
+                         + sensor_name + "');"
+            curs.execute(sql_insert)
 
-    # Next sensor:
-    sensor = "distance"
-    period = 900
-    raw_table = "raw_measures_" + sensor
-    consolidated_table = "consolidated" + str(period) + "_measures_" + sensor
+            print("Added value for " + sensor_name + "; committing...")
+            conn.commit()
 
-    sql_insert = "INSERT INTO " + raw_table + "(epochtimestamp,value) VALUES(?,?);"
-
-    # Calculate speed (celerity) of sound:
-    speed_of_sound = 331.5 + (0.6 * temp)
-    try:
-        dist = func.value_temp_and_sealevelpressure()
-        measure = (utils.epoch_now(), dist)
-        curs.execute(sql_insert, measure)
-        print("Added value for " + sensor1 + "; committing...")
-        conn.commit()
-    except IOError:
-        print("IOError occurred when reading " + sensor1 + " and " + sensor2 + "!")
-
-
-
-
-
-
-
-
-    TRIGGER_PIN = 22
-    ECHO_PIN = 23
-
-    # speed_of_sound = 352
-    echo = Bluetin_Echo.Echo(TRIGGER_PIN, ECHO_PIN, speed_of_sound)
-    # Measure Distance 5 times, return average.
-    samples = 5
-    result = echo.read('cm', samples)
-    # Print result.
-    print(result, 'cm')
-    # Reset GPIO Pins.
-    echo.stop()
-
-
-
-
-
-
-
+    # end of for-loop on each sensor
 
     if CAMERA_ENABLED:
         is_camera_mult = is_multiple(main_call_epoch, 900)  # is True every 900 s / 15 min
@@ -221,16 +176,19 @@ def main():  # Expected to be called once per minute
             take_picture()
 
     if CONSOLIDATE_VAL:
-        sql_req = "SELECT MAX(epochtimestamp) FROM " + raw_table + ";"
-        curs.execute(sql_req)
-        max_epoch_from_raw = curs.fetchall()[0][0]
+        for sensor in sensors:
+            (sensor_name, decimals, consolidated, sensor_type) = sensor
+            period = int(consolidated)
+            sql_req = "SELECT MAX(epochtimestamp) FROM raw_measures WHERE sensor = '" + sensor_name + "';"
+            curs.execute(sql_req)
+            max_epoch_from_raw = curs.fetchall()[0][0]
 
-        sql_req = "SELECT MAX(maxepochtime) FROM " + consolidated_table + ";"
-        curs.execute(sql_req)
-        max_epoch_from_consolidated = curs.fetchall()[0][0]
+            sql_req = "SELECT MAX(maxepochtime) FROM consolidated_measures WHERE sensor = '" + sensor_name + "';"
+            curs.execute(sql_req)
+            max_epoch_from_consolidated = curs.fetchall()[0][0]
 
-        if (max_epoch_from_consolidated is None) or (max_epoch_from_consolidated + period) < max_epoch_from_raw:
-            consolidate_from_raw(curs, sensor, period)
+            if (max_epoch_from_consolidated is None) or (max_epoch_from_consolidated + period) < max_epoch_from_raw:
+                consolidate_from_raw(curs, sensor, period)
 
     # print("closing cursor...")
     curs.close()
@@ -238,14 +196,14 @@ def main():  # Expected to be called once per minute
     # Close DB
     # print("closing db...")
     conn.close()
-    
+
     is_daily_run = is_multiple(main_call_epoch, 86400)  # 60x60x24 s = 1 day
     if is_daily_run:
         print("Midnight run: trigger the pictures sorting...")
         # launch_daily_jobs(main_call_epoch)
     else:
         print("(not midnight run)")
-    
+
     print(utils.iso_timestamp_now() + " - Terminates " + "_" * 47)
 
 

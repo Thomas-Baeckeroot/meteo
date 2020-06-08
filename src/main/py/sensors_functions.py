@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import tsl2561  # If failing, run: pip install Adafruit_GPIO tsl2561 (and also RPi.GPIO ?)
@@ -19,17 +19,21 @@ def round_value_decimals(value, decimals):
 
 def value_cpu_temp():
     cpu_temp = CPUTemperature().temperature
-    return round_value_decimals(cpu_temp, 1)
+    return cpu_temp
 
 
 def value_luminosity():
     tsl = tsl2561.TSL2561(debug=True)
-    return round_value_decimals(tsl.lux(), 0)
+    return tsl
 
 
-def value_temp_and_sealevelpressure():
+def value_ext_temperature():
     sensor = BMP085.BMP085()
     temp = sensor.read_temperature()
+    return temp
+
+
+def value_sealevelpressure():
+    sensor = BMP085.BMP085()
     sealevelpressure_hpa = sensor.read_sealevel_pressure(SENSOR_KNOWN_ALTITUDE) / 100  # Pa -> hPa
-    sealevelpressure_hpa = round_value_decimals(sealevelpressure_hpa, 2)  # keep only 2 decimals
-    return temp, sealevelpressure_hpa
+    return sealevelpressure_hpa

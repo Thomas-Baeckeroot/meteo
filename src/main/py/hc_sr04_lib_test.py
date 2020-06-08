@@ -4,16 +4,35 @@
 import os
 import sys
 import Bluetin_Echo
-import psycopg2  # ProgreSQL
+import psycopg2  # ProgreSQL library
 import time
+from math import pi
 
 import sensors_functions
 import utils
 
 TRIGGER_PIN = 22
 ECHO_PIN = 23
-MAX_DISTANCE = 8  # Get really noisy over 3~4 meters
+MAX_DISTANCE = 800  # Get really noisy over 3~4 meters
 UNIT = u'cm'
+
+
+def volume_water_tank(distance_cm):
+    """Return volume in Litre from the height in centimeter, for a circular/conical water tank.
+    Sensor measures the distance from a certain height to the surface of water, looking down."""
+    # Constants for the tank:
+    r_max = 6.5  # Internal radius at very top of the tank, in dm
+    d_min = 0.5  # Distance from the sensor to the very top of the tank, in dm
+    r_base = 5.2  # Internal radius at the very bottom of the tank (base), in dm
+    d_max = 12.5  # Distance from the sensor to the very bottom of the tank (when water volume is considered to be 0L)
+
+    h = d_max - distance_cm / 10  # height of water, in dm
+    pct_filling = h / (d_max - d_min)  # Percentage of fulfilling of the tank
+    # (0 -> at r_base level, 1 -> at r_max level)
+    r_top = r_base * (1. - pct_filling)\
+        + r_max * pct_filling   # Radius of surface of water
+    volume = h * (pi / 3) * (r_base*r_base + r_top*r_base + r_top*r_top)
+    return volume
 
 
 def measure_distance(temp_celcius=20):
@@ -34,9 +53,9 @@ def measure_distance(temp_celcius=20):
 
 def insert_raw_measures(timestamp, measure, sensor_short_name):
     try:
-        connection = psycopg2.connect(database="meteo")
-        curs = connection.cursor()
-        read_decimals_query = "SELECT decimals FROM SENSORS WHERE names = '" + sensor_short_name + "';"
+        conn = psycopg2.connect(database="meteo")
+        curs = conn.cursor()
+        read_decimals_query = "SELECT decimals FROM sensors WHERE name = '" + sensor_short_name + "';"
         curs.execute(read_decimals_query)
         decimals = int(curs.fetchone()[0])
         insert_query = "INSERT INTO raw_measures VALUES("\
@@ -45,15 +64,15 @@ def insert_raw_measures(timestamp, measure, sensor_short_name):
                        + sensor_short_name + "');"
         # + str(measure) + ", '"
         curs.execute(insert_query)
-        connection.commit()
+        conn.commit()
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
         print("Error while creating PostgreSQL table", error)
     finally:
         # closing database connection.
-        if (connection):
+        if (conn):
             curs.close()
-            connection.close()
+            conn.close()
             print("PostgreSQL connection is closed")
 
 
@@ -82,7 +101,7 @@ if __name__ == "__main__":
 
         # Print result.
         if n_measures != 0:
-            print(utils.local_timestamp_now() + " - %.3f -> min-avg-max\t%.3f\t%.3f\t%.3f" % (d, d_min, d_total/n_measures, d_max))
+            print(utils.local_timestamp_now() + " - %.3f -> min-avg-max\t%.3f\t%.3f\t%.3f\t\tvolume = %.3f L" % (d, d_min, d_total/n_measures, d_max, volume_water_tank(d)))
 
             insert_raw_measures(utils.epoch_now(), d, u'WaterRes')
 
