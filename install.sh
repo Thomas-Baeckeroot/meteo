@@ -91,7 +91,7 @@ printf -- '\n\n*** Create user to run web-server from... ***\n'
 chmod +x ~/meteo/src/main/py/*.py || printf -- 'chmod errors ignored\n'
 chmod +x ~/meteo/src/main/py/home_web/*.py || printf -- 'chmod errors ignored\n'
 # sudo su - web
-sudo runuser -l -c 'ln -f /home/pi/meteo/src/main/py/home_web/index.py /home/web/index.html'
+sudo runuser -l -c 'ln -f /home/pi/meteo/src/main/py/home_web/index.html.py /home/web/index.html'
 sudo runuser -l -c 'ln -f /home/pi/meteo/src/main/py/home_web/graph.svg.py /home/web/graph.svg'
 
 
