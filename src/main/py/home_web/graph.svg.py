@@ -16,6 +16,7 @@ import cgi
 from svg.charts import line
 
 import sqlite3
+
 # import time
 
 
@@ -23,14 +24,16 @@ SECONDS_IN_ONE_DAY = 86400
 METEO_FOLDER = "/home/pi/meteo/"
 DB_NAME = METEO_FOLDER + "meteo.db"
 CAPTURES_FOLDER = METEO_FOLDER + "captures/"
+
+
 # START_TIME = time.time()
 
 
 def generate_samples():
-    yield 'Line', sample_Line()
+    yield 'Line', sample_line()
 
 
-def sample_Line():
+def sample_line():
     form = cgi.FieldStorage()
     sensor_name = form.getvalue("sensor")
 
@@ -44,9 +47,9 @@ def sample_Line():
     scale_hours = int(2700. / width)
 
     if width < 350:
-        tiny_graph=True
+        tiny_graph = True
     else:
-        tiny_graph=False
+        tiny_graph = False
 
     maxepoch = form.getvalue("maxepoch")
     if maxepoch is None:
@@ -57,14 +60,15 @@ def sample_Line():
 
     conn = sqlite3.connect(DB_NAME)
     curs = conn.cursor()
-    curs.execute("SELECT epochtimestamp, value FROM raw_measures_" + sensor_name + " WHERE epochtimestamp<" + str(maxepoch) + " AND epochtimestamp>" + str(minepoch) + ";")
+    curs.execute("SELECT epochtimestamp, value FROM raw_measures_" + sensor_name
+                 + " WHERE epochtimestamp<" + str(maxepoch) + " AND epochtimestamp>" + str(minepoch) + ";")
 
     date_and_value = curs.fetchall()
     epochdates = list()
     values = list()
     for i in list(range(len(date_and_value))):
         epoch = date_and_value[i][0]
-        epoch_minutes = round(epoch/60.)
+        epoch_minutes = round(epoch / 60.)
         if (epoch_minutes % (60 * scale_hours)) == 0:
             epoch_hours = epoch_minutes / 60
             hour_in_day = int(epoch_hours % 24)
@@ -77,7 +81,7 @@ def sample_Line():
     g = line.Line()
     options = dict(
         scale_integers=True,
-        area_fill= True,
+        area_fill=True,
         width=int(width),  # calculations done with width and height, must be integer in pixel ('em' not accepted...)
         height=int(height),
         fields=epochdates,
@@ -87,13 +91,13 @@ def sample_Line():
         right_font=False,
         scale_divisions=2,
         show_graph_title=False,
-        show_y_labels=not(tiny_graph),
-        show_x_labels=not(tiny_graph),  # Hours below
+        show_y_labels=not (tiny_graph),
+        show_x_labels=not (tiny_graph),  # Hours below
         # show_x_title=not(tiny_graph),  # Default False, "X Field names" below
         # show_y_title=not(tiny_graph),  # Default False, "Y Scale" on left
         show_graph_subtitle=False,
         show_x_guidelines=False,  # vertical dot lines: One per *value*
-        show_y_guidelines=not(tiny_graph),  # horizontal dot lines
+        show_y_guidelines=not (tiny_graph),  # horizontal dot lines
         stagger_y_labels=False,  # Default False (shift values for readibility if too many)
         step_include_first_y_label=False,
         show_legend=False,
@@ -110,13 +114,13 @@ def sample_Line():
 
 
 def gen_sample():
-    yield sample_Line()
+    yield sample_line()
 
 
 def save_samples():
     # root = os.path.dirname(__file__)
     for sample_name, sample in generate_samples():
-    # sample = gen_sample()
+        # sample = gen_sample()
 
         res = sample.burn()
         print(res)
