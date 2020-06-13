@@ -91,16 +91,17 @@ printf -- '\n\n*** Create user to run web-server from... ***\n'
 chmod +x ~/meteo/src/main/py/*.py || printf -- 'chmod errors ignored\n'
 chmod +x ~/meteo/src/main/py/home_web/*.py || printf -- 'chmod errors ignored\n'
 # sudo su - web
-sudo runuser -l -c 'ln -f /home/pi/meteo/src/main/py/home_web/index.html.py /home/web/index.html'
-sudo runuser -l -c 'ln -f /home/pi/meteo/src/main/py/home_web/graph.svg.py /home/web/graph.svg'
+sudo runuser --login --command 'ln -f /home/pi/meteo/src/main/py/home_web/index.html.py /home/web/index.html'
+sudo runuser --login --command 'ln -f /home/pi/meteo/src/main/py/home_web/graph.svg.py /home/web/graph.svg'
 
 
 printf -- 'chmod errors ignored\n'
-sudo su - postgres -c "createuser pi --no-superuser --createdb --createrole" || printf -- 'Ignoring error and proceeding: already existing\n'
-# sudo su - postgres -c "createuser admin_debug --interactive --password"
-sudo su - postgres -c "psql --command 'CREATE DATABASE meteo;'" || printf -- 'Ignoring error and proceeding: database already existing?\n'
+sudo su - postgres --command "createuser pi --no-superuser --createdb --createrole" || printf -- 'Ignoring error and proceeding: already existing\n'
+# sudo su - postgres --command "createuser admin_debug --interactive --password"
+sudo su - postgres --command "psql --command 'CREATE DATABASE meteo;'" || printf -- 'Ignoring error and proceeding: database already existing?\n'
 psql --dbname meteo --file '/home/pi/meteo/bin/db_initialization.sql'  # || printf -- 'Ignoring error and proceeding...\n'
-
+createuser web --no-superuser --no-createdb --no-createrole || printf -- 'Ignoring error and proceeding: already existing\n'
+psql --dbname meteo --command "GRANT SELECT ON ALL TABLES IN SCHEMA public TO web;"
 
 cat << EOF
 
@@ -118,8 +119,8 @@ As admin, add below 3 lines at the end of /etc/rc.local, before last '\''exit 0'
 $ sudo vi /etc/rc.local
 [...]
 /home/pi/meteo/src/main/py/watchdog_gpio.py >> /var/log/watchdog_gpio.log 2>&1 &
-sudo su - pi -c \"/home/pi/meteo/src/main/py/video_capture_on_motion.py >> /home/pi/meteo/video.log 2>&1\" &
-sudo su - web -c \"/home/pi/meteo/src/main/py/server3.py >> /home/web/server3.log\" &
+sudo su - pi --command \"/home/pi/meteo/src/main/py/video_capture_on_motion.py >> /home/pi/meteo/video.log 2>&1\" &
+sudo su - web --command \"/home/pi/meteo/src/main/py/server3.py >> /home/web/server3.log\" &
 
 exit 0
 -
