@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import cgi
-import sqlite3
+import psycopg2  # ProgreSQL library
 import time
 import locale
 
@@ -17,9 +17,9 @@ locale.getdefaultlocale()
 print("Content-type: text/html; charset=utf-8\n")
 
 # Connect or Create DB File
-conn = sqlite3.connect(DB_NAME)
+conn = psycopg2.connect(database="meteo")  # Connect to PostgreSQL DB
 curs = conn.cursor()
-curs.execute("SELECT names, priority, label, unit FROM sensors ORDER BY priority ASC;")
+curs.execute("SELECT name, priority, sensor_label, unit FROM sensors ORDER BY priority ASC;")
 sensors = curs.fetchall()
 oldest_date = 2000000000
 sensor_list = "<table style=\"border: .069em solid black;\"><tr><th style=\"padding-left: 1em;padding-right: 2em;\">Capteur</th><th style=\"padding-left: 1em;padding-right: 2em;\">valeur</th><td style=\"padding-left: 1em;padding-right: 2em;\">date</td><td style=\"padding-left: 1em;padding-right: 2em;\"></td></tr>"
@@ -33,7 +33,14 @@ for sensor in sensors:
         style_row = " style=\"color: Silver;\""
     else:
         style_row = ""
-    curs.execute("SELECT MAX(epochtimestamp), value FROM raw_measures_" + sensor_name + ";")
+    curs.execute("""
+        SELECT  epochtimestamp, measure
+        FROM    raw_measures 
+        WHERE   sensor = '" + sensor_name + "'
+          AND   epochtimestamp = (  SELECT  MAX(epochtimestamp) 
+                                    FROM    raw_measures 
+                                    WHERE   sensor = '" + sensor_name + "' );
+    """)
     last_date_and_value = curs.fetchall()
     (epochdate, value) = last_date_and_value[0]
     if oldest_date > epochdate:
