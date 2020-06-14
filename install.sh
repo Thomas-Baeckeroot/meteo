@@ -112,8 +112,8 @@ cat << EOF
 ****************************************************************
 
 -
-Add below line to crontab of user '\''pi'\'':
-* * * * *  /home/pi/meteo/src/main/py/periodical_sensor_reading.py >> /var/log/meteo.log 2>&1
+Add below line to crontab of user '\''pi'\'' by executing '\''crontab -e'\'':
+* * * * *  /home/pi/meteo/src/main/py/periodical_sensor_reading.py >> /home/pi/meteo/periodical_sensor_reading.log 2>&1
 -
 As admin, add below 3 lines at the end of /etc/rc.local, before last '\''exit 0'\'':
 $ sudo vi /etc/rc.local
