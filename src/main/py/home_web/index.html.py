@@ -21,7 +21,7 @@ conn = psycopg2.connect(database="meteo")  # Connect to PostgreSQL DB
 curs = conn.cursor()
 curs.execute("SELECT name, priority, sensor_label, unit FROM sensors ORDER BY priority ASC;")
 sensors = curs.fetchall()
-oldest_date = 2000000000
+oldest_date = -1
 sensor_list = "<table style=\"border: .069em solid black;\">" \
               "<tr><th style=\"padding-left: 1em;padding-right: 2em;\">Capteur</th>" \
               "<th style=\"padding-left: 1em;padding-right: 2em;\">valeur</th>" \
@@ -52,7 +52,7 @@ for sensor in sensors:
                   + sensor_label
     if len(last_date_and_value) > 0:
         (epochdate, value) = last_date_and_value[0]
-        if oldest_date > epochdate:
+        if oldest_date < epochdate:
             oldest_date = epochdate
         # locale.getdefaultlocale()
         date_str = time.strftime('%-d/%m/%Y<br/>%H:%M:%S', time.localtime(epochdate))
@@ -74,9 +74,9 @@ for sensor in sensors:
 
 sensor_list = sensor_list + "</table>"
 
-if oldest_date != 2000000000:
+if oldest_date != -1:
     date_str = time.strftime('%A %-d %B - %H:%M', time.localtime(oldest_date))
-    date_readings = "Relevés le " + date_str + "<br/>"
+    date_readings = "Dernier relevé le " + date_str + "<br/>"
 else:
     date_readings = "Erreur de lecture de date!"
 html = """<!DOCTYPE html>
@@ -85,14 +85,13 @@ html = """<!DOCTYPE html>
 </head>
 <body>
 <h2>Dernières valeurs:</h2>
-""" + sensor_list + """
-<br/>""" + date_readings + """<br/>
+""" + sensor_list + """<br/>
+""" + date_readings + """<br/>
 <form action="index.html">
   <input type="submit" style=\"padding: 1.2em;\" value="Rafraichir" />
 </form>
 <br/>
 </body>
-</html>
-"""
+</html>"""
 
 print(html)

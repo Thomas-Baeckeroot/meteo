@@ -62,8 +62,9 @@ def sample_line():
     # conn = sqlite3.connect(DB_NAME)  # Connect or Create SQLite DB File
     conn = psycopg2.connect(database="meteo")  # Connect to PostgreSQL DB
     curs = conn.cursor()
-    curs.execute("  SELECT  epochtimestamp, value FROM raw_measures "
-                 + "WHERE   epochtimestamp<" + str(maxepoch)
+    curs.execute("  SELECT  epochtimestamp, measure"
+                 "  FROM    raw_measures"
+                 "  WHERE   epochtimestamp<" + str(maxepoch)
                  + "  AND   epochtimestamp>" + str(minepoch)
                  + "  AND   sensor='" + sensor_name + "';")
 

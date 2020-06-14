@@ -47,13 +47,14 @@ printf -- '- tsl2561 for sensors reading\n'
 # A tutorial? about how to use the pressure/humidity/light/temperature sensors with I2C/SPI:
 # https://learn.sparkfun.com/tutorials/raspberry-pi-spi-and-i2c-tutorial/all
 # https://pypi.org/project/tsl2561/
-printf -- '- bluetin.io for HC-SR04 distance sensor reading\n\n'
+printf -- '- bluetin.io for HC-SR04 distance sensor reading\n'
+printf -- '- svg.charts for drawing SVG graphics on web server\n\n'
 # Uncomment below to update all pip packages:
 # pip list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install -U
 
-sudo pip install pydevd gpiozero
+sudo pip install pydevd gpiozero svg.charts
 sudo pip install RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo || printf -- 'Ignored errors. Ok if not run on Raspberry.\n'
-sudo pip3 install pydevd gpiozero
+sudo pip3 install pydevd gpiozero svg.charts
 sudo pip3 install RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo || printf -- 'Ignored errors. Ok if not run on Raspberry.\n'
 
 
