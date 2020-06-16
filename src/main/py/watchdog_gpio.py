@@ -9,6 +9,7 @@ import time  # Import the sleep function from the time module
 
 from utils import iso_timestamp_now
 
+# todo Below variables should be stored in config file ~/.config/meteo.conf
 # GPIO_YYY_LED = 23
 # GPIO_ZZZ_LED = 24
 GPIO_WATCHDOG_LED = 25
@@ -16,7 +17,7 @@ GPIO_WATCHDOG_LED = 25
 # GPIO_XXX_BTN_IN = 12
 # GPIO_YYY_BTN_IN = 16
 # GPIO_ZZZ_BTN_IN = 20
-GPIO_SHUTDOW_BTN_IN = 21
+GPIO_SHUTDOWN_BTN_IN = 21
 
 
 def start_shutdown_process():
@@ -31,13 +32,13 @@ def start_shutdown_process():
         GPIO.output(GPIO_WATCHDOG_LED, GPIO.LOW)
         time.sleep(0.1)
     time.sleep(1)
-    if not GPIO.input(GPIO_SHUTDOW_BTN_IN):
+    if not GPIO.input(GPIO_SHUTDOWN_BTN_IN):
         print("\tGot button pressed at the end of 1s. LED off => cancel stop request")
         # sys.stdout.flush()  # not necessary here, only if debug required
         return
     GPIO.output(GPIO_WATCHDOG_LED, GPIO.HIGH)
     time.sleep(1)
-    if GPIO.input(GPIO_SHUTDOW_BTN_IN):  # Button NOT pressed
+    if GPIO.input(GPIO_SHUTDOWN_BTN_IN):  # Button NOT pressed
         print("\tGot button unpressed at the end of 1s. LED on => cancel stop request")
         # sys.stdout.flush()  # not necessary here, only if debug required
         return
@@ -68,8 +69,8 @@ def main():  # Expected to be launched at startup
     # GPIO.setwarnings(False)    # Ignore warning for now
     GPIO.setmode(GPIO.BCM)  # Use GPIO numbering
 
-    print(iso_timestamp_now() + " - Using GPIO" + str(GPIO_SHUTDOW_BTN_IN) + " as input for shutdown button.")
-    GPIO.setup(GPIO_SHUTDOW_BTN_IN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    print(iso_timestamp_now() + " - Using GPIO" + str(GPIO_SHUTDOWN_BTN_IN) + " as input for shutdown button.")
+    GPIO.setup(GPIO_SHUTDOWN_BTN_IN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     print(iso_timestamp_now() + " - Using GPIO" + str(GPIO_WATCHDOG_LED) + " as output for blinking LED.")
     GPIO.setup(GPIO_WATCHDOG_LED, GPIO.OUT, initial=GPIO.HIGH)
 
@@ -91,7 +92,7 @@ def main():  # Expected to be launched at startup
                 GPIO.output(GPIO_WATCHDOG_LED, GPIO.HIGH)  # Turn on
                 watchdog_led_status = True
 
-        if not GPIO.input(GPIO_SHUTDOW_BTN_IN):
+        if not GPIO.input(GPIO_SHUTDOWN_BTN_IN):
             start_shutdown_process()
 
         if log_count > 36000:  # One log line per hour...
