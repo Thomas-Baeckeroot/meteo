@@ -26,6 +26,7 @@ import hc_sr04_lib_test
 # debugger_ip_address = "192.168.0.63"
 # pydevd.settrace(debugger_ip_address, port=5678)
 
+# todo Below variables should be stored in config file ~/.config/meteo.conf (GPIO numbers also could be informed there)
 METEO_FOLDER = "/home/pi/meteo/"
 # DB_NAME = METEO_FOLDER + "meteo.db"  # SQLite DB File
 CAPTURES_FOLDER = METEO_FOLDER + "captures/"

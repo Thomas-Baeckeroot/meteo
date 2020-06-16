@@ -6,6 +6,7 @@ import Adafruit_BMP.BMP085 as BMP085
 
 from gpiozero import CPUTemperature  # If failing: "pip install gpiozero"
 
+# todo Below variable should be stored in a config file ~/.config/meteo.conf (GPIO numbers also could be informed there)
 SENSOR_KNOWN_ALTITUDE = 230.0  # estimated for St Benoit
 
 

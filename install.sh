@@ -2,6 +2,10 @@
 set -e
 set +x
 
+# todo Below attributions should be replaced by a call to func. that manages a config file ~/.config/meteo.conf (GPIO numbers also could be informed there)
+WEB_USER="web"
+INSTALL_USER="`whoami`"  # usually "pi"...
+
 printf -- '\n\n*** APT installs for:... ***\n'
 printf -- '- PIP (Python package manager)\n'
 printf -- '- Picamera Python module\n'
@@ -75,33 +79,38 @@ printf -- '\n*** BMP sensors: Python 3... ***\n\n'
 sudo python3 setup.py install || printf -- 'Ignored errors. Ok if not run on Raspberry.\n'
 
 printf -- '\n\n*** Create folder where images will be saved... ***\n'
-mkdir -p /home/pi/meteo/captures/
+mkdir -p /home/${INSTALL_USER}/meteo/captures/
 
 # Executed on dev machine / includes GitHub projet:
 # mkdir -p ~/workspace/meteo/src/lib
 # git clone https://github.com/adafruit/Adafruit_Python_BMP.git
 
-printf -- '\n\n*** Create user to run web-server from... ***\n'
-sudo adduser web || printf -- 'User "web" already exists\n'
-# extra option can be used: [--disabled-password]
-# This wil be the user running the web server, with the bare minimum to do so for security reasons.
-
+if [[ "${WEB_USER}" != ${INSTALL_USER} ]] ; then
+    printf -- '\n\n*** Create user to run web-server from... ***\n'
+    sudo adduser ${WEB_USER} || printf -- 'User "${WEB_USER}" already exists\n'
+    # extra option can be used: [--disabled-password]
+    # This wil be the user running the web server, with the bare minimum to do so for security reasons.
+fi
 
 printf -- '\n\n*** Create user to run web-server from... ***\n'
 chmod +x ~/meteo/src/main/py/*.py || printf -- 'chmod errors ignored\n'
 chmod +x ~/meteo/src/main/py/home_web/*.py || printf -- 'chmod errors ignored\n'
-# sudo su - web
-sudo runuser --login --command 'ln -f /home/pi/meteo/src/main/py/home_web/index.html.py /home/web/index.html'
-sudo runuser --login --command 'ln -f /home/pi/meteo/src/main/py/home_web/graph.svg.py /home/web/graph.svg'
+# sudo su - ${WEB_USER}
+sudo runuser --login --command 'ln -f /home/${INSTALL_USER}/meteo/src/main/py/home_web/index.html.py /home/${WEB_USER}/index.html'
+sudo runuser --login --command 'ln -f /home/${INSTALL_USER}/meteo/src/main/py/home_web/graph.svg.py /home/${WEB_USER}/graph.svg'
 
 
 printf -- 'chmod errors ignored\n'
-sudo su - postgres --command "createuser pi --no-superuser --createdb --createrole" || printf -- 'Ignoring error and proceeding: already existing\n'
+sudo su - postgres --command "createuser ${INSTALL_USER} --no-superuser --createdb --createrole" || printf -- 'Ignoring error and proceeding: already existing\n'
 # sudo su - postgres --command "createuser admin_debug --interactive --password"
 sudo su - postgres --command "psql --command 'CREATE DATABASE meteo;'" || printf -- 'Ignoring error and proceeding: database already existing?\n'
-psql --dbname meteo --file '/home/pi/meteo/bin/db_initialization.sql'  # || printf -- 'Ignoring error and proceeding...\n'
-createuser web --no-superuser --no-createdb --no-createrole || printf -- 'Ignoring error and proceeding: already existing\n'
-psql --dbname meteo --command "GRANT SELECT ON ALL TABLES IN SCHEMA public TO web;"
+psql --dbname meteo --file '/home/${INSTALL_USER}/meteo/bin/db_initialization.sql'  # || printf -- 'Ignoring error and proceeding...\n'
+if [[ "${WEB_USER}" != ${INSTALL_USER} ]] ; then
+    createuser ${WEB_USER} --no-superuser --no-createdb --no-createrole || printf -- 'Ignoring error and proceeding: already existing\n'
+fi
+psql --dbname meteo --command "GRANT SELECT ON ALL TABLES IN SCHEMA public TO ${WEB_USER};"
+
+# todo check that user ${INSTALL_USER} has access to /var/log/meteo.log
 
 cat << EOF
 
@@ -112,15 +121,15 @@ cat << EOF
 ****************************************************************
 
 -
-Add below line to crontab of user '\''pi'\'':
-* * * * *  /home/pi/meteo/src/main/py/periodical_sensor_reading.py >> /var/log/meteo.log 2>&1
+Add below line to crontab of user '\''${INSTALL_USER}'\'':
+* * * * *  /home/${INSTALL_USER}/meteo/src/main/py/periodical_sensor_reading.py >> /var/log/meteo.log 2>&1
 -
 As admin, add below 3 lines at the end of /etc/rc.local, before last '\''exit 0'\'':
 $ sudo vi /etc/rc.local
 [...]
-/home/pi/meteo/src/main/py/watchdog_gpio.py >> /var/log/watchdog_gpio.log 2>&1 &
-sudo su - pi --command \"/home/pi/meteo/src/main/py/video_capture_on_motion.py >> /home/pi/meteo/video.log 2>&1\" &
-sudo su - web --command \"/home/pi/meteo/src/main/py/server3.py >> /home/web/server3.log\" &
+nohup -- /home/${INSTALL_USER}/meteo/src/main/py/watchdog_gpio.py >> /var/log/watchdog_gpio.log 2>&1 &
+sudo su - ${INSTALL_USER} --command \"nohup -- /home/${INSTALL_USER}/meteo/src/main/py/video_capture_on_motion.py >> /home/${INSTALL_USER}/meteo/video.log 2>&1\" &
+sudo su - ${WEB_USER} --command \"nohup -- /home/${INSTALL_USER}/meteo/src/main/py/server3.py >> /home/${WEB_USER}/server3.log\" &
 
 exit 0
 -

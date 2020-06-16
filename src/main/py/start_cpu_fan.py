@@ -7,6 +7,7 @@
 
 import RPi.GPIO as GPIO  # Import Raspberry Pi GPIO library
 
+# todo Below variable should be stored in a config file ~/.config/meteo.conf
 GPIO_CPU_FAN_RELAY_OUT = 19
 
 

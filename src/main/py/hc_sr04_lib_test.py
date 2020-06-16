@@ -11,6 +11,7 @@ from math import pi
 import sensors_functions
 import utils
 
+# todo Below variables should be stored in config file ~/.config/meteo.conf
 TRIGGER_PIN = 22
 ECHO_PIN = 23
 MAX_DISTANCE = 800  # Get really noisy over 3~4 meters
