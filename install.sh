@@ -3,16 +3,19 @@ set -e
 set +x
 
 # todo Below attributions should be replaced by a call to func. that manages a config file ~/.config/meteo.conf (GPIO numbers also could be informed there)
+# Parsing of .ini/.conf files from bash is described:
+#   here:     https://ajdiaz.wordpress.com/2008/02/09/bash-ini-parser/
+#   or there: https://github.com/rudimeier/bash_ini_parser
 WEB_USER="web"
 INSTALL_USER="`whoami`"  # usually "pi"...
 
-printf -- '\n\n*** APT installs for:... ***\n'
-printf -- '- PIP (Python package manager)\n'
-printf -- '- Picamera Python module\n'
-printf -- '- postgresql database\n'
-printf -- '- gpac to get "MP4Box" command for webcam video captures\n'
+printf -- "\n\n*** APT installs for:... ***\n"
+printf -- "- PIP (Python package manager)\n"
+printf -- "- Picamera Python module\n"
+printf -- "- postgresql database\n"
+printf -- "- gpac to get "MP4Box" command for webcam video captures\n"
 # As detailed https://www.raspberrypi.org/documentation/usage/camera/raspicam/raspivid.md
-printf -- '- libmicrohttpd12 for tests with "motion" (required yet?)\n\n'
+printf -- "- libmicrohttpd12 for tests with 'motion' (required yet?)\n\n"
 ## from https://github.com/Motion-Project/motion/releases
 #echo "\n\n*** Install pi_stretch_motion for ?video-motion-detection?... ***"
 #sudo dpkg -i pi_stretch_motion_4.2.2-1_armhf.deb
@@ -26,7 +29,7 @@ libmicrohttpd12
 
 sudo apt install -y \
 python-picamera python3-picamera \
-|| printf -- 'Ignored errors. Ok if not run on Raspberry.\n'
+|| printf -- "Ignored errors. Ok if not run on Raspberry.\n"
 ## Also useful for developing from ssh command-line:
 
 # sudo apt install vim vim-addon-manager
@@ -39,47 +42,47 @@ python-picamera python3-picamera \
 ## cd ~/.vim/bundle
 ## git clone https://github.com/klen/python-mode.git
 
-printf -- '\n\n*** PIP Installs: ***\n'
-printf -- '- postgresql for Python calls\n'
-printf -- '- pydevd for Python remote debugging\n'
+printf -- "\n\n*** PIP Installs: ***\n"
+printf -- "- postgresql for Python calls\n"
+printf -- "- pydevd for Python remote debugging\n"
 # check https://raspberrypi.stackexchange.com/questions/70018/remotely-debug-python-code-on-pi-using-eclipse-in-windows for further details
-printf -- '- gpiozero for CPU temperature reading and other GPIO\n'
-printf -- '- RPi.GPIO for input/output management\n'
-printf -- '- Adafruit_GPIO for input/output management\n'
+printf -- "- gpiozero for CPU temperature reading and other GPIO\n"
+printf -- "- RPi.GPIO for input/output management\n"
+printf -- "- Adafruit_GPIO for input/output management\n"
 # note: if issues for Adafruit_GPIO install, launch with "python -m pip" instead of "pip"
-printf -- '- tsl2561 for sensors reading\n'
+printf -- "- tsl2561 for sensors reading\n"
 # A tutorial? about how to use the pressure/humidity/light/temperature sensors with I2C/SPI:
 # https://learn.sparkfun.com/tutorials/raspberry-pi-spi-and-i2c-tutorial/all
 # https://pypi.org/project/tsl2561/
-printf -- '- bluetin.io for HC-SR04 distance sensor reading\n'
-printf -- '- svg.charts for drawing SVG graphics on web server\n\n'
+printf -- "- bluetin.io for HC-SR04 distance sensor reading\n"
+printf -- "- svg.charts for drawing SVG graphics on web server\n\n"
 # Uncomment below to update all pip packages:
 # pip list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install -U
 
-sudo pip install pydevd gpiozero svg.charts
-sudo pip install RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo || printf -- 'Ignored errors. Ok if not run on Raspberry.\n'
+sudo pip install pydevd gpiozero  # svg.charts works only for Python 3 (web sever)
+sudo pip install RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
 sudo pip3 install pydevd gpiozero svg.charts
-sudo pip3 install RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo || printf -- 'Ignored errors. Ok if not run on Raspberry.\n'
+sudo pip3 install RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
 
 
 # Replaced by apt install (preferable)
 # sudo pip install psycopg2
 # sudo pip3 install psycopg2
 
-printf -- '\n\n*** Install BMP sensors library... ***\n'
+printf -- "\n\n*** Install BMP sensors library... ***\n"
 cd /tmp
 # sudo apt-get install git build-essential python-dev python-smbus
 # Remove any pre-existing folder:
 sudo rm -rf /tmp/Adafruit_Python_BMP
-printf -- '*** BMP sensors: cloning... ***\n\n'
+printf -- "*** BMP sensors: cloning... ***\n\n"
 git clone https://github.com/adafruit/Adafruit_Python_BMP.git
 cd Adafruit_Python_BMP
-printf -- '\n*** BMP sensors: Python 2... ***\n\n'
-sudo python setup.py install || printf -- 'Ignored errors. Ok if not run on Raspberry.\n'
-printf -- '\n*** BMP sensors: Python 3... ***\n\n'
-sudo python3 setup.py install || printf -- 'Ignored errors. Ok if not run on Raspberry.\n'
+printf -- "\n*** BMP sensors: Python 2... ***\n\n"
+sudo python setup.py install || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
+printf -- "\n*** BMP sensors: Python 3... ***\n\n"
+sudo python3 setup.py install || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
 
-printf -- '\n\n*** Create folder where images will be saved... ***\n'
+printf -- "\n\n*** Create folder where images will be saved... ***\n"
 mkdir -p /home/${INSTALL_USER}/meteo/captures/
 
 # Executed on dev machine / includes GitHub projet:
@@ -87,27 +90,27 @@ mkdir -p /home/${INSTALL_USER}/meteo/captures/
 # git clone https://github.com/adafruit/Adafruit_Python_BMP.git
 
 if [[ "${WEB_USER}" != ${INSTALL_USER} ]] ; then
-    printf -- '\n\n*** Create user to run web-server from... ***\n'
-    sudo adduser ${WEB_USER} || printf -- 'User "${WEB_USER}" already exists\n'
+    printf -- "\n\n*** Create user to run web-server from... ***\n"
+    sudo adduser ${WEB_USER} || printf -- "User "${WEB_USER}" already exists\n"
     # extra option can be used: [--disabled-password]
     # This wil be the user running the web server, with the bare minimum to do so for security reasons.
 fi
 
-printf -- '\n\n*** Create user to run web-server from... ***\n'
-chmod +x ~/meteo/src/main/py/*.py || printf -- 'chmod errors ignored\n'
-chmod +x ~/meteo/src/main/py/home_web/*.py || printf -- 'chmod errors ignored\n'
+printf -- "\n\n*** Create user to run web-server from... ***\n"
+chmod +x ~/meteo/src/main/py/*.py || printf -- "chmod errors ignored\n"
+chmod +x ~/meteo/src/main/py/home_web/*.py || printf -- "chmod errors ignored\n"
 # sudo su - ${WEB_USER}
-sudo runuser --login --command 'ln -f /home/${INSTALL_USER}/meteo/src/main/py/home_web/index.html.py /home/${WEB_USER}/index.html'
-sudo runuser --login --command 'ln -f /home/${INSTALL_USER}/meteo/src/main/py/home_web/graph.svg.py /home/${WEB_USER}/graph.svg'
+sudo runuser --login --command "ln -f /home/${INSTALL_USER}/meteo/src/main/py/home_web/index.html.py /home/${WEB_USER}/index.html"
+sudo runuser --login --command "ln -f /home/${INSTALL_USER}/meteo/src/main/py/home_web/graph.svg.py /home/${WEB_USER}/graph.svg"
 
 
-printf -- 'chmod errors ignored\n'
-sudo su - postgres --command "createuser ${INSTALL_USER} --no-superuser --createdb --createrole" || printf -- 'Ignoring error and proceeding: already existing\n'
+printf -- "chmod errors ignored\n"
+sudo su - postgres --command "createuser ${INSTALL_USER} --no-superuser --createdb --createrole" || printf -- "Ignoring error and proceeding: already existing\n"
 # sudo su - postgres --command "createuser admin_debug --interactive --password"
-sudo su - postgres --command "psql --command 'CREATE DATABASE meteo;'" || printf -- 'Ignoring error and proceeding: database already existing?\n'
-psql --dbname meteo --file '/home/${INSTALL_USER}/meteo/bin/db_initialization.sql'  # || printf -- 'Ignoring error and proceeding...\n'
+sudo su - postgres --command "psql --command 'CREATE DATABASE meteo;'" || printf -- "Ignoring error and proceeding: database already existing?\n"
+psql --dbname meteo --file "/home/${INSTALL_USER}/meteo/bin/db_initialization.sql"  # || printf -- "Ignoring error and proceeding...\n"
 if [[ "${WEB_USER}" != ${INSTALL_USER} ]] ; then
-    createuser ${WEB_USER} --no-superuser --no-createdb --no-createrole || printf -- 'Ignoring error and proceeding: already existing\n'
+    createuser ${WEB_USER} --no-superuser --no-createdb --no-createrole || printf -- "Ignoring error and proceeding: already existing\n"
 fi
 psql --dbname meteo --command "GRANT SELECT ON ALL TABLES IN SCHEMA public TO ${WEB_USER};"
 
