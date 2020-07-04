@@ -6,6 +6,7 @@ import RPi.GPIO as GPIO  # Import Raspberry Pi GPIO library
 # import subprocess
 import sys
 import time  # Import the sleep function from the time module
+import configparser
 
 from utils import iso_timestamp_now
 
@@ -21,6 +22,9 @@ GPIO_SHUTDOWN_BTN_IN = 21
 
 
 def start_shutdown_process():
+    global GPIO_WATCHDOG_LED
+    global GPIO_SHUTDOWN_BTN_IN
+
     print(iso_timestamp_now() + " - Will now blink fast for 1 sec., stop for 1 s. and light on for 1 s.,")
     print("\texpecting no button pressed at end of led off,")
     print("\tand expecting button pressed at end of led on.")
@@ -63,8 +67,19 @@ def start_shutdown_process():
 
 
 def main():  # Expected to be launched at startup
+    global GPIO_WATCHDOG_LED
+    global GPIO_SHUTDOWN_BTN_IN
+
     print("_" * 80)
     print(iso_timestamp_now() + " - Starting watchdog...")
+
+    config = configparser.ConfigParser()
+    config.read('/home/pi/.config/meteo.conf')
+    GPIO_WATCHDOG_LED = int(config['GPIO']['GPIO_WATCHDOG_LED'])
+    GPIO_SHUTDOWN_BTN_IN = int(config['GPIO']['GPIO_SHUTDOWN_BTN_IN'])
+    print(iso_timestamp_now() + " - GPIOs:")
+    print(iso_timestamp_now() + "\tWatchdog LED    -> " + str(GPIO_WATCHDOG_LED) + " (output)")
+    print(iso_timestamp_now() + "\tShutdown button -> " + str(GPIO_SHUTDOWN_BTN_IN) + " (input)")
 
     # GPIO.setwarnings(False)    # Ignore warning for now
     GPIO.setmode(GPIO.BCM)  # Use GPIO numbering
