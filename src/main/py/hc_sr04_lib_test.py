@@ -37,6 +37,7 @@ def volume_water_tank(distance_cm):
 
 
 def measure_distance(temp_celcius=20):
+    # TODO Move this method to sensors_function.py
     # Initialise Sensor with pins, speed of sound.
     speed_of_sound = 331.5 + (0.6 * temp_celcius)
     echo = Bluetin_Echo.Echo(TRIGGER_PIN, ECHO_PIN, speed_of_sound)

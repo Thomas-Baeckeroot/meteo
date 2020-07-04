@@ -7,13 +7,13 @@ set +x
 #   here:     https://ajdiaz.wordpress.com/2008/02/09/bash-ini-parser/
 #   or there: https://github.com/rudimeier/bash_ini_parser
 WEB_USER="web"
-INSTALL_USER="`whoami`"  # usually "pi"...
+INSTALL_USER="$(whoami)"  # usually "pi"...
 
 printf -- "\n\n*** APT installs for:... ***\n"
 printf -- "- PIP (Python package manager)\n"
 printf -- "- Picamera Python module\n"
 printf -- "- postgresql database\n"
-printf -- "- gpac to get "MP4Box" command for webcam video captures\n"
+printf -- "- gpac to get 'MP4Box' command for webcam video captures\n"
 # As detailed https://www.raspberrypi.org/documentation/usage/camera/raspicam/raspivid.md
 printf -- "- libmicrohttpd12 for tests with 'motion' (required yet?)\n\n"
 ## from https://github.com/Motion-Project/motion/releases
@@ -22,7 +22,7 @@ printf -- "- libmicrohttpd12 for tests with 'motion' (required yet?)\n\n"
 
 sudo apt install -y \
 python-pip python3-pip \
-postgresql libpq-dev python-psycopg2 \
+postgresql libpq-dev python-psycopg2 python3-psycopg2 \
 postgresql-client postgresql-client-common \
 gpac \
 libmicrohttpd12
@@ -57,7 +57,8 @@ printf -- "- tsl2561 for sensors reading\n"
 printf -- "- bluetin.io for HC-SR04 distance sensor reading\n"
 printf -- "- svg.charts for drawing SVG graphics on web server\n\n"
 # Uncomment below to update all pip packages:
-# pip list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install -U
+# sudo pip list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo pip install -U
+# sudo pip3 list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo pip3 install -U
 
 sudo pip install pydevd gpiozero  # svg.charts works only for Python 3 (web sever)
 sudo pip install RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
@@ -128,12 +129,19 @@ cat << EOF
 Add below line to crontab of user '\''${INSTALL_USER}'\'' by executing '\''crontab -e'\'':
 * * * * *  /home/${INSTALL_USER}/meteo/src/main/py/periodical_sensor_reading.py >> /home/${INSTALL_USER}/meteo/periodical_sensor_reading.log 2>&1
 -
-As admin, add below 3 lines at the end of /etc/rc.local, before last '\''exit 0'\'':
+As admin, add below lines at the end of /etc/rc.local, before last '\''exit 0'\'':
 $ sudo vi /etc/rc.local
 [...]
+# Watchdog:
 nohup -- /home/${INSTALL_USER}/meteo/src/main/py/watchdog_gpio.py >> /var/log/watchdog_gpio.log 2>&1 &
+
+# Camera trap:
 sudo su - ${INSTALL_USER} --command \"nohup -- /home/${INSTALL_USER}/meteo/src/main/py/video_capture_on_motion.py >> /home/${INSTALL_USER}/meteo/video.log 2>&1\" &
+
+# Webserver:
 sudo su - ${WEB_USER} --command \"nohup -- /home/${INSTALL_USER}/meteo/src/main/py/server3.py >> /home/${WEB_USER}/server3.log\" &
+# Required to keep WiFi always on:
+sleep 30 && sudo iw dev wlan0 set power_save off &
 
 exit 0
 -

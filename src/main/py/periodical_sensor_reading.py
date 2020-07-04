@@ -32,6 +32,7 @@ METEO_FOLDER = "/home/pi/meteo/"
 CAPTURES_FOLDER = METEO_FOLDER + "captures/"
 CAMERA_ENABLED = True
 CONSOLIDATE_VAL = False
+main_call_epoch = utils.epoch_now()
 
 
 def is_multiple(value, multiple):
@@ -106,8 +107,84 @@ def take_picture():
         print("Failed " + str(capture_tentatives) + " times to take picture. Gave up!")
 
 
+def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
+    global main_call_epoch
+    (sensor_name, sensor_label_dest, decimals_dest, cumulative_dest, unit_dest, consolidated_dest,
+     sensor_type_dest) = sensor_dest
+    conn_remote_src = psycopg2.connect(database="meteo", host=remote_server_src, )  # Connect to REMOTE PostgreSQL DB
+    # FIXME Manage situation where remote is not reachable
+    curs_src = conn_remote_src.cursor()
+
+    # name   | priority |        sensor_label         | decimals | cumulative | unit | consolidated | sensor_type
+    read_sensors_query = "SELECT sensor_label, decimals, cumulative, unit, consolidated" \
+                         "  FROM sensors" \
+                         " WHERE name='" + sensor_name + "';"
+    curs_src.execute(read_sensors_query)
+    (sensor_label_src, decimals_src, cumulative_src, unit_src, consolidated_src) = curs_src.fetchall()[0]
+    print("sensor_label: \tsrc='" + sensor_label_src + "'\t>>> dest='" + sensor_label_dest + "'")
+    if sensor_label_src != sensor_label_dest:
+        curs_src.execute("UPDATE sensors"
+                         "   SET sensor_label=" + sensor_label_src +
+                         " WHERE name='" + sensor_name + "';")
+    print("Decimals:     \tsrc='" + decimals_src + "'\t>>> dest='" + decimals_dest + "'")
+    if decimals_src != decimals_dest:
+        curs_src.execute("UPDATE sensors"
+                         "   SET decimals=" + decimals_src +
+                         " WHERE name='" + sensor_name + "';")
+    print("cumulative: \tsrc='" + cumulative_src + "'\t>>> dest='" + cumulative_dest + "'")
+    if cumulative_src != cumulative_dest:
+        curs_src.execute("UPDATE sensors"
+                         "   SET cumulative=" + cumulative_src +
+                         " WHERE name='" + sensor_name + "';")
+    print("unit: \tsrc='" + unit_src + "'\t>>> dest='" + unit_dest + "'")
+    if unit_src != unit_dest:
+        curs_src.execute("UPDATE sensors"
+                         "   SET unit=" + unit_src +
+                         " WHERE name='" + sensor_name + "';")
+    print("consolidated: \tsrc='" + consolidated_src + "'\t>>> dest='" + consolidated_dest + "'")
+    if consolidated_src != consolidated_dest:
+        curs_src.execute("UPDATE sensors"
+                         "   SET consolidated=" + consolidated_src +
+                         " WHERE name='" + sensor_name + "';")
+
+    n_updates = 99999
+    # Loop as long as we got updates to synchronise and in the limit of 50s after start of this script
+    # (to avoid possible concurrency with other instance that would copy the same data)
+    while n_updates > 0 and (utils.epoch_now() - main_call_epoch) < 50:
+        read_sensors_query = "SELECT epochtimestamp, measure" \
+                             "  FROM raw_measures" \
+                             " WHERE sensor='" + sensor_name + \
+                             "'  AND synchronised='false' " \
+                             "ORDER BY epochtimestamp asc FETCH FIRST 10 ROWS ONLY;"
+        curs_src.execute(read_sensors_query)
+        epochs_and_measures_from_src = curs_src.fetchall()
+        n_updates = len(epochs_and_measures_from_src)
+        if n_updates > 0:
+            insert_measures_to_dest_query = "INSERT INTO raw_measures(epochtimestamp, measure, sensor) VALUES "
+            for (epoch_src, measure_src) in epochs_and_measures_from_src:
+                # = epoch_and_measure  # todo once working, should be included within for declaration
+                insert_measures_to_dest_query = insert_measures_to_dest_query + \
+                                                "(" + str(epoch_src) + ", " + str(measure_src) + ", " \
+                                                + sensor_name + ")"
+            insert_measures_to_dest_query = insert_measures_to_dest_query + ";"
+            curs_dest = conn_local_dest.cursor()
+            curs_dest.execute(insert_measures_to_dest_query)
+
+            update_synchronised_query = "UPDATE raw_measures(synchronised)" \
+                                        "   SET true" \
+                                        " WHERE epoch IN("
+            for (epoch_src, measure_src) in epochs_and_measures_from_src:
+                update_synchronised_query = update_synchronised_query + str(epoch_src) + ", "
+            update_synchronised_query = update_synchronised_query + ") AND sensor='" + sensor_name + "'"
+            curs_src.execute(update_synchronised_query)
+
+        print("Imported " + str(n_updates) + " records from " + remote_server_src)
+
+    pass
+
+
 def main():  # Expected to be called once per minute
-    main_call_epoch = utils.epoch_now()
+    global main_call_epoch
     print(utils.iso_timestamp_now() + " - Starting on " + socket.gethostname() + "-----------------------------------")
     temp = 15  # default value for later calculation of speed of sound
 
@@ -116,11 +193,11 @@ def main():  # Expected to be called once per minute
     curs = conn.cursor()
 
     # name   | priority |        sensor_label         | decimals | cumulative | unit | consolidated | sensor_type
-    read_sensors_query = "SELECT name, decimals, consolidated, sensor_type FROM sensors;"
+    read_sensors_query = "SELECT name, sensor_label, decimals, cumulative, unit, consolidated, sensor_type FROM sensors;"
     curs.execute(read_sensors_query)
     sensors = curs.fetchall()
     for sensor in sensors:
-        (sensor_name, decimals, consolidated, sensor_type) = sensor
+        (sensor_name, sensor_label, decimals, cumulative, unit, consolidated, sensor_type) = sensor
 
         measure = None
         # Below ifs to be replaced by function blocks and dictionary as described
@@ -149,6 +226,17 @@ def main():  # Expected to be called once per minute
         elif sensor_type == "distance":
             # Calculate speed (celerity) of sound:
             measure = hc_sr04_lib_test.measure_distance(temp)
+
+        elif sensor_type.startswith("remote:"):
+            # Another remote PostgreSQL contains the measures. Those not "synchronised" will be copied
+            # if having ~Connection refused~~port 5432?~ issues then
+            #   -> On remote server, in file postgresql.conf, set "listen_addresses = '*'"
+            # 
+            #   -> in file pg_hba.conf, add "host    meteo           pi              192.168.0.94/32         trust"
+            # (those 2 configuration files are usually in /etc/postgresql/11/main/ )
+            # fixme the upper "trust" is not secured and should look for a decent unix authentication later...
+            remote_server = sensor_type[7:]
+            copy_values_from_server(sensor, remote_server, conn)
 
         else:
             print("ERROR! Unable to interpret '" + sensor_type + "' as a sensor type! Ignoring sensor '" + sensor_name
