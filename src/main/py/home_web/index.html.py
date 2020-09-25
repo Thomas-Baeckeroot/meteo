@@ -82,6 +82,7 @@ else:
 html = """<!DOCTYPE html>
 <head>
     <title>Centrale météo St Benoît</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 </head>
 <body>
 <h2>Dernières valeurs:</h2>

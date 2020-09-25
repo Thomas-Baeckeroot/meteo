@@ -103,6 +103,7 @@ chmod +x ~/meteo/src/main/py/home_web/*.py || printf -- "chmod errors ignored\n"
 # sudo su - ${WEB_USER}
 sudo runuser --login --command "ln -f /home/${INSTALL_USER}/meteo/src/main/py/home_web/index.html.py /home/${WEB_USER}/index.html"
 sudo runuser --login --command "ln -f /home/${INSTALL_USER}/meteo/src/main/py/home_web/graph.svg.py /home/${WEB_USER}/graph.svg"
+sudo runuser --login --command "ln -f /home/${INSTALL_USER}/meteo/src/main/py/home_web/favicon.svg.py /home/${WEB_USER}/favicon.svg"
 
 
 printf -- "chmod errors ignored\n"
