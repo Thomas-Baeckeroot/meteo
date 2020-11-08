@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import cgi
-import psycopg2  # ProgreSQL library
+import psycopg2 as dbmodule  # ProgreSQL library
 import time
 import locale
 
@@ -17,7 +17,7 @@ locale.getdefaultlocale()
 print("Content-type: text/html; charset=utf-8\n")
 
 # Connect or Create DB File
-conn = psycopg2.connect(database="meteo")  # Connect to PostgreSQL DB
+conn = dbmodule.connect(database="meteo")  # Connect to PostgreSQL DB
 curs = conn.cursor()
 curs.execute("SELECT name, priority, sensor_label, unit FROM sensors ORDER BY priority ASC;")
 sensors = curs.fetchall()

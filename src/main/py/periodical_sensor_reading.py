@@ -4,7 +4,7 @@
 # import calendar
 # import datetime
 import picamera
-import psycopg2  # ProgreSQL library
+import psycopg2 as dbmodule  # ProgreSQL library
 import socket
 # import sqlite3
 import sys
@@ -111,7 +111,7 @@ def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
     global main_call_epoch
     (sensor_name, sensor_label_dest, decimals_dest, cumulative_dest, unit_dest, consolidated_dest,
      sensor_type_dest) = sensor_dest
-    conn_remote_src = psycopg2.connect(database="meteo", host=remote_server_src, )  # Connect to REMOTE PostgreSQL DB
+    conn_remote_src = dbmodule.connect(database="meteo", host=remote_server_src, )  # Connect to REMOTE PostgreSQL DB
     # FIXME Manage situation where remote is not reachable
     curs_src = conn_remote_src.cursor()
 
@@ -189,7 +189,7 @@ def main():  # Expected to be called once per minute
     temp = 15  # default value for later calculation of speed of sound
 
     # conn = sqlite3.connect(DB_NAME)  # Connect or Create SQLite DB File
-    conn = psycopg2.connect(database="meteo")  # Connect to PostgreSQL DB
+    conn = dbmodule.connect(database="meteo")  # Connect to PostgreSQL DB
     curs = conn.cursor()
 
     # name   | priority |        sensor_label         | decimals | cumulative | unit | consolidated | sensor_type

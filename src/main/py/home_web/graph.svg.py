@@ -7,7 +7,7 @@ Serves SVG chart of requested sensor.
 
 import cgi
 # import os
-import psycopg2  # ProgreSQL library
+import psycopg2 as dbmodule  # ProgreSQL library
 
 # from svg.charts.plot import Plot
 # from svg.charts import bar
@@ -60,7 +60,7 @@ def sample_line():
     minepoch = maxepoch - SECONDS_IN_ONE_DAY
 
     # conn = sqlite3.connect(DB_NAME)  # Connect or Create SQLite DB File
-    conn = psycopg2.connect(database="meteo")  # Connect to PostgreSQL DB
+    conn = dbmodule.connect(database="meteo")  # Connect to PostgreSQL DB
     curs = conn.cursor()
     curs.execute("  SELECT  epochtimestamp, measure"
                  "  FROM    raw_measures"
