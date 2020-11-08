@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Sample based from https://python-django.dev/page-python-serveur-web-creer-rapidement
 

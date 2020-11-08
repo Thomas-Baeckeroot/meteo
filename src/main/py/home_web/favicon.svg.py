@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 print("Content-type: image/svg+xml; charset=utf-8\r\n\r\n")
