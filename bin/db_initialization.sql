@@ -3,20 +3,22 @@
 
 
 CREATE TABLE IF NOT EXISTS sensors
-    (   name            CHAR(8),     -- PRIMARY KEY,
-        priority        INTEGER,  -- priority value: from 0 to 100; ie: 20 for main values (temp.)
+    (   name            VARBINARY(8),   -- PRIMARY KEY, (MariaDB)
+        --name          CHAR(8),        -- PRIMARY KEY, (PostgreSQL)
+        priority        INTEGER,        -- priority value: from 0 to 100; ie: 20 for main values (temp.)
         sensor_label    TEXT,
-        decimals        INTEGER,  -- decimal places: 0 = rounded at unit, 1 = 1/10th of unit, ...
-        cumulative      BOOLEAN,  -- ie: True for mm of water, false for temperature
+        decimals        INTEGER,        -- decimal places: 0 = rounded at unit, 1 = 1/10th of unit, ...
+        cumulative      BOOLEAN,        -- ie: True for mm of water, false for temperature
         unit            TEXT,
-        consolidated    TEXT,  -- time-range (in s.) for consolidation; ie: 900 -> data consolidated per 15 minutes
+        consolidated    TEXT,           -- time-range (in s.) for consolidation; ie: 900 -> data consolidated per 15 minutes
         sensor_type     TEXT
-        -- sensor_config  TEXT  -- ie 'GPIO23'
+        -- sensor_config  TEXT          -- ie 'GPIO23'
     );
 CREATE TABLE raw_measures
-    (   epochtimestamp  INTEGER,  -- seconds since 1970/01/01, https://www.sqlite.org/draft/lang_datefunc.html
+    (   epochtimestamp  INTEGER,        -- seconds since 1970/01/01, https://www.sqlite.org/draft/lang_datefunc.html
         measure         REAL,
-        sensor          CHAR(8),  -- REFERENCES sensors (name)
+        sensor          VARBINARY(8),   -- REFERENCES sensors (name) (MariaDB)
+        --sensor        CHAR(8),        -- REFERENCES sensors (name) (PostgreSQL)
         synchronised    BOOLEAN DEFAULT false NOT NULL
         -- PRIMARY KEY (epochtimestamp, sensor)
     );
@@ -28,8 +30,9 @@ CREATE TABLE consolidated_measures
         max_value       REAL,
         mean_value      REAL,
         total_values    REAL,
-        sensor          CHAR(8), -- REFERENCES sensors (name
-        period          INTEGER  -- period in seconds: =900 for 15 minutes periods
+        sensor          VARBINARY(8),   -- REFERENCES sensors (name) (MariaDB)
+        --sensor        CHAR(8),        -- REFERENCES sensors (name) (PostgreSQL)
+        period          INTEGER         -- period in seconds: =900 for 15 minutes periods
     );
 
 -- INSERT INTO sensors VALUES('SensShortName' , p0_100, 'Sensor verbose texte'    , num_dec_0_2, false, 'Unit_cm', '900'); -- later, consolidated should be like '900 86400'

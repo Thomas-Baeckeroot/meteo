@@ -53,4 +53,7 @@ handler.cgi_directories = ["/"]
 print("Serveur P3 actif sur le port: " + str(PORT))
 
 httpd = server(server_address, handler)
-httpd.serve_forever()
+try:
+    httpd.serve_forever()
+except KeyboardInterrupt:
+    print("\nKeyboard interruption intercepted. Exiting...")

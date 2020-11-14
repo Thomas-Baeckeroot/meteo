@@ -30,6 +30,7 @@ import hc_sr04_lib_test
 METEO_FOLDER = "/home/pi/meteo/"
 # DB_NAME = METEO_FOLDER + "meteo.db"  # SQLite DB File
 CAPTURES_FOLDER = METEO_FOLDER + "captures/"
+CAMERA_NAME = "camera1"
 CAMERA_ENABLED = True
 CONSOLIDATE_VAL = False
 main_call_epoch = utils.epoch_now()
@@ -93,7 +94,7 @@ def take_picture():
             camera.start_preview()
             time.sleep(5)
             dt_now = utils.iso_timestamp4files()
-            filename = CAPTURES_FOLDER + "camera1_" + dt_now + ".jpg"
+            filename = CAPTURES_FOLDER + CAMERA_NAME + "_" + dt_now + ".jpg"
             print(filename)
             camera.capture(filename)
             camera.stop_preview()
