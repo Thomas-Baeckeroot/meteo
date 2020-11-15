@@ -10,7 +10,7 @@ import locale
 # from sensors_functions import iso_timestamp
 
 METEO_FOLDER = "/home/pi/meteo/"
-DB_NAME = METEO_FOLDER + "meteo.db"
+DB_NAME = "meteo"
 CAPTURES_FOLDER = METEO_FOLDER + "captures/"
 
 form = cgi.FieldStorage()
@@ -18,7 +18,7 @@ locale.getdefaultlocale()
 print("Content-type: text/html; charset=utf-8\n")
 
 # Connect or Create DB File
-conn = dbmodule.connect(database="meteo")  # Connect to PostgreSQL DB
+conn = dbmodule.connect(database=DB_NAME)  # Connect to PostgreSQL DB
 curs = conn.cursor()
 curs.execute("SELECT name, priority, sensor_label, unit FROM sensors ORDER BY priority ASC;")
 sensors = curs.fetchall()
@@ -45,7 +45,7 @@ for sensor in sensors:
         WHERE   sensor = '""" + sensor_name + """'
           AND   epochtimestamp = (  SELECT  MAX(epochtimestamp) 
                                     FROM    raw_measures 
-                                    WHERE   sensor = '""" + sensor_name + """' );""" )
+                                    WHERE   sensor = '""" + sensor_name + """' );""")
     last_date_and_value = curs.fetchall()
 
     sensor_list = sensor_list + "<tr" + style_row + ">"
@@ -57,21 +57,21 @@ for sensor in sensors:
             oldest_date = epochdate
         # locale.getdefaultlocale()
         date_str = time.strftime('%-d/%m/%Y<br/>%H:%M:%S', time.localtime(epochdate))
-        sensor_list = sensor_list + \
-                      "</td>\n<td style=\"text-align: center;padding-left: 1em;padding-right: 2em;" \
-                      + style_value + "\">" + str(value) + " " + unit + "</td>\n" \
-                      "<td style=\"padding-left: 1em;padding-right: 2em;font-size: x-small;text-align: center;\">" \
-                      + date_str \
-                      + "</td>\n<td style=\"padding-left: 1em;padding-right: 2em;\">" \
-                      + "<a href=\"graph.svg?sensor=" + sensor_name + "&maxepoch=" + str(oldest_date)\
-                      + "&width=980\">" \
-                      + "<img src=\"graph.svg?sensor=" + sensor_name + "&maxepoch=" + str(oldest_date) \
-                      + "&width=100\" style=\"width:100px;height:40px;\" /></a><td></tr>\n"
+        sensor_list = sensor_list \
+            + "</td>\n<td style=\"text-align: center;padding-left: 1em;padding-right: 2em;" \
+            + style_value + "\">" + str(value) + " " + unit + "</td>\n" \
+            + "<td style=\"padding-left: 1em;padding-right: 2em;font-size: x-small;text-align: center;\">" \
+            + date_str \
+            + "</td>\n<td style=\"padding-left: 1em;padding-right: 2em;\">" \
+            + "<a href=\"graph.svg?sensor=" + sensor_name + "&maxepoch=" + str(oldest_date)\
+            + "&width=980\">" \
+            + "<img src=\"graph.svg?sensor=" + sensor_name + "&maxepoch=" + str(oldest_date) \
+            + "&width=100\" style=\"width:100px;height:40px;\" /></a><td></tr>\n"
     else:
         sensor_list = sensor_list + "</td>\n<td style=\"text-align: center;padding-left: 1em;padding-right: 2em;" \
-                      + style_value + "\">-</td>\n" \
-                      + "<td style=\"padding-left: 1em;padding-right: 2em;font-size: x-small;text-align: center;\">-" \
-                      + "</td>\n<td style=\"padding-left: 1em;padding-right: 2em;\"><td></tr>\n"
+            + style_value + "\">-</td>\n" \
+            + "<td style=\"padding-left: 1em;padding-right: 2em;font-size: x-small;text-align: center;\">-" \
+            + "</td>\n<td style=\"padding-left: 1em;padding-right: 2em;\"><td></tr>\n"
 
 sensor_list = sensor_list + "</table>"
 

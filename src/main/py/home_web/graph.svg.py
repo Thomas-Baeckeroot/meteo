@@ -24,7 +24,7 @@ from svg.charts import line
 
 SECONDS_IN_ONE_DAY = 86400
 METEO_FOLDER = "/home/pi/meteo/"
-# DB_NAME = METEO_FOLDER + "meteo.db"
+DB_NAME = "meteo"
 CAPTURES_FOLDER = METEO_FOLDER + "captures/"
 
 
@@ -60,8 +60,7 @@ def sample_line():
 
     minepoch = maxepoch - SECONDS_IN_ONE_DAY
 
-    # conn = sqlite3.connect(DB_NAME)  # Connect or Create SQLite DB File
-    conn = dbmodule.connect(database="meteo")  # Connect to PostgreSQL DB
+    conn = dbmodule.connect(database=DB_NAME)
     curs = conn.cursor()
     curs.execute("  SELECT  epochtimestamp, measure"
                  "  FROM    raw_measures"

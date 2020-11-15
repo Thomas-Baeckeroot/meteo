@@ -29,7 +29,7 @@ import hc_sr04_lib_test
 
 # todo Below variables should be stored in config file ~/.config/meteo.conf (GPIO numbers also could be informed there)
 METEO_FOLDER = "/home/pi/meteo/"
-# DB_NAME = METEO_FOLDER + "meteo.db"  # SQLite DB File
+DB_NAME = "meteo"
 CAPTURES_FOLDER = METEO_FOLDER + "captures/"
 CAMERA_NAME = "camera1"
 CAMERA_ENABLED = True
@@ -187,15 +187,16 @@ def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
 
 def main():  # Expected to be called once per minute
     global main_call_epoch
-    print(utils.iso_timestamp_now() + " - Starting on " + socket.gethostname() + " ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
+    print(utils.iso_timestamp_now() + " - Starting on " + socket.gethostname()
+          + " ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
     temp = 15  # default value for later calculation of speed of sound
 
-    # conn = sqlite3.connect(DB_NAME)  # Connect or Create SQLite DB File
-    conn = dbmodule.connect(database="meteo")  # Connect to PostgreSQL DB
+    conn = dbmodule.connect(database=DB_NAME)
     curs = conn.cursor()
 
     # name   | priority |        sensor_label         | decimals | cumulative | unit | consolidated | sensor_type
-    read_sensors_query = "SELECT name, sensor_label, decimals, cumulative, unit, consolidated, sensor_type FROM sensors;"
+    read_sensors_query = \
+        "SELECT name, sensor_label, decimals, cumulative, unit, consolidated, sensor_type FROM sensors;"
     curs.execute(read_sensors_query)
     sensors = curs.fetchall()
     for sensor in sensors:
