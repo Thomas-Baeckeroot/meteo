@@ -187,7 +187,7 @@ def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
 
 def main():  # Expected to be called once per minute
     global main_call_epoch
-    print(utils.iso_timestamp_now() + " - Starting on " + socket.gethostname() + "-----------------------------------")
+    print(utils.iso_timestamp_now() + " - Starting on " + socket.gethostname() + " ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
     temp = 15  # default value for later calculation of speed of sound
 
     # conn = sqlite3.connect(DB_NAME)  # Connect or Create SQLite DB File
@@ -200,6 +200,7 @@ def main():  # Expected to be called once per minute
     sensors = curs.fetchall()
     for sensor in sensors:
         (sensor_name, sensor_label, decimals, cumulative, unit, consolidated, sensor_type) = sensor
+        sensor_name = sensor_name.decode('ascii')
 
         measure = None
         # Below ifs to be replaced by function blocks and dictionary as described
@@ -241,8 +242,8 @@ def main():  # Expected to be called once per minute
             copy_values_from_server(sensor, remote_server, conn)
 
         else:
-            print("ERROR! Unable to interpret '" + sensor_type + "' as a sensor type! Ignoring sensor '" + sensor_name
-                  + "'...")
+            print("Sensor '" + sensor_name + "' -> ERROR! Unable to interpret '" + str(sensor_type)
+                  + "' as a sensor type! Skipped...")
             # measure = None  # kept as None
 
         if measure is not None:
@@ -253,6 +254,7 @@ def main():  # Expected to be called once per minute
                          + str(utils.epoch_now()) + "," \
                          + str(func.round_value_decimals(measure, decimals)) + ", '" \
                          + sensor_name + "');"
+            # print(str(sql_insert))
             curs.execute(sql_insert)
 
             print("\tAdded value for " + sensor_name + "; committing...")
