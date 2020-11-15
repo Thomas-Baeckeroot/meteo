@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import cgi
-import psycopg2 as dbmodule  # ProgreSQL library
+# import psycopg2 as dbmodule  # ProgreSQL library
+import mariadb as dbmodule  # MariaDB library
 import time
 import locale
 

@@ -1,10 +1,6 @@
--- sudo apt install sqlite3
--- sqlite3 /home/pi/meteo/meteo.db
-
-
 CREATE TABLE IF NOT EXISTS sensors
-    (   name            VARBINARY(8),   -- PRIMARY KEY, (MariaDB)
-        --name          CHAR(8),        -- PRIMARY KEY, (PostgreSQL)
+    (   name            VARBINARY(8),   -- (MariaDB)
+    --  name  CHAR(8),  -- PRIMARY KEY" -- (PostgreSQL)
         priority        INTEGER,        -- priority value: from 0 to 100; ie: 20 for main values (temp.)
         sensor_label    TEXT,
         decimals        INTEGER,        -- decimal places: 0 = rounded at unit, 1 = 1/10th of unit, ...
@@ -17,8 +13,7 @@ CREATE TABLE IF NOT EXISTS sensors
 CREATE TABLE raw_measures
     (   epochtimestamp  INTEGER,        -- seconds since 1970/01/01, https://www.sqlite.org/draft/lang_datefunc.html
         measure         REAL,
-        sensor          VARBINARY(8),   -- REFERENCES sensors (name) (MariaDB)
-        --sensor        CHAR(8),        -- REFERENCES sensors (name) (PostgreSQL)
+        sensor          VARBINARY(8),   -- (MariaDB) ( PostgreSQL: "sensor  CHAR(8),  -- REFERENCES sensors (name)" )
         synchronised    BOOLEAN DEFAULT false NOT NULL
         -- PRIMARY KEY (epochtimestamp, sensor)
     );
@@ -31,7 +26,7 @@ CREATE TABLE consolidated_measures
         mean_value      REAL,
         total_values    REAL,
         sensor          VARBINARY(8),   -- REFERENCES sensors (name) (MariaDB)
-        --sensor        CHAR(8),        -- REFERENCES sensors (name) (PostgreSQL)
+    --  sensor          CHAR(8),        -- REFERENCES sensors (name) (PostgreSQL)
         period          INTEGER         -- period in seconds: =900 for 15 minutes periods
     );
 

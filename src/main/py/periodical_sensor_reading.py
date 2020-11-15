@@ -4,7 +4,8 @@
 # import calendar
 # import datetime
 import picamera
-import psycopg2 as dbmodule  # ProgreSQL library
+# import psycopg2 as dbmodule  # ProgreSQL library
+import mariadb as dbmodule  # ProgreSQL library
 import socket
 # import sqlite3
 import sys
@@ -204,7 +205,7 @@ def main():  # Expected to be called once per minute
         # Below ifs to be replaced by function blocks and dictionary as described
         # at https://stackoverflow.com/questions/11479816/what-is-the-python-equivalent-for-a-case-switch-statement
         if sensor_type == "ignored":
-            print("Ignoring sensor '" + sensor_name + "'...")
+            print("Sensor '" + sensor_name + "' -> -ignoring-")
             # measure = None  # kept as None
 
         elif sensor_type == "CPU_temp":
@@ -245,7 +246,7 @@ def main():  # Expected to be called once per minute
             # measure = None  # kept as None
 
         if measure is not None:
-            print("sensor '" + sensor_name + "' -> " + str(measure))
+            print("Sensor '" + sensor_name + "' -> " + str(measure))
             # sql_insert = "INSERT INTO " + raw_table + "(epochtimestamp,value) VALUES(?,?);"
             # curs.execute(sql_insert, measure)  # not supported by PostgreSQL ?
             sql_insert = "INSERT INTO raw_measures(epochtimestamp, measure, sensor) VALUES(" \
@@ -254,7 +255,7 @@ def main():  # Expected to be called once per minute
                          + sensor_name + "');"
             curs.execute(sql_insert)
 
-            print("Added value for " + sensor_name + "; committing...")
+            print("\tAdded value for " + sensor_name + "; committing...")
             conn.commit()
 
     # end of for-loop on each sensor

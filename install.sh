@@ -9,8 +9,26 @@ set +x
 WEB_USER="web"
 INSTALL_USER="$(whoami)"  # usually "pi"...
 
+printf -- "\n\n*** APT-install for Python 3... ***\n"
+sudo apt install -y python3 python3-dev
+
+# This script can be adapted to be executed from a Synology NAS to use it as web-server
+# Pre-requisites:
+# - activate ssh and connect as admin
+# - add SynoCommunity as Package Sources (cf. https://synocommunity.com/ for more information).
+# - add git package
+# command should be 'synopkg install_from_server py3k', 'synopkg install_from_server MariaDB10'
+
+# sudo apt install -y python-pip  # Former Python2, dropped.
+
+printf -- "\n\n*** APT installs for Python PIP3 (Python package manager)... ***\n"
+# Instead of the below 'python3-pip' install, depending on your Linux distro, it may be more reliable to follow
+# instructions from https://pip.pypa.io/en/stable/installing/ :
+# curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py
+# python3 get-pip.py
+sudo apt install -y python3-pip
+
 printf -- "\n\n*** APT installs for:... ***\n"
-printf -- "- PIP (Python package manager)\n"
 printf -- "- Picamera Python module\n"
 printf -- "- postgresql database\n"
 printf -- "- gpac to get 'MP4Box' command for webcam video captures\n"
@@ -20,16 +38,20 @@ printf -- "- libmicrohttpd12 for tests with 'motion' (required yet?)\n\n"
 #echo "\n\n*** Install pi_stretch_motion for ?video-motion-detection?... ***"
 #sudo dpkg -i pi_stretch_motion_4.2.2-1_armhf.deb
 
-sudo apt install -y \
-python-pip python3-pip \
-postgresql libpq-dev python-psycopg2 python3-psycopg2 \
-postgresql-client postgresql-client-common \
-gpac \
-libmicrohttpd12
+# printf -- "Installing PostgreSQL (database server and required Connector-C, etc...)...\n"
+# sudo apt install -y postgresql libpq-dev python-psycopg2 python3-psycopg2 postgresql-client postgresql-client-common \
 
-sudo apt install -y \
-python-picamera python3-picamera \
-|| printf -- "Ignored errors. Ok if not run on Raspberry.\n"
+printf -- "Installing multimedia...\n"
+sudo apt install -y gpac
+
+printf -- "Installing HTTP server functionality...\n"  # Not required anymore?
+sudo apt install -y libmicrohttpd12
+
+printf -- "Installing MariaDB (database server and required Connector-C, etc...)...\n"
+sudo apt install -y mariadb-server libmariadb-dev
+
+# former Python 2: sudo apt install -y python-picamera || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
+sudo apt install -y python3-picamera || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
 ## Also useful for developing from ssh command-line:
 
 # sudo apt install vim vim-addon-manager
@@ -59,10 +81,11 @@ printf -- "- svg.charts for drawing SVG graphics on web server\n\n"
 # Uncomment below to update all pip packages:
 # sudo pip list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo pip install -U
 # sudo pip3 list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo pip3 install -U
+# sudo pip3 list | grep -v "Package" | grep -v "\-\-\-\-\-\-\-" | cut -d ' ' -f 1 | xargs -n1 sudo pip3 install -U
 
 sudo pip install pydevd gpiozero  # svg.charts works only for Python 3 (web sever)
 sudo pip install RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
-sudo pip3 install pydevd gpiozero svg.charts
+sudo pip3 install pydevd gpiozero svg.charts mariadb
 sudo pip3 install RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
 
 
@@ -84,7 +107,7 @@ printf -- "\n*** BMP sensors: Python 3... ***\n\n"
 sudo python3 setup.py install || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
 
 printf -- "\n\n*** Create folder where images will be saved... ***\n"
-mkdir -p /home/${INSTALL_USER}/meteo/captures/
+mkdir -p "${HOME}/meteo/captures/"
 
 # Executed on dev machine / includes GitHub projet:
 # mkdir -p ~/workspace/meteo/src/lib
@@ -92,7 +115,7 @@ mkdir -p /home/${INSTALL_USER}/meteo/captures/
 
 if [[ "${WEB_USER}" != ${INSTALL_USER} ]] ; then
     printf -- "\n\n*** Create user to run web-server from... ***\n"
-    sudo adduser ${WEB_USER} || printf -- "User "${WEB_USER}" already exists\n"
+    sudo adduser ${WEB_USER} || printf -- "User \"${WEB_USER}\" already exists\n"
     # extra option can be used: [--disabled-password]
     # This wil be the user running the web server, with the bare minimum to do so for security reasons.
 fi
@@ -101,16 +124,30 @@ printf -- "\n\n*** Create user to run web-server from... ***\n"
 chmod +x ~/meteo/src/main/py/*.py || printf -- "chmod errors ignored\n"
 chmod +x ~/meteo/src/main/py/home_web/*.py || printf -- "chmod errors ignored\n"
 # sudo su - ${WEB_USER}
-sudo runuser --login --command "ln -f /home/${INSTALL_USER}/meteo/src/main/py/home_web/index.html.py /home/${WEB_USER}/index.html"
-sudo runuser --login --command "ln -f /home/${INSTALL_USER}/meteo/src/main/py/home_web/graph.svg.py /home/${WEB_USER}/graph.svg"
-sudo runuser --login --command "ln -f /home/${INSTALL_USER}/meteo/src/main/py/home_web/favicon.svg.py /home/${WEB_USER}/favicon.svg"
+# TODO Create a variable that replaces '${HOME}/../${WEB_USER}' by direct '${HOME_WEB_USER}' (without '..')
+sudo runuser --login --command "mkdir ${HOME}/../${WEB_USER}/www"
+sudo runuser --login --command "ln -f -s ${HOME}/meteo/src/main/py/home_web/index.html.py ${HOME}/../${WEB_USER}/www/index.html"
+sudo runuser --login --command "ln -f -s ${HOME}/meteo/src/main/py/home_web/graph.svg.py ${HOME}/../${WEB_USER}/www/graph.svg"
+sudo runuser --login --command "ln -f -s ${HOME}/meteo/src/main/py/home_web/favicon.svg.py ${HOME}/../${WEB_USER}/www/favicon.svg"
 
 
 printf -- "chmod errors ignored\n"
-sudo su - postgres --command "createuser ${INSTALL_USER} --no-superuser --createdb --createrole" || printf -- "Ignoring error and proceeding: already existing\n"
+# Former PostgreSQL
+# sudo su - postgres --command "createuser ${INSTALL_USER} --no-superuser --createdb --createrole" || printf -- "Ignoring error and proceeding: already existing\n"
 # sudo su - postgres --command "createuser admin_debug --interactive --password"
-sudo su - postgres --command "psql --command 'CREATE DATABASE meteo;'" || printf -- "Ignoring error and proceeding: database already existing?\n"
-psql --dbname meteo --file "/home/${INSTALL_USER}/meteo/bin/db_initialization.sql"  # || printf -- "Ignoring error and proceeding...\n"
+
+printf -- "Create database...\n"
+# PostSQL
+#sudo su - postgres --command "psql --command 'CREATE DATABASE meteo;'" || printf -- "Ignoring error and proceeding: database already existing?\n"
+#psql --dbname meteo --file "${HOME}/meteo/bin/db_initialization.sql"  # || printf -- "Ignoring error and proceeding...\n"
+#MariaDB
+sudo mariadb -u root -e "CREATE DATABASE meteo;"  # || printf -- "Ignoring error and proceeding: database already existing?\n"
+sudo mariadb -u root -e "CREATE USER 'pi'@'localhost' IDENTIFIED VIA unix_socket;"
+sudo mariadb -u root -e "grant all privileges on meteo.* TO 'pi'@'localhost';"
+sudo mariadb -u root -e "CREATE USER 'web'@'localhost' IDENTIFIED VIA unix_socket;"
+sudo mariadb -u root -e "grant SELECT on meteo.* TO 'web'@'localhost';"
+mariadb meteo < "${HOME}/meteo/bin/db_initialization.sql"  # || printf -- "Ignoring error and proceeding...\n"
+
 if [[ "${WEB_USER}" != ${INSTALL_USER} ]] ; then
     createuser ${WEB_USER} --no-superuser --no-createdb --no-createrole || printf -- "Ignoring error and proceeding: already existing\n"
 fi
@@ -128,19 +165,19 @@ cat << EOF
 
 -
 Add below line to crontab of user '\''${INSTALL_USER}'\'' by executing '\''crontab -e'\'':
-* * * * *  /home/${INSTALL_USER}/meteo/src/main/py/periodical_sensor_reading.py >> /home/${INSTALL_USER}/meteo/periodical_sensor_reading.log 2>&1
+* * * * *  ${HOME}/meteo/src/main/py/periodical_sensor_reading.py >> ${HOME}/meteo/periodical_sensor_reading.log 2>&1
 -
 As admin, add below lines at the end of /etc/rc.local, before last '\''exit 0'\'':
 $ sudo vi /etc/rc.local
 [...]
 # Watchdog:
-nohup -- /home/${INSTALL_USER}/meteo/src/main/py/watchdog_gpio.py >> /var/log/watchdog_gpio.log 2>&1 &
+nohup -- ${HOME}/meteo/src/main/py/watchdog_gpio.py >> /var/log/watchdog_gpio.log 2>&1 &
 
 # Camera trap:
-sudo su - ${INSTALL_USER} --command \"nohup -- /home/${INSTALL_USER}/meteo/src/main/py/video_capture_on_motion.py >> /home/${INSTALL_USER}/meteo/video.log 2>&1\" &
+sudo su - ${INSTALL_USER} --command \"nohup -- ${HOME}/meteo/src/main/py/video_capture_on_motion.py >> ${HOME}/meteo/video.log 2>&1\" &
 
 # Webserver:
-sudo su - ${WEB_USER} --command \"nohup -- /home/${INSTALL_USER}/meteo/src/main/py/server3.py >> /home/${WEB_USER}/server3.log\" &
+sudo su - ${WEB_USER} --command \"nohup -- ${HOME}/meteo/src/main/py/server3.py >> ${HOME}/../${WEB_USER}/server3.log\" &
 # Required to keep WiFi always on:
 sleep 30 && sudo iw dev wlan0 set power_save off &
 

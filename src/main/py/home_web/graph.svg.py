@@ -7,7 +7,8 @@ Serves SVG chart of requested sensor.
 
 import cgi
 # import os
-import psycopg2 as dbmodule  # ProgreSQL library
+# import psycopg2 as dbmodule  # ProgreSQL library
+import mariadb as dbmodule  # MariaDB library
 
 # from svg.charts.plot import Plot
 # from svg.charts import bar
