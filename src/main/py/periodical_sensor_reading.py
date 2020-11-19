@@ -5,7 +5,8 @@
 # import datetime
 import picamera
 # import psycopg2 as dbmodule  # ProgreSQL library
-import mariadb as dbmodule  # ProgreSQL library
+import mariadb as dbmodule  # MariaDB library
+# import mysql.connector as dbmodule  # MySQL library
 import socket
 # import sqlite3
 import sys

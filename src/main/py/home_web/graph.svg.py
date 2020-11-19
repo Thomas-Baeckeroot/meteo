@@ -9,6 +9,7 @@ import cgi
 # import os
 # import psycopg2 as dbmodule  # ProgreSQL library
 import mariadb as dbmodule  # MariaDB library
+# import mysql.connector as dbmodule  # MySQL library
 
 # from svg.charts.plot import Plot
 # from svg.charts import bar

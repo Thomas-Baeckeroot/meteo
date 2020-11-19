@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os
+# import os
 import sys
 import Bluetin_Echo
-import psycopg2 as dbmodule  # ProgreSQL library
-import time
+# import psycopg2 as dbmodule  # ProgreSQL library
+import mariadb as dbmodule  # MariaDB library
+# import mysql.connector as dbmodule  # MySQL library
+# import time
 from math import pi
 
 import sensors_functions

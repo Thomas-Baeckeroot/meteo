@@ -39,6 +39,11 @@ INSERT INTO sensors VALUES('temp_ext', 90, 'Température'                , 1, fa
 INSERT INTO sensors VALUES('pressure', 80, 'Pression atmosphérique'     , 1, false, 'hPa', '900', 'ignored');
 
 
+
+EXIT;  -- Does not actually exit but makes the script failing and stop here...
+
+
+
 -- OLD TABLES (WITH ONE TABLE PER SENSOR)
 BEGIN;
 CREATE TABLE raw_measures_CPU_temp

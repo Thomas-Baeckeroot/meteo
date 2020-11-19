@@ -25,7 +25,7 @@ printf -- "\n\n*** APT installs for Python PIP3 (Python package manager)... ***\
 # Instead of the below 'python3-pip' install, depending on your Linux distro, it may be more reliable to follow
 # instructions from https://pip.pypa.io/en/stable/installing/ :
 # curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py
-# python3 get-pip.py
+# python3 /tmp/get-pip.py
 sudo apt install -y python3-pip
 
 printf -- "\n\n*** APT installs for:... ***\n"
@@ -142,8 +142,8 @@ printf -- "Create database...\n"
 #psql --dbname meteo --file "${HOME}/meteo/bin/db_initialization.sql"  # || printf -- "Ignoring error and proceeding...\n"
 #MariaDB
 sudo mariadb -u root -e "CREATE DATABASE meteo;"  # || printf -- "Ignoring error and proceeding: database already existing?\n"
-sudo mariadb -u root -e "CREATE USER 'pi'@'localhost' IDENTIFIED VIA unix_socket;"
-sudo mariadb -u root -e "grant all privileges on meteo.* TO 'pi'@'localhost';"
+sudo mariadb -u root -e "CREATE USER '${INSTALL_USER}'@'localhost' IDENTIFIED VIA unix_socket;"
+sudo mariadb -u root -e "grant all privileges on meteo.* TO '${INSTALL_USER}'@'localhost';"
 sudo mariadb -u root -e "CREATE USER 'web'@'localhost' IDENTIFIED VIA unix_socket;"
 sudo mariadb -u root -e "grant SELECT on meteo.* TO 'web'@'localhost';"
 mariadb meteo < "${HOME}/meteo/bin/db_initialization.sql"  # || printf -- "Ignoring error and proceeding...\n"
