@@ -143,9 +143,9 @@ printf -- "Create database...\n"
 #MariaDB
 sudo mariadb -u root -e "CREATE DATABASE meteo;"  # || printf -- "Ignoring error and proceeding: database already existing?\n"
 sudo mariadb -u root -e "CREATE USER '${INSTALL_USER}'@'localhost' IDENTIFIED VIA unix_socket;"
-sudo mariadb -u root -e "grant all privileges on meteo.* TO '${INSTALL_USER}'@'localhost';"
+sudo mariadb -u root -e "GRANT all privileges on meteo.* TO '${INSTALL_USER}'@'localhost';"
 sudo mariadb -u root -e "CREATE USER 'web'@'localhost' IDENTIFIED VIA unix_socket;"
-sudo mariadb -u root -e "grant SELECT on meteo.* TO 'web'@'localhost';"
+sudo mariadb -u root -e "GRANT SELECT on meteo.* TO 'web'@'localhost';"
 mariadb meteo < "${HOME}/meteo/bin/db_initialization.sql"  # || printf -- "Ignoring error and proceeding...\n"
 
 if [[ "${WEB_USER}" != ${INSTALL_USER} ]] ; then

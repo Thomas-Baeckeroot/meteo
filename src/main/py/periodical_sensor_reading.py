@@ -4,13 +4,10 @@
 # import calendar
 # import datetime
 import picamera
-# import psycopg2 as dbmodule  # ProgreSQL library
-import mariadb as dbmodule  # MariaDB library
-# import mysql.connector as dbmodule  # MySQL library
+# import pydevd  # If failing: "pip install pydevd"
 import socket
 # import sqlite3
 import sys
-# import pydevd  # If failing: "pip install pydevd"
 import time
 # import tsl2561  # If failing: pip install: Adafruit_GPIO tsl2561 (and also RPi.GPIO ?)
 # from gpiozero import CPUTemperature  # If failing: "pip install gpiozero"
@@ -21,6 +18,7 @@ import utils
 import start_cpu_fan
 import Bluetin_Echo
 import hc_sr04_lib_test
+import home_web.db_module as db_module
 
 # path_to_pydevd = "home/pi/.local/bin/pydevd"  # found by 'find / -name pydevd'
 # sys.path.append(path_to_pydevd)
@@ -30,9 +28,8 @@ import hc_sr04_lib_test
 
 # todo Below variables should be stored in config file ~/.config/meteo.conf (GPIO numbers also could be informed there)
 METEO_FOLDER = "/home/pi/meteo/"
-DB_NAME = "meteo"
 CAPTURES_FOLDER = METEO_FOLDER + "captures/"
-CAMERA_NAME = "camera1"
+CAMERA_NAME = "camera1"  # TODO Move to config file (with default = hostname)
 CAMERA_ENABLED = True
 CONSOLIDATE_VAL = False
 main_call_epoch = utils.epoch_now()
@@ -114,7 +111,8 @@ def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
     global main_call_epoch
     (sensor_name, sensor_label_dest, decimals_dest, cumulative_dest, unit_dest, consolidated_dest,
      sensor_type_dest) = sensor_dest
-    conn_remote_src = dbmodule.connect(database="meteo", host=remote_server_src, )  # Connect to REMOTE PostgreSQL DB
+    sensor_name = sensor_name.decode('ascii')
+    conn_remote_src = db_module.get_conn(host=remote_server_src)  # Connect to REMOTE PostgreSQL DB
     # FIXME Manage situation where remote is not reachable
     curs_src = conn_remote_src.cursor()
 
@@ -192,7 +190,7 @@ def main():  # Expected to be called once per minute
           + " ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
     temp = 15  # default value for later calculation of speed of sound
 
-    conn = dbmodule.connect(database=DB_NAME)
+    conn = db_module.get_conn()
     curs = conn.cursor()
 
     # name   | priority |        sensor_label         | decimals | cumulative | unit | consolidated | sensor_type

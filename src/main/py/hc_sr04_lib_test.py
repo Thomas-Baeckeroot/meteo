@@ -4,12 +4,9 @@
 # import os
 import sys
 import Bluetin_Echo
-# import psycopg2 as dbmodule  # ProgreSQL library
-import mariadb as dbmodule  # MariaDB library
-# import mysql.connector as dbmodule  # MySQL library
-# import time
 from math import pi
 
+import home_web.db_module as db_module
 import sensors_functions
 import utils
 
@@ -57,7 +54,7 @@ def measure_distance(temp_celcius=20):
 
 def insert_raw_measures(timestamp, measure, sensor_short_name):
     try:
-        conn = dbmodule.connect(database="meteo")
+        conn = db_module.get_conn()
         curs = conn.cursor()
         read_decimals_query = "SELECT decimals FROM sensors WHERE name = '" + sensor_short_name + "';"
         curs.execute(read_decimals_query)
@@ -69,7 +66,7 @@ def insert_raw_measures(timestamp, measure, sensor_short_name):
         # + str(measure) + ", '"
         curs.execute(insert_query)
         conn.commit()
-    except (Exception, dbmodule.DatabaseError) as error:
+    except Exception as error:
         print(error)
         print("Error while creating PostgreSQL table", error)
     finally:

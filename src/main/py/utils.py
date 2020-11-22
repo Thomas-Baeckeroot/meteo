@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import configparser
 import datetime
+import os
 import time
 
 
@@ -32,3 +34,14 @@ def local_timestamp(epoch):
     else:
         separator = 'W'  # Winter time
     return datetime.datetime.fromtimestamp(epoch).isoformat(sep=separator)
+
+
+def get_home():
+    # if failing here, test "from pathlib import Path / home = str(Path.home())"
+    return os.path.expanduser("~")
+
+
+def get_config():
+    config = configparser.ConfigParser()
+    config.read(get_home() + '/.config/meteo.conf')
+    return config

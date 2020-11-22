@@ -2,17 +2,15 @@
 # -*- coding: utf-8 -*-
 
 import cgi
-import sys
-# import psycopg2 as dbmodule  # ProgreSQL library
-import mariadb as dbmodule  # MariaDB library
-# import mysql.connector as dbmodule  # MySQL library
-import time
 import locale
+import sys
+import time
+import traceback
 
+import db_module
 # from sensors_functions import iso_timestamp
 
 METEO_FOLDER = "/home/pi/meteo/"
-DB_NAME = "meteo"
 CAPTURES_FOLDER = METEO_FOLDER + "captures/"
 
 form = cgi.FieldStorage()
@@ -28,7 +26,7 @@ html = """<!DOCTYPE html>
 
 try:
     # Connect or Create DB File
-    conn = dbmodule.connect(database=DB_NAME, user="web", port=3307)  # Connect to PostgreSQL DB
+    conn = db_module.get_conn()
     curs = conn.cursor()
     curs.execute("SELECT name, priority, sensor_label, unit FROM sensors ORDER BY priority ASC;")
     sensors = curs.fetchall()
@@ -40,6 +38,7 @@ try:
                   "<td style=\"padding-left: 1em;padding-right: 2em;\"></td></tr>"
     for sensor in sensors:
         (sensor_name, priority, sensor_label, unit) = sensor
+        sensor_name = sensor_name.decode('ascii')
         if priority < 35:
             style_value = "font-weight: bold;"
         else:
@@ -98,9 +97,10 @@ try:
     </form>
     <br/>"""
 
-except ConnectionRefusedError as err:
-    html = html + "OS error: {0}".format(err)
-    print("OS error: {0}".format(err), file=sys.stderr)
+except Exception as err:
+    html = html + "<br/>Exception: {0}<br/>".format(err)
+    print("Exception: {0}".format(err), file=sys.stderr)
+    traceback.print_exc(file=sys.stderr)
 
 html = html + "</body></html>"
 print(html)

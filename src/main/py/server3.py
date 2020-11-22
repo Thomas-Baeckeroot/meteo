@@ -7,6 +7,8 @@ import cgitb
 # import logging
 import sys
 
+from utils import get_config
+
 # Due to Logger unable to get error message details, then it has been commented.
 # Outputs will tentatively be catch by redirection on call.
 
@@ -44,13 +46,14 @@ class LoggerWriter:
 
 cgitb.enable()
 
-PORT = 49107
-server_address = ("", PORT)
+config = get_config()
+port = config.getint('DEFAULT', 'WebServerPort', fallback=8080)
+server_address = ("", port)
 
 server = http.server.HTTPServer
 handler = http.server.CGIHTTPRequestHandler
 handler.cgi_directories = ["/"]
-print("Serveur P3 actif sur le port: " + str(PORT))
+print("Serveur P3 actif sur le port: " + str(port))
 
 httpd = server(server_address, handler)
 try:

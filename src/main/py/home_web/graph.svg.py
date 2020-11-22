@@ -7,25 +7,19 @@ Serves SVG chart of requested sensor.
 
 import cgi
 # import os
-# import psycopg2 as dbmodule  # ProgreSQL library
-import mariadb as dbmodule  # MariaDB library
-# import mysql.connector as dbmodule  # MySQL library
-
 # from svg.charts.plot import Plot
 # from svg.charts import bar
 # from svg.charts import time_series
 # from svg.charts import pie
 # from svg.charts import schedule
 from svg.charts import line
-
-# import sqlite3
-
 # import time
+
+import db_module
 
 
 SECONDS_IN_ONE_DAY = 86400
 METEO_FOLDER = "/home/pi/meteo/"
-DB_NAME = "meteo"
 CAPTURES_FOLDER = METEO_FOLDER + "captures/"
 
 
@@ -61,7 +55,7 @@ def sample_line():
 
     minepoch = maxepoch - SECONDS_IN_ONE_DAY
 
-    conn = dbmodule.connect(database=DB_NAME)
+    conn = db_module.get_conn()
     curs = conn.cursor()
     curs.execute("  SELECT  epochtimestamp, measure"
                  "  FROM    raw_measures"

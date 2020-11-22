@@ -6,8 +6,8 @@ import RPi.GPIO as GPIO  # Import Raspberry Pi GPIO library
 # import subprocess
 import sys
 import time  # Import the sleep function from the time module
-import configparser
 
+from utils import get_config
 from utils import iso_timestamp_now
 
 # todo Below variables should be stored in config file ~/.config/meteo.conf
@@ -73,8 +73,7 @@ def main():  # Expected to be launched at startup
     print("_" * 80)
     print(iso_timestamp_now() + " - Starting watchdog...")
 
-    config = configparser.ConfigParser()
-    config.read('/home/pi/.config/meteo.conf')
+    config = get_config()
     GPIO_WATCHDOG_LED = int(config['GPIO']['GPIO_WATCHDOG_LED'])
     GPIO_SHUTDOWN_BTN_IN = int(config['GPIO']['GPIO_SHUTDOWN_BTN_IN'])
     print(iso_timestamp_now() + " - GPIOs:")
