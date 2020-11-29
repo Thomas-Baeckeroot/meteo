@@ -142,11 +142,25 @@ printf -- "Create database...\n"
 #psql --dbname meteo --file "${HOME}/meteo/bin/db_initialization.sql"  # || printf -- "Ignoring error and proceeding...\n"
 #MariaDB
 sudo mariadb -u root -e "CREATE DATABASE meteo;"  # || printf -- "Ignoring error and proceeding: database already existing?\n"
-sudo mariadb -u root -e "CREATE USER '${INSTALL_USER}'@'localhost' IDENTIFIED VIA unix_socket;"
+sudo mariadb -u root -e "CREATE USER '${INSTALL_USER}'@'localhost' IDENTIFIED BY 'SetRandomPassword123';"
 sudo mariadb -u root -e "GRANT all privileges on meteo.* TO '${INSTALL_USER}'@'localhost';"
-sudo mariadb -u root -e "CREATE USER 'web'@'localhost' IDENTIFIED VIA unix_socket;"
+sudo mariadb -u root -e "CREATE USER 'web'@'localhost' IDENTIFIED BY 'SetRandomPassword123';"
 sudo mariadb -u root -e "GRANT SELECT on meteo.* TO 'web'@'localhost';"
 mariadb meteo < "${HOME}/meteo/bin/db_initialization.sql"  # || printf -- "Ignoring error and proceeding...\n"
+
+printf -- "\n"
+printf -- "In order to use 'remote:' sensors (multiple weather stations/servers),\n"
+printf -- "you would need to configure your database to accept external connections.\n"
+printf -- "Check 'Activate remote access' for your database.\n"
+printf -- "For MySQL and MariaDB, comment parameter 'bind-address' that limit access to those IP\n"
+printf -- "in file below:\n"
+printf -- "\tcat /etc/mysql/my.cnf\n"
+printf -- "\n"
+printf -- "Appropriate user should also be created like:\n"
+printf -- "$ sudo mysql -u root\n"
+printf -- "> CREATE USER 'remote_pi'@'192.168.0.{server-IP}' IDENTIFIED BY 'SetRandomPassword123';\n"
+printf -- "> GRANT all privileges on meteo.* TO 'remote_pi'@'192.168.0.{server-IP}';\n"
+printf -- "\n"
 
 if [[ "${WEB_USER}" != ${INSTALL_USER} ]] ; then
     createuser ${WEB_USER} --no-superuser --no-createdb --no-createrole || printf -- "Ignoring error and proceeding: already existing\n"
@@ -154,6 +168,8 @@ fi
 psql --dbname meteo --command "GRANT SELECT ON ALL TABLES IN SCHEMA public TO ${WEB_USER};"
 
 # todo check that user ${INSTALL_USER} has access to /var/log/meteo.log
+
+# TODO Scripts launched at startup might be done with a .sh file in  /usr/local/etc/rc.d/
 
 cat << EOF
 

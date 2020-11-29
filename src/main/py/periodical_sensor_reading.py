@@ -3,7 +3,6 @@
 
 # import calendar
 # import datetime
-import picamera
 # import pydevd  # If failing: "pip install pydevd"
 import socket
 # import sqlite3
@@ -15,8 +14,6 @@ import time
 
 import sensors_functions as func
 import utils
-import start_cpu_fan
-import Bluetin_Echo
 import hc_sr04_lib_test
 import home_web.db_module as db_module
 
@@ -68,45 +65,6 @@ def consolidate_from_raw(curs, sensor, period):
     # TODO Consolidation from raw values table must be done soon...
 
 
-def take_picture():
-    sys.stdout.write("Take picture:\t")
-    captured_success = False
-    capture_tentatives = 0
-    while not captured_success and capture_tentatives < 23:
-        capture_tentatives = capture_tentatives + 1
-        try:
-            camera = picamera.PiCamera()
-            # camera.awb_mode = 'sunlight'
-            # camera.awb_mode = 'cloudy'
-            # camera.awb_mode = 'tungsten'
-            camera.awb_mode = 'off'
-            # camera.awb_gains = (0.9, 1.9)  # Default (red, blue); each between 0.0 and 8.0
-            # camera.awb_gains = (2.0, 1.9) trop rouge
-            camera.awb_gains = (1.6, 1.0)
-            # camera.awb_gains = (1.6, 1.9) pas assez vert?
-            # camera.awb_gains = (1.4, 1.9) un peu trop bleu
-            # camera.awb_gains = (1.0, 1.9) trop bleu
-            camera.brightness = 46
-            camera.resolution = (1296, 972)  # binned mode below 1296x972
-            # camera.resolution = (1920, 1080)  # FullHD (unbinned)
-            # camera.resolution = (2592, 1944)  # Max. resolution
-            camera.start_preview()
-            time.sleep(5)
-            dt_now = utils.iso_timestamp4files()
-            filename = CAPTURES_FOLDER + CAMERA_NAME + "_" + dt_now + ".jpg"
-            print(filename)
-            camera.capture(filename)
-            camera.stop_preview()
-            camera.close()
-            captured_success = True
-        except picamera.exc.PiCameraMMALError:
-            sys.stdout.write(".")
-            time.sleep(capture_tentatives)
-
-    if not captured_success:
-        print("Failed " + str(capture_tentatives) + " times to take picture. Gave up!")
-
-
 def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
     global main_call_epoch
     (sensor_name, sensor_label_dest, decimals_dest, cumulative_dest, unit_dest, consolidated_dest,
@@ -127,15 +85,15 @@ def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
         curs_src.execute("UPDATE sensors"
                          "   SET sensor_label=" + sensor_label_src +
                          " WHERE name='" + sensor_name + "';")
-    print("Decimals:     \tsrc='" + decimals_src + "'\t>>> dest='" + decimals_dest + "'")
+    print("Decimals:     \tsrc='" + str(decimals_src) + "'\t>>> dest='" + str(decimals_dest) + "'")
     if decimals_src != decimals_dest:
         curs_src.execute("UPDATE sensors"
-                         "   SET decimals=" + decimals_src +
+                         "   SET decimals=" + str(decimals_src) +
                          " WHERE name='" + sensor_name + "';")
-    print("cumulative: \tsrc='" + cumulative_src + "'\t>>> dest='" + cumulative_dest + "'")
+    print("cumulative: \tsrc='" + str(cumulative_src) + "'\t>>> dest='" + str(cumulative_dest) + "'")
     if cumulative_src != cumulative_dest:
         curs_src.execute("UPDATE sensors"
-                         "   SET cumulative=" + cumulative_src +
+                         "   SET cumulative=" + str(cumulative_src) +
                          " WHERE name='" + sensor_name + "';")
     print("unit: \tsrc='" + unit_src + "'\t>>> dest='" + unit_dest + "'")
     if unit_src != unit_dest:
@@ -151,35 +109,55 @@ def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
     n_updates = 99999
     # Loop as long as we got updates to synchronise and in the limit of 50s after start of this script
     # (to avoid possible concurrency with other instance that would copy the same data)
-    while n_updates > 0 and (utils.epoch_now() - main_call_epoch) < 50:
-        read_sensors_query = "SELECT epochtimestamp, measure" \
-                             "  FROM raw_measures" \
-                             " WHERE sensor='" + sensor_name + \
-                             "'  AND synchronised='false' " \
-                             "ORDER BY epochtimestamp asc FETCH FIRST 10 ROWS ONLY;"
-        curs_src.execute(read_sensors_query)
-        epochs_and_measures_from_src = curs_src.fetchall()
-        n_updates = len(epochs_and_measures_from_src)
-        if n_updates > 0:
-            insert_measures_to_dest_query = "INSERT INTO raw_measures(epochtimestamp, measure, sensor) VALUES "
-            for (epoch_src, measure_src) in epochs_and_measures_from_src:
-                # = epoch_and_measure  # todo once working, should be included within for declaration
-                insert_measures_to_dest_query = insert_measures_to_dest_query + \
-                                                "(" + str(epoch_src) + ", " + str(measure_src) + ", " \
-                                                + sensor_name + ")"
-            insert_measures_to_dest_query = insert_measures_to_dest_query + ";"
-            curs_dest = conn_local_dest.cursor()
-            curs_dest.execute(insert_measures_to_dest_query)
+    # while n_updates > 0 and (utils.epoch_now() - main_call_epoch) < 50:
+    read_sensors_query = "SELECT epochtimestamp, measure" \
+                         "  FROM raw_measures" \
+                         " WHERE sensor='" + sensor_name + \
+                         "'  AND synchronised='false' " \
+                         "ORDER BY epochtimestamp asc LIMIT 3000;"  # PostgreSQL: "FETCH FIRST 10 ROWS ONLY;"
+    # print("read_sensors_query =\n" + read_sensors_query + "\n----------------------------")
+    curs_src.execute(read_sensors_query)
+    epochs_and_measures_from_src = curs_src.fetchall()
+    n_updates = len(epochs_and_measures_from_src)
+    if n_updates > 0:
+        insert_measures_to_dest_query = "INSERT INTO raw_measures(epochtimestamp, measure, sensor) VALUES "
+        not_first_value = False
+        for (epoch_src, measure_src) in epochs_and_measures_from_src:
+            # = epoch_and_measure  # todo once working, should be included within for declaration
+            if not_first_value:
+                insert_measures_to_dest_query = insert_measures_to_dest_query + ","
+            insert_measures_to_dest_query = insert_measures_to_dest_query \
+                + "(" + str(epoch_src) + ", " + str(measure_src) + ", '" \
+                + sensor_name + "')"
+            not_first_value = True
+        insert_measures_to_dest_query = insert_measures_to_dest_query + ";"
+        curs_dest = conn_local_dest.cursor()
+        # print("insert_measures_to_dest_query = " + str(len(insert_measures_to_dest_query)) + " bytes/chars")
+        # print(insert_measures_to_dest_query)
+        # print("-----------------------------------------")
+        curs_dest.execute(insert_measures_to_dest_query)
 
-            update_synchronised_query = "UPDATE raw_measures(synchronised)" \
-                                        "   SET true" \
-                                        " WHERE epoch IN("
-            for (epoch_src, measure_src) in epochs_and_measures_from_src:
-                update_synchronised_query = update_synchronised_query + str(epoch_src) + ", "
-            update_synchronised_query = update_synchronised_query + ") AND sensor='" + sensor_name + "'"
-            curs_src.execute(update_synchronised_query)
+        update_synchronised_query = "UPDATE raw_measures" \
+                                    "   SET synchronised=true" \
+                                    " WHERE epochtimestamp IN ("
+        # PostgreSQL? was "UPDATE raw_measures(synchronised) SET true""
+        not_first_value = False
+        for (epoch_src, measure_src) in epochs_and_measures_from_src:
+            if not_first_value:
+                update_synchronised_query = update_synchronised_query + ", "
+            update_synchronised_query = update_synchronised_query + str(epoch_src)
+            not_first_value = True
+        update_synchronised_query = update_synchronised_query + ") AND sensor='" + sensor_name + "'"
+        # print("update_synchronised_query =" + str(len(update_synchronised_query)) + " bytes/chars")
+        # print(update_synchronised_query)
+        # print("-----------------------------------------")
+        curs_src.execute(update_synchronised_query)
 
-        print("Imported " + str(n_updates) + " records from " + remote_server_src)
+        conn_remote_src.commit()
+        conn_local_dest.commit()
+
+    print("Imported " + str(n_updates) + " records from " + remote_server_src)
+    # end of while
 
     pass
 
@@ -211,6 +189,7 @@ def main():  # Expected to be called once per minute
 
         elif sensor_type == "CPU_temp":
             measure = func.value_cpu_temp()
+            # start_cpu_fan = __import__("start_cpu_fan")
             # if measure > 40:
             #     start_cpu_fan.start_cpu_fan()
             # if measure < 20:
@@ -266,7 +245,7 @@ def main():  # Expected to be called once per minute
         is_camera_mult = is_multiple(main_call_epoch, 900)  # is True every 900 s / 15 min
         if is_camera_mult:
             print("Once every 15 minutes: Capture picture")
-            take_picture()
+            func.take_picture()
 
     if CONSOLIDATE_VAL:
         for sensor in sensors:

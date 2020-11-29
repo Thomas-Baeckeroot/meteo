@@ -58,7 +58,7 @@ def start_video_capture():
     while not captured_success and capture_tentatives < 23:
         capture_tentatives = capture_tentatives + 1
         try:
-            camera = picamera.PiCamera()
+            camera = picamera.PiCamera()  # TODO Duplicated with sensors_functions.py:54
             camera.awb_mode = 'off'
             camera.awb_gains = (1.6, 1.0)
             camera.brightness = 46

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import tsl2561  # If failing, run: pip install Adafruit_GPIO tsl2561 (and also RPi.GPIO ?)
-import Adafruit_BMP.BMP085 as BMP085
+import sys
+import time
 
 from gpiozero import CPUTemperature  # If failing: "pip install gpiozero"
 
@@ -24,17 +24,60 @@ def value_cpu_temp():
 
 
 def value_luminosity():
+    tsl2561 = __import__("tsl2561")  # If failing, run: pip install Adafruit_GPIO tsl2561 (and also RPi.GPIO ?)
     tsl = tsl2561.TSL2561(debug=True)
     return tsl
 
 
 def value_ext_temperature():
+    BMP085 = __import__("Adafruit_BMP.BMP085")
     sensor = BMP085.BMP085()
     temp = sensor.read_temperature()
     return temp
 
 
 def value_sealevelpressure():
+    BMP085 = __import__("Adafruit_BMP.BMP085")
     sensor = BMP085.BMP085()
     sealevelpressure_hpa = sensor.read_sealevel_pressure(SENSOR_KNOWN_ALTITUDE) / 100  # Pa -> hPa
     return sealevelpressure_hpa
+
+
+def take_picture():
+    sys.stdout.write("Take picture:\t")
+    captured_success = False
+    capture_tentatives = 0
+    while not captured_success and capture_tentatives < 23:
+        picamera = __import__("picamera")
+        capture_tentatives = capture_tentatives + 1
+        try:
+            camera = picamera.PiCamera()  # TODO Duplicated with video_capture_on_motion.py:61
+            # camera.awb_mode = 'sunlight'
+            # camera.awb_mode = 'cloudy'
+            # camera.awb_mode = 'tungsten'
+            camera.awb_mode = 'off'
+            # camera.awb_gains = (0.9, 1.9)  # Default (red, blue); each between 0.0 and 8.0
+            # camera.awb_gains = (2.0, 1.9) trop rouge
+            camera.awb_gains = (1.6, 1.0)
+            # camera.awb_gains = (1.6, 1.9) pas assez vert?
+            # camera.awb_gains = (1.4, 1.9) un peu trop bleu
+            # camera.awb_gains = (1.0, 1.9) trop bleu
+            camera.brightness = 46
+            camera.resolution = (1296, 972)  # binned mode below 1296x972
+            # camera.resolution = (1920, 1080)  # FullHD (unbinned)
+            # camera.resolution = (2592, 1944)  # Max. resolution
+            camera.start_preview()
+            time.sleep(5)
+            dt_now = utils.iso_timestamp4files()
+            filename = CAPTURES_FOLDER + CAMERA_NAME + "_" + dt_now + ".jpg"
+            print(filename)
+            camera.capture(filename)
+            camera.stop_preview()
+            camera.close()
+            captured_success = True
+        except picamera.exc.PiCameraMMALError:
+            sys.stdout.write(".")
+            time.sleep(capture_tentatives)
+
+    if not captured_success:
+        print("Failed " + str(capture_tentatives) + " times to take picture. Gave up!")
