@@ -28,7 +28,7 @@ try:
     # Connect or Create DB File
     conn = db_module.get_conn()
     curs = conn.cursor()
-    curs.execute("SELECT name, priority, sensor_label, unit FROM sensors ORDER BY priority ASC;")
+    curs.execute("SELECT name, priority, sensor_label, unit FROM sensors ORDER BY priority DESC;")
     sensors = curs.fetchall()
     oldest_date = -1
     sensor_list = "<table style=\"border: .069em solid black;\">" \
@@ -39,11 +39,13 @@ try:
     for sensor in sensors:
         (sensor_name, priority, sensor_label, unit) = sensor
         sensor_name = sensor_name.decode('ascii')
-        if priority < 35:
+
+        if priority > 70:
             style_value = "font-weight: bold;"
         else:
             style_value = ""
-        if priority > 70:
+
+        if priority < 35:
             style_row = " style=\"color: Silver;\""
         else:
             style_row = ""

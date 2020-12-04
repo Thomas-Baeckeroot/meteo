@@ -24,21 +24,21 @@ def value_cpu_temp():
 
 
 def value_luminosity():
-    tsl2561 = __import__("tsl2561")  # If failing, run: pip install Adafruit_GPIO tsl2561 (and also RPi.GPIO ?)
+    tsl2561 = __import__("tsl2561")  # If failing, run: "sudo pip3 install Adafruit_GPIO tsl2561" (and also RPi.GPIO ?)
     tsl = tsl2561.TSL2561(debug=True)
-    return tsl
+    return tsl.lux()
 
 
 def value_ext_temperature():
-    BMP085 = __import__("Adafruit_BMP.BMP085")
-    sensor = BMP085.BMP085()
+    bmp_mod = __import__("Adafruit_BMP.BMP085")
+    sensor = bmp_mod.BMP085.BMP085()
     temp = sensor.read_temperature()
     return temp
 
 
 def value_sealevelpressure():
-    BMP085 = __import__("Adafruit_BMP.BMP085")
-    sensor = BMP085.BMP085()
+    bmp_mod = __import__("Adafruit_BMP.BMP085")
+    sensor = bmp_mod.BMP085.BMP085()
     sealevelpressure_hpa = sensor.read_sealevel_pressure(SENSOR_KNOWN_ALTITUDE) / 100  # Pa -> hPa
     return sealevelpressure_hpa
 

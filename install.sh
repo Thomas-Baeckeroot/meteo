@@ -85,7 +85,7 @@ printf -- "- svg.charts for drawing SVG graphics on web server\n\n"
 
 sudo pip install pydevd gpiozero  # svg.charts works only for Python 3 (web sever)
 sudo pip install RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
-sudo pip3 install pydevd gpiozero svg.charts mariadb
+sudo pip3 install pydevd gpiozero svg.charts mariadb pymysql
 sudo pip3 install RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
 
 
@@ -146,6 +146,7 @@ sudo mariadb -u root -e "CREATE USER '${INSTALL_USER}'@'localhost' IDENTIFIED BY
 sudo mariadb -u root -e "GRANT all privileges on meteo.* TO '${INSTALL_USER}'@'localhost';"
 sudo mariadb -u root -e "CREATE USER 'web'@'localhost' IDENTIFIED BY 'SetRandomPassword123';"
 sudo mariadb -u root -e "GRANT SELECT on meteo.* TO 'web'@'localhost';"
+# To check users:        SELECT Host, User FROM mysql.user;
 mariadb meteo < "${HOME}/meteo/bin/db_initialization.sql"  # || printf -- "Ignoring error and proceeding...\n"
 
 printf -- "\n"
@@ -183,6 +184,10 @@ cat << EOF
 Add below line to crontab of user '\''${INSTALL_USER}'\'' by executing '\''crontab -e'\'':
 * * * * *  ${HOME}/meteo/src/main/py/periodical_sensor_reading.py >> ${HOME}/meteo/periodical_sensor_reading.log 2>&1
 -
+If user can be specified in your OS (other than Raspbian):
+* * * * *  ${INSTALL_USER}    python3 "${HOME}/meteo/src/main/py/periodical_sensor_reading.py" >> "${HOME}/meteo/periodical_sensor_reading.log" 2>&1
+
+
 As admin, add below lines at the end of /etc/rc.local, before last '\''exit 0'\'':
 $ sudo vi /etc/rc.local
 [...]

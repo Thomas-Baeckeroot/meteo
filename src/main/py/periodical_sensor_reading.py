@@ -13,6 +13,7 @@ import time
 # import Adafruit_BMP.BMP085 as BMP085
 
 import sensors_functions as func
+from time import sleep
 import utils
 import hc_sr04_lib_test
 import home_web.db_module as db_module
@@ -27,7 +28,7 @@ import home_web.db_module as db_module
 METEO_FOLDER = "/home/pi/meteo/"
 CAPTURES_FOLDER = METEO_FOLDER + "captures/"
 CAMERA_NAME = "camera1"  # TODO Move to config file (with default = hostname)
-CAMERA_ENABLED = True
+CAMERA_ENABLED = False
 CONSOLIDATE_VAL = False
 main_call_epoch = utils.epoch_now()
 
@@ -70,8 +71,11 @@ def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
     (sensor_name, sensor_label_dest, decimals_dest, cumulative_dest, unit_dest, consolidated_dest,
      sensor_type_dest) = sensor_dest
     sensor_name = sensor_name.decode('ascii')
-    conn_remote_src = db_module.get_conn(host=remote_server_src)  # Connect to REMOTE PostgreSQL DB
-    # FIXME Manage situation where remote is not reachable
+    try:
+        conn_remote_src = db_module.get_conn(host=remote_server_src)  # Connect to REMOTE PostgreSQL DB
+    except Exception as err:
+        print("\tException: {0}".format(err))
+        return
     curs_src = conn_remote_src.cursor()
 
     # name   | priority |        sensor_label         | decimals | cumulative | unit | consolidated | sensor_type
@@ -80,31 +84,32 @@ def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
                          " WHERE name='" + sensor_name + "';"
     curs_src.execute(read_sensors_query)
     (sensor_label_src, decimals_src, cumulative_src, unit_src, consolidated_src) = curs_src.fetchall()[0]
-    print("sensor_label: \tsrc='" + sensor_label_src + "'\t>>> dest='" + sensor_label_dest + "'")
     if sensor_label_src != sensor_label_dest:
-        curs_src.execute("UPDATE sensors"
-                         "   SET sensor_label=" + sensor_label_src +
-                         " WHERE name='" + sensor_name + "';")
-    print("Decimals:     \tsrc='" + str(decimals_src) + "'\t>>> dest='" + str(decimals_dest) + "'")
+        print("\tUPDATING sensor_label: \tsrc='" + sensor_label_src + "'\t>>> dest='" + sensor_label_dest + "'")
+        print("UPDATE sensors   SET sensor_label=" + sensor_label_src + " WHERE name='" + sensor_name + "';")
+    #    curs_src.execute("UPDATE sensors"
+    #                     "   SET sensor_label=" + sensor_label_src +
+    #                     " WHERE name='" + sensor_name + "';")
     if decimals_src != decimals_dest:
+        print("\tUPDATING Decimals:     \tsrc='" + str(decimals_src) + "'\t>>> dest='" + str(decimals_dest) + "'")
         curs_src.execute("UPDATE sensors"
                          "   SET decimals=" + str(decimals_src) +
                          " WHERE name='" + sensor_name + "';")
-    print("cumulative: \tsrc='" + str(cumulative_src) + "'\t>>> dest='" + str(cumulative_dest) + "'")
     if cumulative_src != cumulative_dest:
+        print("\tUPDATING cumulative: \tsrc='" + str(cumulative_src) + "'\t>>> dest='" + str(cumulative_dest) + "'")
         curs_src.execute("UPDATE sensors"
                          "   SET cumulative=" + str(cumulative_src) +
                          " WHERE name='" + sensor_name + "';")
-    print("unit: \tsrc='" + unit_src + "'\t>>> dest='" + unit_dest + "'")
     if unit_src != unit_dest:
+        print("\tUPDATING unit: \tsrc='" + unit_src + "'\t>>> dest='" + unit_dest + "'")
         curs_src.execute("UPDATE sensors"
                          "   SET unit=" + unit_src +
                          " WHERE name='" + sensor_name + "';")
-    print("consolidated: \tsrc='" + consolidated_src + "'\t>>> dest='" + consolidated_dest + "'")
     if consolidated_src != consolidated_dest:
+        print("\tUPDATING consolidated: \tsrc='" + str(consolidated_src) + "'\t>>> dest='" + str(consolidated_dest) + "'")
         curs_src.execute("UPDATE sensors"
-                         "   SET consolidated=" + consolidated_src +
-                         " WHERE name='" + sensor_name + "';")
+                         "   SET consolidated=" + str(consolidated_src) +
+                         " WHERE name='" + str(sensor_name) + "';")
 
     n_updates = 99999
     # Loop as long as we got updates to synchronise and in the limit of 50s after start of this script
@@ -115,7 +120,7 @@ def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
                          " WHERE sensor='" + sensor_name + \
                          "'  AND synchronised='false' " \
                          "ORDER BY epochtimestamp asc LIMIT 3000;"  # PostgreSQL: "FETCH FIRST 10 ROWS ONLY;"
-    # print("read_sensors_query =\n" + read_sensors_query + "\n----------------------------")
+    # print("\tread_sensors_query =\n" + read_sensors_query + "\n----------------------------")
     curs_src.execute(read_sensors_query)
     epochs_and_measures_from_src = curs_src.fetchall()
     n_updates = len(epochs_and_measures_from_src)
@@ -132,9 +137,9 @@ def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
             not_first_value = True
         insert_measures_to_dest_query = insert_measures_to_dest_query + ";"
         curs_dest = conn_local_dest.cursor()
-        # print("insert_measures_to_dest_query = " + str(len(insert_measures_to_dest_query)) + " bytes/chars")
+        # print("\tinsert_measures_to_dest_query = " + str(len(insert_measures_to_dest_query)) + " bytes/chars")
         # print(insert_measures_to_dest_query)
-        # print("-----------------------------------------")
+        # print("\t-----------------------------------------")
         curs_dest.execute(insert_measures_to_dest_query)
 
         update_synchronised_query = "UPDATE raw_measures" \
@@ -148,18 +153,18 @@ def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
             update_synchronised_query = update_synchronised_query + str(epoch_src)
             not_first_value = True
         update_synchronised_query = update_synchronised_query + ") AND sensor='" + sensor_name + "'"
-        # print("update_synchronised_query =" + str(len(update_synchronised_query)) + " bytes/chars")
+        # print("\tupdate_synchronised_query =" + str(len(update_synchronised_query)) + " bytes/chars")
         # print(update_synchronised_query)
-        # print("-----------------------------------------")
+        # print("\t-----------------------------------------")
         curs_src.execute(update_synchronised_query)
 
         conn_remote_src.commit()
         conn_local_dest.commit()
 
-    print("Imported " + str(n_updates) + " records from " + remote_server_src)
-    # end of while
+    print("\tImported " + str(n_updates) + " records from " + remote_server_src)
+    # end of commented "# while n_updates > 0 ..."
 
-    pass
+    return
 
 
 def main():  # Expected to be called once per minute
@@ -167,6 +172,7 @@ def main():  # Expected to be called once per minute
     print(utils.iso_timestamp_now() + " - Starting on " + socket.gethostname()
           + " ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
     temp = 15  # default value for later calculation of speed of sound
+    first_remote = True
 
     conn = db_module.get_conn()
     curs = conn.cursor()
@@ -210,6 +216,9 @@ def main():  # Expected to be called once per minute
             measure = hc_sr04_lib_test.measure_distance(temp)
 
         elif sensor_type.startswith("remote:"):
+            if first_remote:
+                sleep(5)  # give time for very last value of remote sensors to be updated
+                first_remote = False
             # Another remote PostgreSQL contains the measures. Those not "synchronised" will be copied
             # if having ~Connection refused~~port 5432?~ issues then
             #   -> On remote server, in file postgresql.conf, set "listen_addresses = '*'"
@@ -218,6 +227,7 @@ def main():  # Expected to be called once per minute
             # (those 2 configuration files are usually in /etc/postgresql/11/main/ )
             # fixme the upper "trust" is not secured and should look for a decent unix authentication later...
             remote_server = sensor_type[7:]
+            print("Sensor '" + sensor_name + "' -> reading values from " + remote_server + "...")
             copy_values_from_server(sensor, remote_server, conn)
 
         else:

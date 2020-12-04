@@ -61,7 +61,8 @@ def sample_line():
                  "  FROM    raw_measures"
                  "  WHERE   epochtimestamp<" + str(maxepoch)
                  + "  AND   epochtimestamp>" + str(minepoch)
-                 + "  AND   sensor='" + sensor_name + "';")
+                 + "  AND   sensor='" + sensor_name
+                 + "' ORDER BY epochtimestamp ASC;")
 
     date_and_value = curs.fetchall()
     epochdates = list()

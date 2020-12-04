@@ -26,7 +26,6 @@ def get_conn(host=None):
             password=password,
             port=port)
     else:
-        print('remote:' + host)
         database = config.get('remote:' + host, 'Name', fallback='weather_station')
         user = config.get('remote:' + host, 'User')  # Could have default fallback to os.getusername()
         password = config.get('remote:' + host, 'Password')
