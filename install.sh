@@ -125,10 +125,10 @@ chmod +x ~/meteo/src/main/py/*.py || printf -- "chmod errors ignored\n"
 chmod +x ~/meteo/src/main/py/home_web/*.py || printf -- "chmod errors ignored\n"
 # sudo su - ${WEB_USER}
 # TODO Create a variable that replaces '${HOME}/../${WEB_USER}' by direct '${HOME_WEB_USER}' (without '..')
-sudo runuser --login --command "mkdir ${HOME}/../${WEB_USER}/www"
-sudo runuser --login --command "ln -f -s ${HOME}/meteo/src/main/py/home_web/index.html.py ${HOME}/../${WEB_USER}/www/index.html"
-sudo runuser --login --command "ln -f -s ${HOME}/meteo/src/main/py/home_web/graph.svg.py ${HOME}/../${WEB_USER}/www/graph.svg"
-sudo runuser --login --command "ln -f -s ${HOME}/meteo/src/main/py/home_web/favicon.svg.py ${HOME}/../${WEB_USER}/www/favicon.svg"
+sudo runuser --login --command "ln -f -s ${HOME}/meteo/src/main/py/home_web/index.html.py ${HOME}/../${WEB_USER}/index.html"
+sudo runuser --login --command "ln -f -s ${HOME}/meteo/src/main/py/home_web/graph.svg.py ${HOME}/../${WEB_USER}/graph.svg"
+sudo runuser --login --command "mkdir -p ${HOME}/../${WEB_USER}/html"
+sudo runuser --login --command "ln -f -s ${HOME}/meteo/src/main/py/home_web/html/favicon.svg ${HOME}/../${WEB_USER}/html/favicon.svg"
 
 
 printf -- "chmod errors ignored\n"

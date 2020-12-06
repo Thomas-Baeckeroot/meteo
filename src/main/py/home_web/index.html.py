@@ -20,7 +20,7 @@ print("Content-type: text/html; charset=utf-8\n")
 html = """<!DOCTYPE html>
 <head>
     <title>Centrale météo St Benoît</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="html/favicon.svg">
 </head>
 <body>"""
 
