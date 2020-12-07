@@ -8,6 +8,7 @@ import time
 import traceback
 
 import db_module
+
 # from sensors_functions import iso_timestamp
 
 METEO_FOLDER = "/home/pi/meteo/"
@@ -31,24 +32,25 @@ try:
     curs.execute("SELECT name, priority, sensor_label, unit FROM sensors ORDER BY priority DESC;")
     sensors = curs.fetchall()
     oldest_date = -1
-    sensor_list = "<table style=\"border: .069em solid black;\">" \
-                  "<tr><th style=\"padding-left: 1em;padding-right: 2em;\">Capteur</th>" \
-                  "<th style=\"padding-left: 1em;padding-right: 2em;\">valeur</th>" \
-                  "<td style=\"padding-left: 1em;padding-right: 2em;\">date</td>" \
-                  "<td style=\"padding-left: 1em;padding-right: 2em;\"></td></tr>"
+    sensor_list = "<table style=\"border: .15em solid black; border-collapse: collapse;\">\n" \
+                  "<tr style=\"border: .1em solid black;\">\n" \
+                  "\t<th style=\"padding-left: 1em;padding-right: 2em;\">Capteur</th>\n" \
+                  "\t<th style=\"padding-left: 1em;padding-right: 2em;\">valeur</th>\n" \
+                  "\t<td style=\"padding-left: 1em;padding-right: 2em;\">date</td>\n" \
+                  "\t<td style=\"padding-left: 1em;padding-right: 2em;\"></td>\n</tr>"
     for sensor in sensors:
         (sensor_name, priority, sensor_label, unit) = sensor
         sensor_name = sensor_name.decode('ascii')
 
         if priority > 70:
+            style_row = "border: .069em solid lightgray;"
             style_value = "font-weight: bold;"
-        else:
+        elif priority < 35:
+            style_row = "color: Silver; border: .069em solid lightgray;"
             style_value = ""
-
-        if priority < 35:
-            style_row = " style=\"color: Silver;\""
         else:
-            style_row = ""
+            style_row = "border: .069em solid lightgray;"
+            style_value = ""
 
         curs.execute("""
             SELECT  epochtimestamp, measure
@@ -59,9 +61,8 @@ try:
                                         WHERE   sensor = '""" + sensor_name + """' );""")
         last_date_and_value = curs.fetchall()
 
-        sensor_list = sensor_list + "<tr" + style_row + ">"
-        sensor_list = sensor_list + "<td style=\"padding-left: 1em;padding-right: 2em;\">"\
-                      + sensor_label
+        sensor_list = sensor_list + "<tr style=\"" + style_row + "\">"
+        sensor_list = sensor_list + "\n\t<td style=\"padding-left: 1em;padding-right: 2em;\">" + sensor_label
         if len(last_date_and_value) > 0:
             (epochdate, value) = last_date_and_value[0]
             if oldest_date < epochdate:
@@ -69,12 +70,12 @@ try:
             # locale.getdefaultlocale()
             date_str = time.strftime('%-d/%m/%Y<br/>%H:%M:%S', time.localtime(epochdate))
             sensor_list = sensor_list \
-                + "</td>\n<td style=\"text-align: center;padding-left: 1em;padding-right: 2em;" \
+                + "</td>\n\t<td style=\"text-align: center;padding-left: 1em;padding-right: 2em;" \
                 + style_value + "\">" + str(value) + " " + unit + "</td>\n" \
-                + "<td style=\"padding-left: 1em;padding-right: 2em;font-size: x-small;text-align: center;\">" \
+                + "\t<td style=\"padding-left: 1em;padding-right: 2em;font-size: x-small;text-align: center;\">" \
                 + date_str \
-                + "</td>\n<td style=\"padding-left: 1em;padding-right: 2em;\">" \
-                + "<a href=\"graph.svg?sensor=" + sensor_name + "&maxepoch=" + str(oldest_date)\
+                + "</td>\n\t<td style=\"padding-left: 1em;padding-right: 2em;\">" \
+                + "<a href=\"graph.svg?sensor=" + sensor_name + "&maxepoch=" + str(oldest_date) \
                 + "&width=980\">" \
                 + "<img src=\"graph.svg?sensor=" + sensor_name + "&maxepoch=" + str(oldest_date) \
                 + "&width=100\" style=\"width:100px;height:40px;\" /></a><td></tr>\n"
@@ -84,20 +85,18 @@ try:
                 + "<td style=\"padding-left: 1em;padding-right: 2em;font-size: x-small;text-align: center;\">-" \
                 + "</td>\n<td style=\"padding-left: 1em;padding-right: 2em;\"><td></tr>\n"
 
-    sensor_list = sensor_list + "</table>"
-
     if oldest_date != -1:
         date_str = time.strftime('%A %-d %B - %H:%M', time.localtime(oldest_date))
-        date_readings = "Dernier relevé le " + date_str + "<br/>"
+        date_readings = "Dernier relevé le " + date_str
     else:
         date_readings = "Erreur de lecture de date!"
-    html = html + """<h2>Dernières valeurs:</h2>
-    """ + sensor_list + """<br/>
-    """ + date_readings + """<br/>
+
+    sensor_list = sensor_list + """<tr style=\"border: .15em solid black;\">\n\t<td>
     <form action="index.html">
-      <input type="submit" style=\"padding: 1.2em;\" value="Rafraichir" />
-    </form>
-    <br/>"""
+        <input type="submit" style=\"padding: 1.2em;\" value="Rafraichir" />
+    </form></td>\n\t<td colspan="3">""" + date_readings + """</td></tr></table>"""
+
+    html = html + "<h3>Dernières valeurs:</h2>" + sensor_list
 
 except Exception as err:
     html = html + "<br/>Exception: {0}<br/>".format(err)
