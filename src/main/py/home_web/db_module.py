@@ -10,10 +10,21 @@ import os
 import pymysql as db_module  # PyMySQL
 
 
-def get_conn(host=None):
-    home = os.path.expanduser("~")  # if failing here, test "from pathlib import Path / home = str(Path.home())"
+def get_home():
+    # Function copied from utils.py
+    # if failing here, test "from pathlib import Path / home = str(Path.home())"
+    return os.path.expanduser("~")
+
+
+def get_config():
+    # Function copied from utils.py
     config = configparser.ConfigParser()
-    config.read(home + '/.config/meteo.conf')  # todo rename to weather_station.conf
+    config.read(get_home() + '/.config/meteo.conf')
+    return config
+
+
+def get_conn(host=None):
+    config = get_config()
 
     if host is None:
         database = config.get('DATABASE', 'Name', fallback='weather_station')

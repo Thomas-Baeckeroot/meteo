@@ -129,7 +129,7 @@ sudo runuser --login --command "ln -f -s ${HOME}/meteo/src/main/py/home_web/inde
 sudo runuser --login --command "ln -f -s ${HOME}/meteo/src/main/py/home_web/graph.svg.py ${HOME}/../${WEB_USER}/graph.svg"
 sudo runuser --login --command "mkdir -p ${HOME}/../${WEB_USER}/html"
 sudo runuser --login --command "ln -f -s ${HOME}/meteo/src/main/py/home_web/html/favicon.svg ${HOME}/../${WEB_USER}/html/favicon.svg"
-
+sudo runuser --login --command "ln -f -s ${HOME}/meteo/captures ${HOME}/../${WEB_USER}/captures"
 
 printf -- "chmod errors ignored\n"
 # Former PostgreSQL

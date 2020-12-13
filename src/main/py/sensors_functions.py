@@ -3,11 +3,15 @@
 
 import sys
 import time
+import utils
 
 from gpiozero import CPUTemperature  # If failing: "pip install gpiozero"
 
 # todo Below variable should be stored in a config file ~/.config/meteo.conf (GPIO numbers also could be informed there)
 SENSOR_KNOWN_ALTITUDE = 230.0  # estimated for St Benoit
+METEO_FOLDER = "/home/pi/meteo/"
+CAPTURES_FOLDER = METEO_FOLDER + "captures/"
+CAMERA_NAME = "grangette"  # TODO Move to config file (with default = hostname)
 
 
 def round_value_decimals(value, decimals):
@@ -45,9 +49,8 @@ def value_sealevelpressure():
 
 def take_picture():
     sys.stdout.write("Take picture:\t")
-    captured_success = False
     capture_tentatives = 0
-    while not captured_success and capture_tentatives < 23:
+    while capture_tentatives < 23:
         picamera = __import__("picamera")
         capture_tentatives = capture_tentatives + 1
         try:
@@ -74,10 +77,11 @@ def take_picture():
             camera.capture(filename)
             camera.stop_preview()
             camera.close()
-            captured_success = True
+            return filename
         except picamera.exc.PiCameraMMALError:
             sys.stdout.write(".")
             time.sleep(capture_tentatives)
 
-    if not captured_success:
-        print("Failed " + str(capture_tentatives) + " times to take picture. Gave up!")
+        # End of 'while not captured_success and capture_tentatives < 23:'
+    print("Failed " + str(capture_tentatives) + " times to take picture. Gave up!")
+    return None

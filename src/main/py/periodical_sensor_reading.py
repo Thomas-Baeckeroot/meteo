@@ -24,11 +24,6 @@ import home_web.db_module as db_module
 # debugger_ip_address = "192.168.0.63"
 # pydevd.settrace(debugger_ip_address, port=5678)
 
-# todo Below variables should be stored in config file ~/.config/meteo.conf (GPIO numbers also could be informed there)
-METEO_FOLDER = "/home/pi/meteo/"
-CAPTURES_FOLDER = METEO_FOLDER + "captures/"
-CAMERA_NAME = "camera1"  # TODO Move to config file (with default = hostname)
-CAMERA_ENABLED = False
 CONSOLIDATE_VAL = False
 main_call_epoch = utils.epoch_now()
 
@@ -84,12 +79,13 @@ def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
                          " WHERE name='" + sensor_name + "';"
     curs_src.execute(read_sensors_query)
     (sensor_label_src, decimals_src, cumulative_src, unit_src, consolidated_src) = curs_src.fetchall()[0]
+    # FIXME Below UPDATEs have no effect...
     if sensor_label_src != sensor_label_dest:
         print("\tUPDATING sensor_label: \tsrc='" + sensor_label_src + "'\t>>> dest='" + sensor_label_dest + "'")
-        print("UPDATE sensors   SET sensor_label=" + sensor_label_src + " WHERE name='" + sensor_name + "';")
+        print("UPDATE sensors   SET sensor_label='" + sensor_label_src + "' WHERE name='" + sensor_name + "';")
     #    curs_src.execute("UPDATE sensors"
-    #                     "   SET sensor_label=" + sensor_label_src +
-    #                     " WHERE name='" + sensor_name + "';")
+    #                     "   SET sensor_label='" + sensor_label_src +
+    #                     "' WHERE name='" + sensor_name + "';")
     if decimals_src != decimals_dest:
         print("\tUPDATING Decimals:     \tsrc='" + str(decimals_src) + "'\t>>> dest='" + str(decimals_dest) + "'")
         curs_src.execute("UPDATE sensors"
@@ -103,18 +99,14 @@ def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
     if unit_src != unit_dest:
         print("\tUPDATING unit: \tsrc='" + unit_src + "'\t>>> dest='" + unit_dest + "'")
         curs_src.execute("UPDATE sensors"
-                         "   SET unit=" + unit_src +
-                         " WHERE name='" + sensor_name + "';")
+                         "   SET unit='" + unit_src +
+                         "' WHERE name='" + sensor_name + "';")
     if consolidated_src != consolidated_dest:
         print("\tUPDATING consolidated: \tsrc='" + str(consolidated_src) + "'\t>>> dest='" + str(consolidated_dest) + "'")
         curs_src.execute("UPDATE sensors"
-                         "   SET consolidated=" + str(consolidated_src) +
-                         " WHERE name='" + str(sensor_name) + "';")
+                         "   SET consolidated='" + str(consolidated_src) +
+                         "' WHERE name='" + str(sensor_name) + "';")
 
-    n_updates = 99999
-    # Loop as long as we got updates to synchronise and in the limit of 50s after start of this script
-    # (to avoid possible concurrency with other instance that would copy the same data)
-    # while n_updates > 0 and (utils.epoch_now() - main_call_epoch) < 50:
     read_sensors_query = "SELECT epochtimestamp, measure" \
                          "  FROM raw_measures" \
                          " WHERE sensor='" + sensor_name + \
@@ -162,7 +154,6 @@ def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
         conn_local_dest.commit()
 
     print("\tImported " + str(n_updates) + " records from " + remote_server_src)
-    # end of commented "# while n_updates > 0 ..."
 
     return
 
@@ -173,6 +164,7 @@ def main():  # Expected to be called once per minute
           + " ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
     temp = 15  # default value for later calculation of speed of sound
     first_remote = True
+    camera_enabled = False
 
     conn = db_module.get_conn()
     curs = conn.cursor()
@@ -215,6 +207,9 @@ def main():  # Expected to be called once per minute
             # Calculate speed (celerity) of sound:
             measure = hc_sr04_lib_test.measure_distance(temp)
 
+        elif sensor_type == "camera":
+            camera_enabled = True
+
         elif sensor_type.startswith("remote:"):
             if first_remote:
                 sleep(5)  # give time for very last value of remote sensors to be updated
@@ -248,10 +243,14 @@ def main():  # Expected to be called once per minute
 
             print("\tAdded value for " + sensor_name + "; committing...")
             conn.commit()
+        else:
+            print("Sensor '" + sensor_name + "' -> No value")
 
     # end of for-loop on each sensor
+    config = utils.get_config()
+    # database = config.get('DATABASE', 'Name', fallback='weather_station')
 
-    if CAMERA_ENABLED:
+    if camera_enabled:
         is_camera_mult = is_multiple(main_call_epoch, 900)  # is True every 900 s / 15 min
         if is_camera_mult:
             print("Once every 15 minutes: Capture picture")
