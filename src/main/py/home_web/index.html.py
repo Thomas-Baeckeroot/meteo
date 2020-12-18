@@ -23,7 +23,7 @@ html = """<!DOCTYPE html>
     <title>Centrale météo St Benoît</title>
     <link rel="icon" type="image/svg+xml" href="html/favicon.svg">
 </head>
-<body>"""
+<body style="background-color: whitesmoke;">"""
 
 try:
     # Connect or Create DB File
@@ -32,12 +32,12 @@ try:
     curs.execute("SELECT name, priority, sensor_label, unit FROM sensors ORDER BY priority DESC;")
     sensors = curs.fetchall()
     oldest_date = -1
-    sensor_list = "<table style=\"border: .15em solid black; border-collapse: collapse;\">\n" \
-                  "<tr style=\"border: .1em solid black;\">\n" \
-                  "\t<th style=\"padding-left: 1em;padding-right: 2em;\">Capteur</th>\n" \
-                  "\t<th style=\"padding-left: 1em;padding-right: 2em;\">valeur</th>\n" \
-                  "\t<td style=f\"padding-left: 1em;padding-right: 2em;\">date</td>\n" \
-                  "\t<td style=\"padding-left: 1em;padding-right: 2em;\"></td>\n</tr>"
+    sensor_list = "<table style=\"border: .15em solid black; border-collapse: collapse; background-color: white;\">\n" \
+            "<tr style=\"border: .1em solid black; background-color: silver;\">\n" \
+                  "\t<th style=\"padding-left: 1em; padding-right: 2em;\">Capteur</th>\n" \
+                  "\t<th style=\"padding-left: 1em; padding-right: 2em;\">valeur</th>\n" \
+                  "\t<td style=\"padding-left: 1em; padding-right: 2em;\">date</td>\n" \
+                  "\t<td style=\"padding-left: 1em; padding-right: 2em;\"></td>\n</tr>"
     camera_row = "<tr><td colspan=\"4\"><table style=\"text-align: center;\"><tr>"
     for sensor in sensors:
         (sensor_name, priority, sensor_label, unit) = sensor

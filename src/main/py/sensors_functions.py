@@ -11,7 +11,6 @@ from gpiozero import CPUTemperature  # If failing: "pip install gpiozero"
 SENSOR_KNOWN_ALTITUDE = 230.0  # estimated for St Benoit
 METEO_FOLDER = "/home/pi/meteo/"
 CAPTURES_FOLDER = METEO_FOLDER + "captures/"
-CAMERA_NAME = "grangette"  # TODO Move to config file (with default = hostname)
 
 
 def round_value_decimals(value, decimals):
@@ -47,7 +46,7 @@ def value_sealevelpressure():
     return sealevelpressure_hpa
 
 
-def take_picture():
+def take_picture(camera_name):
     sys.stdout.write("Take picture:\t")
     capture_tentatives = 0
     while capture_tentatives < 23:
@@ -72,9 +71,9 @@ def take_picture():
             camera.start_preview()
             time.sleep(5)
             dt_now = utils.iso_timestamp4files()
-            filename = CAPTURES_FOLDER + CAMERA_NAME + "_" + dt_now + ".jpg"
-            print(filename)
-            camera.capture(filename)
+            filename = camera_name + "_" + dt_now + ".jpg"
+            print(CAPTURES_FOLDER + filename)
+            camera.capture(CAPTURES_FOLDER + filename)
             camera.stop_preview()
             camera.close()
             return filename

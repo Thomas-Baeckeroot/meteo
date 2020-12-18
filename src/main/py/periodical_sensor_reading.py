@@ -254,7 +254,26 @@ def main():  # Expected to be called once per minute
         is_camera_mult = is_multiple(main_call_epoch, 900)  # is True every 900 s / 15 min
         if is_camera_mult:
             print("Once every 15 minutes: Capture picture")
-            func.take_picture()
+            picture_name = func.take_picture(sensor_name)
+
+            # try:
+            sql_update = \
+                "UPDATE captures         " +\
+                "SET    filepath_last = '" + picture_name + "'," +\
+                "       filepath_data = '" + picture_name + "' " +\
+                "WHERE  sensor_name = '" + sensor_name + "';"
+            # print(sql_update)  # for debugging...
+            result = curs.execute(sql_update)
+            # except Exception as err:
+            if result == 0:
+                sql_insert = \
+                    "INSERT INTO captures (sensor_name, filepath_last, filepath_data) " +\
+                    "VALUES ('" + sensor_name + "', '" + picture_name + "', '" + picture_name + "')"
+                # print(sql_insert)  # for debugging...
+                curs.execute(sql_insert)
+            
+            print("\tAdded value for " + sensor_name + "; committing...")
+            conn.commit()
 
     if CONSOLIDATE_VAL:
         for sensor in sensors:
