@@ -151,7 +151,8 @@ def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
         curs_src.execute(update_synchronised_query)
 
         conn_remote_src.commit()
-        conn_local_dest.commit()
+
+    conn_local_dest.commit()  # Can be an update of label name or unit, etc... without value
 
     print("\tImported " + str(n_updates) + " records from " + remote_server_src)
 
