@@ -25,7 +25,6 @@ import home_web.db_module as db_module
 # pydevd.settrace(debugger_ip_address, port=5678)
 
 CONSOLIDATE_VAL = False
-main_call_epoch = utils.epoch_now()
 
 
 def is_multiple(value, multiple):
@@ -62,9 +61,8 @@ def consolidate_from_raw(curs, sensor, period):
 
 
 def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
-    global main_call_epoch
-    (sensor_name, sensor_label_dest, decimals_dest, cumulative_dest, unit_dest, consolidated_dest,
-     sensor_type_dest) = sensor_dest
+    (sensor_name, sensor_label_dest, decimals_dest, cumulative_dest, unit_dest,
+        consolidated_dest, sensor_type_dest, filepath_last, filepath_data) = sensor_dest
     sensor_name = sensor_name.decode('ascii')
     try:
         conn_remote_src = db_module.get_conn(host=remote_server_src)  # Connect to REMOTE PostgreSQL DB
@@ -72,8 +70,6 @@ def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
         print("\tException: {0}".format(err))
         return
     curs_src = conn_remote_src.cursor()
-
-    # name   | priority |        sensor_label         | decimals | cumulative | unit | consolidated | sensor_type
     read_sensors_query = "SELECT sensor_label, decimals, cumulative, unit, consolidated" \
                          "  FROM sensors" \
                          " WHERE name='" + sensor_name + "';"
@@ -159,24 +155,52 @@ def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
     return
 
 
+def rsync_pictures_from_server(local_sensor, remote_server_src, conn_local_dest):
+    (sensor_name, sensor_label_dest, decimals_dest, cumulative_dest, unit_dest,
+        consolidated_dest, sensor_type_dest, filepath_last_local, filepath_data_local) = local_sensor
+    sensor_name = sensor_name.decode('ascii')
+    print("\tpicture sensor '" + sensor_name + "'")
+    print("\t(filepath_last_local, filepath_data_local) = (\t'" + filepath_last_local + "',\t'" + filepath_data_local + "')")
+    try:
+        conn_remote_src = db_module.get_conn(host=remote_server_src)  # Connect to REMOTE PostgreSQL DB
+    except Exception as err:
+        print("\tException: {0}".format(err))
+        return
+    curs_src = conn_remote_src.cursor()
+    read_filepath_query = "SELECT filepath_last, filepath_data" \
+                          "  FROM captures" \
+                          " WHERE sensor_name='" + sensor_name + "';"
+    print("\tread_filepath_query = '" + read_filepath_query + "'")
+    curs_src.execute(read_filepath_query)
+    (filepath_last_src, filepath_data_src) = curs_src.fetchall()[0]
+    print("\t(filepath_last_src, filepath_data_src)   =   (\t'" + filepath_last_src + "',\t'" + filepath_data_src + "')")
+    if filepath_last_src != filepath_last_local:
+        print("FIXME: Call to .rsync_pictures_from_server() ignored!")
+    # rsync -ravz -e "ssh -p 49142" --size-only pi@82.64.89.174:/home/pi/meteo/captures/*.jpg /home/thomas/workspace/meteo/captures/grangette/
+
+
 def main():  # Expected to be called once per minute
-    global main_call_epoch
+    main_call_epoch = utils.epoch_now()
     print(utils.iso_timestamp_now() + " - Starting on " + socket.gethostname()
           + " ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
     temp = 15  # default value for later calculation of speed of sound
     first_remote = True
-    camera_enabled = False
+    local_camera_name = None
 
     conn = db_module.get_conn()
     curs = conn.cursor()
 
     # name   | priority |        sensor_label         | decimals | cumulative | unit | consolidated | sensor_type
     read_sensors_query = \
-        "SELECT name, sensor_label, decimals, cumulative, unit, consolidated, sensor_type FROM sensors;"
+        "SELECT  name, sensor_label, decimals, cumulative, unit," \
+        "        consolidated, sensor_type, filepath_last, filepath_data " \
+        "FROM    sensors " \
+        "    LEFT JOIN captures ON sensors.name = captures.sensor_name; "
     curs.execute(read_sensors_query)
     sensors = curs.fetchall()
     for sensor in sensors:
-        (sensor_name, sensor_label, decimals, cumulative, unit, consolidated, sensor_type) = sensor
+        (sensor_name, sensor_label, decimals, cumulative, unit,
+            consolidated, sensor_type, filepath_last, filepath_data) = sensor
         sensor_name = sensor_name.decode('ascii')
 
         measure = None
@@ -209,7 +233,7 @@ def main():  # Expected to be called once per minute
             measure = hc_sr04_lib_test.measure_distance(temp)
 
         elif sensor_type == "camera":
-            camera_enabled = True
+            local_camera_name = sensor_name
 
         elif sensor_type.startswith("remote:"):
             if first_remote:
@@ -224,7 +248,10 @@ def main():  # Expected to be called once per minute
             # fixme the upper "trust" is not secured and should look for a decent unix authentication later...
             remote_server = sensor_type[7:]
             print("Sensor '" + sensor_name + "' -> reading values from " + remote_server + "...")
-            copy_values_from_server(sensor, remote_server, conn)
+            if unit == "picture":
+                rsync_pictures_from_server(sensor, remote_server, conn)
+            else:
+                copy_values_from_server(sensor, remote_server, conn)
 
         else:
             print("Sensor '" + sensor_name + "' -> ERROR! Unable to interpret '" + str(sensor_type)
@@ -251,29 +278,29 @@ def main():  # Expected to be called once per minute
     config = utils.get_config()
     # database = config.get('DATABASE', 'Name', fallback='weather_station')
 
-    if camera_enabled:
+    if local_camera_name is not None:
         is_camera_mult = is_multiple(main_call_epoch, 900)  # is True every 900 s / 15 min
         if is_camera_mult:
             print("Once every 15 minutes: Capture picture")
-            picture_name = func.take_picture(sensor_name)
+            picture_name = func.take_picture(local_camera_name)
 
             # try:
             sql_update = \
                 "UPDATE captures         " +\
                 "SET    filepath_last = '" + picture_name + "'," +\
                 "       filepath_data = '" + picture_name + "' " +\
-                "WHERE  sensor_name = '" + sensor_name + "';"
+                "WHERE  sensor_name = '" + local_camera_name + "';"
             # print(sql_update)  # for debugging...
             result = curs.execute(sql_update)
             # except Exception as err:
             if result == 0:
                 sql_insert = \
                     "INSERT INTO captures (sensor_name, filepath_last, filepath_data) " +\
-                    "VALUES ('" + sensor_name + "', '" + picture_name + "', '" + picture_name + "')"
+                    "VALUES ('" + local_camera_name + "', '" + picture_name + "', '" + picture_name + "')"
                 # print(sql_insert)  # for debugging...
                 curs.execute(sql_insert)
             
-            print("\tAdded value for " + sensor_name + "; committing...")
+            print("\tUpdated value for camera " + local_camera_name + "; committing...")
             conn.commit()
 
     if CONSOLIDATE_VAL:

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import pathlib
 import sys
 import time
 import utils
@@ -8,9 +9,7 @@ import utils
 from gpiozero import CPUTemperature  # If failing: "pip install gpiozero"
 
 # todo Below variable should be stored in a config file ~/.config/meteo.conf (GPIO numbers also could be informed there)
-SENSOR_KNOWN_ALTITUDE = 230.0  # estimated for St Benoit
-METEO_FOLDER = "/home/pi/meteo/"
-CAPTURES_FOLDER = METEO_FOLDER + "captures/"
+METEO_FOLDER = "/home/pi/meteo"
 
 
 def round_value_decimals(value, decimals):
@@ -40,9 +39,11 @@ def value_ext_temperature():
 
 
 def value_sealevelpressure():
+    config = utils.get_config()
+    sensor_known_altitude = config.get('DEFAULT', 'SensorKnownAltitude', fallback=50)
     bmp_mod = __import__("Adafruit_BMP.BMP085")
     sensor = bmp_mod.BMP085.BMP085()
-    sealevelpressure_hpa = sensor.read_sealevel_pressure(SENSOR_KNOWN_ALTITUDE) / 100  # Pa -> hPa
+    sealevelpressure_hpa = sensor.read_sealevel_pressure(sensor_known_altitude) / 100  # Pa -> hPa
     return sealevelpressure_hpa
 
 
@@ -72,8 +73,12 @@ def take_picture(camera_name):
             time.sleep(5)
             dt_now = utils.iso_timestamp4files()
             filename = camera_name + "_" + dt_now + ".jpg"
-            print(CAPTURES_FOLDER + filename)
-            camera.capture(CAPTURES_FOLDER + filename)
+            base_captures_folder = METEO_FOLDER + "/captures"  # todo get value from config file
+            capture_folder = base_captures_folder + "/" + camera_name + "/" + dt_now[0:4] + "/" + dt_now[5:10]
+            pathlib.Path(capture_folder)\
+                .mkdir(parents=True, exist_ok=True)
+            print(capture_folder + "/" + filename)
+            camera.capture(capture_folder + "/" + filename)
             camera.stop_preview()
             camera.close()
             return filename

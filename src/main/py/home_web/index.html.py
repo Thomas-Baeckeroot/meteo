@@ -24,7 +24,7 @@ html = """<!DOCTYPE html>
     <title>Centrale météo St Benoît</title>
     <link rel="icon" type="image/svg+xml" href="html/favicon.svg">
 </head>
-<body style="background-color: whitesmoke;">"""
+<body style="background-color: lightsteelblue;">"""
 
 try:
     # Connect or Create DB File
@@ -35,9 +35,10 @@ try:
         "FROM    sensors"
         "    LEFT JOIN captures ON sensors.name = captures.sensor_name "
         "ORDER BY priority DESC;")
-    # SELECT name, priority, sensor_label, unit, filepath_data
+    # SELECT name, priority, sensor_label, unit, epochtimestamp, measure
     # FROM   sensors
-    # LEFT JOIN captures ON sensors.name = captures.sensor_name ORDER BY priority DESC;
+    #     LEFT JOIN raw_measures ON sensors.name = raw_measures.sensor
+    #     AND epochtimestamp = ( SELECT  MAX(epochtimestamp)  FROM    raw_measures  WHERE   sensor = sensors.name );
     sensors = curs.fetchall()
     oldest_date = -1
     sensor_list =\
