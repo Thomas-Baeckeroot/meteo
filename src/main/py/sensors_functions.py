@@ -40,7 +40,7 @@ def value_ext_temperature():
 
 def value_sealevelpressure():
     config = utils.get_config()
-    sensor_known_altitude = config.get('DEFAULT', 'SensorKnownAltitude', fallback=50)
+    sensor_known_altitude = config.getint('DEFAULT', 'SensorKnownAltitude', fallback=50)
     bmp_mod = __import__("Adafruit_BMP.BMP085")
     sensor = bmp_mod.BMP085.BMP085()
     sealevelpressure_hpa = sensor.read_sealevel_pressure(sensor_known_altitude) / 100  # Pa -> hPa
@@ -73,15 +73,16 @@ def take_picture(camera_name):
             time.sleep(5)
             dt_now = utils.iso_timestamp4files()
             filename = camera_name + "_" + dt_now + ".jpg"
-            base_captures_folder = METEO_FOLDER + "/captures"  # todo get value from config file
+            base_captures_folder = "captures"  # todo get value from config file
             capture_folder = base_captures_folder + "/" + camera_name + "/" + dt_now[0:4] + "/" + dt_now[5:10]
-            pathlib.Path(capture_folder)\
+            pathlib.Path(METEO_FOLDER + "/" + capture_folder)\
                 .mkdir(parents=True, exist_ok=True)
-            print(capture_folder + "/" + filename)
-            camera.capture(capture_folder + "/" + filename)
+            full_path_filename = capture_folder + "/" + filename
+            print(full_path_filename)
+            camera.capture(METEO_FOLDER + "/" + full_path_filename)
             camera.stop_preview()
             camera.close()
-            return filename
+            return full_path_filename
         except picamera.exc.PiCameraMMALError:
             sys.stdout.write(".")
             time.sleep(capture_tentatives)
