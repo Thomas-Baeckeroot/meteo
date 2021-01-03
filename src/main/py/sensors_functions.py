@@ -73,13 +73,13 @@ def take_picture(camera_name):
             time.sleep(5)
             dt_now = utils.iso_timestamp4files()
             filename = camera_name + "_" + dt_now + ".jpg"
+            capture_folder = camera_name + "/" + dt_now[0:4] + "/" + dt_now[5:10]
             base_captures_folder = "captures"  # todo get value from config file
-            capture_folder = base_captures_folder + "/" + camera_name + "/" + dt_now[0:4] + "/" + dt_now[5:10]
-            pathlib.Path(METEO_FOLDER + "/" + capture_folder)\
+            pathlib.Path(METEO_FOLDER + "/" + base_captures_folder + "/" + capture_folder)\
                 .mkdir(parents=True, exist_ok=True)
             full_path_filename = capture_folder + "/" + filename
             print(full_path_filename)
-            camera.capture(METEO_FOLDER + "/" + full_path_filename)
+            camera.capture(METEO_FOLDER + "/" + base_captures_folder + "/" + full_path_filename)
             camera.stop_preview()
             camera.close()
             return full_path_filename
