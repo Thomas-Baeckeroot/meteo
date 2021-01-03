@@ -40,7 +40,7 @@ def value_ext_temperature():
 
 def value_sealevelpressure():
     config = utils.get_config()
-    sensor_known_altitude = config.getint('DEFAULT', 'SensorKnownAltitude', fallback=50)
+    sensor_known_altitude = config.getfloat('DEFAULT', 'SensorKnownAltitude', fallback=50.0)
     bmp_mod = __import__("Adafruit_BMP.BMP085")
     sensor = bmp_mod.BMP085.BMP085()
     sealevelpressure_hpa = sensor.read_sealevel_pressure(sensor_known_altitude) / 100  # Pa -> hPa

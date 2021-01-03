@@ -6,6 +6,7 @@
 # import pydevd  # If failing: "pip install pydevd"
 import socket
 # import sqlite3
+import subprocess
 import sys
 import time
 # import tsl2561  # If failing: pip install: Adafruit_GPIO tsl2561 (and also RPi.GPIO ?)
@@ -160,7 +161,6 @@ def rsync_pictures_from_server(local_sensor, remote_server_src, conn_local_dest)
         consolidated_dest, sensor_type_dest, filepath_last_local, filepath_data_local) = local_sensor
     sensor_name = sensor_name.decode('ascii')
     print("\tpicture sensor '" + sensor_name + "'")
-    print("\t(filepath_last_local, filepath_data_local) = (\t'" + filepath_last_local + "',\t'" + filepath_data_local + "')")
     try:
         conn_remote_src = db_module.get_conn(host=remote_server_src)  # Connect to REMOTE PostgreSQL DB
     except Exception as err:
@@ -170,13 +170,51 @@ def rsync_pictures_from_server(local_sensor, remote_server_src, conn_local_dest)
     read_filepath_query = "SELECT filepath_last, filepath_data" \
                           "  FROM captures" \
                           " WHERE sensor_name='" + sensor_name + "';"
-    print("\tread_filepath_query = '" + read_filepath_query + "'")
+    # print("\tread_filepath_query = '" + read_filepath_query + "'")  # for debugging purpose
     curs_src.execute(read_filepath_query)
     (filepath_last_src, filepath_data_src) = curs_src.fetchall()[0]
-    print("\t(filepath_last_src, filepath_data_src)   =   (\t'" + filepath_last_src + "',\t'" + filepath_data_src + "')")
-    if filepath_last_src != filepath_last_local:
-        print("FIXME: Call to .rsync_pictures_from_server() ignored!")
-    # rsync -ravz -e "ssh -p 49142" --size-only pi@82.64.89.174:/home/pi/meteo/captures/*.jpg /home/thomas/workspace/meteo/captures/grangette/
+    print("\t(filepath_last_src  , filepath_data_src  ) = (\t'" + filepath_last_src + "',\t'" + filepath_data_src + "')")
+    print("\t(filepath_last_local, filepath_data_local) = (\t'" + filepath_last_local + "',\t'" + filepath_data_local + "')")
+
+    if filepath_last_src == filepath_last_local:
+        print("\tNo new picture detected for '" + sensor_name + "'. rsync not required.")
+        return
+    # else:  # filepath_last_src != filepath_last_local:
+    print("\tNew picture has been detected. Starting rsync from '" + remote_server_src + "' to local...")
+    config = utils.get_config()
+    rsync_user = config.get('remote:' + remote_server_src, 'rsync_user', fallback="web")
+
+    ssh_port = config.getint('remote:' + remote_server_src, 'ssh_port', fallback=22)
+    # rsync connection relies on ssh connection. No password authentication is implemented here.
+    # Authentication is done by keys:
+    # Public key ~/.ssh/id_rsa.pub from local user should be added into ~/.ssh/authorized_keys of remote source.
+    remote_server_src_regex = "\"rsync(.*)" + remote_server_src.replace(".", "\.") + "\""
+    rsync_already_running = subprocess.call(["ps", "-ef", "|", "grep", "-E", remote_server_src_regex])  # , shell=True
+    if rsync_already_running != 1:
+        print("\tAnother rsync process is suspected to be still running for regex '" + remote_server_src_regex
+              + "' ('ps|grep' returned code " + str(rsync_already_running) + ").")
+        return
+
+    print("\tStarting rsync process...")
+    rsync_return_code = subprocess.call(
+        ["rsync", "-ravz", "--rsh", "ssh -p " + str(ssh_port),
+         "--size-only",
+         rsync_user + "@" + remote_server_src + ":/home/pi/meteo/captures/" + sensor_name + "/",
+         utils.get_home() + "/meteo/captures/" + sensor_name + "/"])
+
+    if rsync_return_code != 0:
+        print("\trsync returned code '" + str(rsync_return_code) + "' different from success '0'...")
+        return
+
+    print("\trsync successful. Updating local db with values from remote...")
+    curs_dest = conn_local_dest.cursor()
+    update_last_pictures_values = "UPDATE captures" \
+                                  "   SET filepath_last = '" + filepath_last_src + "'," \
+                                  "       filepath_data = '" + filepath_data_src + "'" \
+                                  " WHERE sensor_name='" + sensor_name + "';"
+    curs_dest.execute(update_last_pictures_values)
+    conn_local_dest.commit()
+    print("\tLocal db updated with ('" + filepath_last_src + "', '" + filepath_data_src + "').")
 
 
 def main():  # Expected to be called once per minute
@@ -275,8 +313,6 @@ def main():  # Expected to be called once per minute
             print("Sensor '" + sensor_name + "' -> No value")
 
     # end of for-loop on each sensor
-    config = utils.get_config()
-    # database = config.get('DATABASE', 'Name', fallback='weather_station')
 
     if local_camera_name is not None:
         is_camera_mult = is_multiple(main_call_epoch, 900)  # is True every 900 s / 15 min
