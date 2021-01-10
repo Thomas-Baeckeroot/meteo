@@ -156,6 +156,12 @@ def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
     return
 
 
+def create_folders_if_required(destination_file):
+    # TODO Not implemented yet.
+    # Now folders are being created after IF rsync succeed....
+    return
+
+
 def rsync_pictures_from_server(local_sensor, remote_server_src, conn_local_dest):
     (sensor_name, sensor_label_dest, decimals_dest, cumulative_dest, unit_dest,
         consolidated_dest, sensor_type_dest, filepath_last_local, filepath_data_local) = local_sensor
@@ -173,8 +179,8 @@ def rsync_pictures_from_server(local_sensor, remote_server_src, conn_local_dest)
     # print("\tread_filepath_query = '" + read_filepath_query + "'")  # for debugging purpose
     curs_src.execute(read_filepath_query)
     (filepath_last_src, filepath_data_src) = curs_src.fetchall()[0]
-    print("\t(filepath_last_src  , filepath_data_src  ) = (\t'" + filepath_last_src + "',\t'" + filepath_data_src + "')")
-    print("\t(filepath_last_local, filepath_data_local) = (\t'" + filepath_last_local + "',\t'" + filepath_data_local + "')")
+    print("\t(..._last_src  , ..._data_src  ) = (\t'" + filepath_last_src + "',\t'" + filepath_data_src + "')")
+    print("\t(..._last_local, ..._data_local) = (\t'" + filepath_last_local + "',\t'" + filepath_data_local + "')")
 
     if filepath_last_src == filepath_last_local:
         print("\tNo new picture detected for '" + sensor_name + "'. rsync not required.")
@@ -188,33 +194,57 @@ def rsync_pictures_from_server(local_sensor, remote_server_src, conn_local_dest)
     # rsync connection relies on ssh connection. No password authentication is implemented here.
     # Authentication is done by keys:
     # Public key ~/.ssh/id_rsa.pub from local user should be added into ~/.ssh/authorized_keys of remote source.
-    remote_server_src_regex = "\"rsync(.*)" + remote_server_src.replace(".", "\.") + "\""
-    rsync_already_running = subprocess.call(["ps", "-ef", "|", "grep", "-E", remote_server_src_regex])  # , shell=True
-    if rsync_already_running != 1:
-        print("\tAnother rsync process is suspected to be still running for regex '" + remote_server_src_regex
-              + "' ('ps|grep' returned code " + str(rsync_already_running) + ").")
-        return
 
-    print("\tStarting rsync process...")
+    # remote_server_src_regex = "\"[r]sync(.*)" + remote_server_src.replace(".", "\.") + "\""
+    # rsync_already_running = subprocess.call(["ps", "-ef", "|", "grep", "-E", remote_server_src_regex], shell=True)  # fixme Always return 0. To be fixed...
+    # print("\t" + str(rsync_already_running) + " <-- 'ps -ef | grep -E " + remote_server_src_regex + "'")
+    # if rsync_already_running == 0:
+    #     print("\tAnother rsync process is detected still running for regex " + remote_server_src_regex
+    #           + " ('ps|grep' returned code " + str(rsync_already_running) + ").")
+    #     return
+
+    print("\tStarting file copy process...")
+    destination_file = utils.get_home() + "/meteo/captures/" + filepath_last_src
+    create_folders_if_required(destination_file)
+    command = ["scp",
+               "-P", str(ssh_port),
+               rsync_user + "@" + remote_server_src + ":/home/pi/meteo/captures/" + filepath_last_src,
+               destination_file]
+    cp_return_code = subprocess.call(command)
+    print("\tcp terminated with return code " + str(cp_return_code))
+    if cp_return_code == 0:
+        print("\trsync successful. Updating local db with values from remote...")
+        curs_dest = conn_local_dest.cursor()
+        update_last_pictures_values = "UPDATE captures" \
+                                      "   SET filepath_last = '" + filepath_last_src + "'," \
+                                      "       filepath_data = '" + filepath_data_src + "'" \
+                                      " WHERE sensor_name='" + sensor_name + "';"
+        curs_dest.execute(update_last_pictures_values)
+        conn_local_dest.commit()
+        print("\tLocal db updated with ('" + filepath_last_src + "', '" + filepath_data_src + "').")
+    else:
+        print("\tcp returned code '" + str(cp_return_code) + "' different from success '0'.\n\tCommand was:"
+              + str(command))
+
+    print("\tStarting rsync process...")  # if remote remained offline, previous pictures may miss...
     rsync_return_code = subprocess.call(
-        ["rsync", "-ravz", "--rsh", "ssh -p " + str(ssh_port),
+        ["rsync",
+         "--recursive",  # -[r]avz
+         "--archive",  #   -r[a]vz
+         "--verbose",  #   -ra[v]z
+         "--compress",  #  -rav[z]
          "--size-only",
+         "--rsh", "ssh -p " + str(ssh_port),
+         # "--time-limit", "1",  # not working on some distros (exemple: Synology NAS)
+         "--timeout", "2",  # if network is not good, we prefer exit quickly and let next execution finishing.
          rsync_user + "@" + remote_server_src + ":/home/pi/meteo/captures/" + sensor_name + "/",
          utils.get_home() + "/meteo/captures/" + sensor_name + "/"])
-
     if rsync_return_code != 0:
         print("\trsync returned code '" + str(rsync_return_code) + "' different from success '0'...")
         return
-
-    print("\trsync successful. Updating local db with values from remote...")
-    curs_dest = conn_local_dest.cursor()
-    update_last_pictures_values = "UPDATE captures" \
-                                  "   SET filepath_last = '" + filepath_last_src + "'," \
-                                  "       filepath_data = '" + filepath_data_src + "'" \
-                                  " WHERE sensor_name='" + sensor_name + "';"
-    curs_dest.execute(update_last_pictures_values)
-    conn_local_dest.commit()
-    print("\tLocal db updated with ('" + filepath_last_src + "', '" + filepath_data_src + "').")
+    # rsync finished with success, local folder synchronised with remote
+    # TODO set new values 'folder_synchronised' in table 'captures'
+    return
 
 
 def main():  # Expected to be called once per minute
