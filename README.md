@@ -1,18 +1,38 @@
-# meteo
-Weather station &amp; + with Raspberry Pi
+# Weather station with Raspberry Pi
 
-With a simple Raspberry Pi (eventually a 0) connected to weather sensors, make a weather station that include:
+Webserver hosting a weather station, built on top of a Raspberry Pi (eventually a 0) with weather sensors.
 - data history
 - consulting data through web interface
-- possibly a webcam
+- webcam optional
 
-The idea is to start with a blank raspian (simple 'Raspbian Buster Lite' ok),
-- login,
-- (launch command line "sudo apt install git" of course...) 
-- clone this repository with "git clone https://github.com/Thomas-Baeckeroot/meteo.git"
-- then follow instruction of "sudo meteo/install.sh"...
+![WebServer capture](images/webserver-simple.jpg)
 
-# GPIO pins
+# Installation
+
+With a raspian (simple 'Raspbian * Lite' ok):
+1. login to console
+2. (launch command line "sudo apt install git" of course...) 
+3. clone this repository with "git clone https://github.com/Thomas-Baeckeroot/meteo.git"
+4. launch "sudo meteo/install.sh" and follow instruction...
+
+# Technical details
+
+Sensor reading is written in **Python 3**, it is triggered every minute with simple **cron**.
+Webserver is **Python 3** (graphs with svg.charts).
+Data are stored in **MariaDB** database.
+
+![Temperature graph](images/graph.png)
+
+Configuration with multiple Raspberrys Pis are possible, a "master" copying data from a slave,
+making possible presentation of data from a distant Pi 0 for example, on another Pi 4.
+As much as possible, things have been kept simple so that it is possible to install webserver on a NAS
+(Synology DSxxx, etc...), getting values and picture from remote Raspberrys:
+
+![WebServer 'advanced'](images/webserver-master.jpg)
+
+# GPIO pins used for my personal configuration...
+
+Configuration is either in ~/meteo/meteo.conf or in table *sensors" of database.
 
 |                     |                         |     |     |                         |                   |
 |--------------------:| -----------------------:|:---:|:---:|:----------------------- |:------------------|

@@ -30,7 +30,7 @@ sudo apt install -y python3-pip
 
 printf -- "\n\n*** APT installs for:... ***\n"
 printf -- "- Picamera Python module\n"
-printf -- "- postgresql database\n"
+# printf -- "- postgresql database\n"
 printf -- "- gpac to get 'MP4Box' command for webcam video captures\n"
 # As detailed https://www.raspberrypi.org/documentation/usage/camera/raspicam/raspivid.md
 printf -- "- libmicrohttpd12 for tests with 'motion' (required yet?)\n\n"
