@@ -7,9 +7,12 @@ import re
 import sys
 import time
 import traceback
+import urllib.parse
 
 import db_module
 
+from urllib.parse import urlencode, quote_plus
+#import urllib.parse
 # from sensors_functions import iso_timestamp
 
 METEO_FOLDER = "/home/pi/meteo/"
@@ -63,9 +66,15 @@ try:
         sensor_name = sensor_name.decode('ascii')
 
         if unit == "picture":  # Below 10, sensors are not displayed in top list (ie: pictures from camera)
+            arguments = {'image':filepath_data}
+            result = urlencode(arguments, quote_via=quote_plus)
+
+            # 'password=xyz&username=administrator'   # "image=" + urllib.parse.quote(filepath_data)
+            # "<td><a href=\"capture.html?image=" + urllib.parse.quote(filepath_data) + \
             camera_row = \
                 camera_row + \
-                "<td><img src=\"captures/" + filepath_data + "\" width=\"360em\" height=\"270em\" /><br/>" + \
+                "<td><a href=\"capture.html?" + result + \
+                "\"><img src=\"captures/" + filepath_data + "\" width=\"360em\" height=\"270em\" /></a><br/>" + \
                 sensor_label + "<br/>" + re.findall(r"(\d{4}-\d{2}-\d{2}.\d{2}-\d{2})", filepath_data)[0] + "</td>"
 
         elif priority > 10:
