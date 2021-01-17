@@ -19,6 +19,10 @@ CREATE TABLE raw_measures
         -- PRIMARY KEY (epochtimestamp, sensor)
     );
 
+# CREATE INDEX epoch_bindex
+#     BTREE ON raw_measures (epochtimestamp);
+CREATE INDEX epoch_bindex USING BTREE ON raw_measures (epochtimestamp);
+
 CREATE TABLE consolidated_measures
     (   minepochtime    INTEGER,
         maxepochtime    INTEGER,

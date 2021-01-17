@@ -127,6 +127,7 @@ chmod +x ~/meteo/src/main/py/home_web/*.py || printf -- "chmod errors ignored\n"
 # TODO Create a variable that replaces '${HOME}/../${WEB_USER}' by direct '${HOME_WEB_USER}' (without '..')
 sudo runuser --login --command "ln -f -s ${HOME}/meteo/src/main/py/home_web/index.html.py ${HOME}/../${WEB_USER}/index.html"
 sudo runuser --login --command "ln -f -s ${HOME}/meteo/src/main/py/home_web/graph.svg.py ${HOME}/../${WEB_USER}/graph.svg"
+sudo runuser --login --command "ln -f -s ${HOME}/meteo/src/main/py/home_web/capture.html.py ${HOME}/../${WEB_USER}/capture.html"
 sudo runuser --login --command "mkdir -p ${HOME}/../${WEB_USER}/html"
 sudo runuser --login --command "ln -f -s ${HOME}/meteo/src/main/py/home_web/html/favicon.svg ${HOME}/../${WEB_USER}/html/favicon.svg"
 sudo runuser --login --command "ln -f -s ${HOME}/meteo/captures ${HOME}/../${WEB_USER}/captures"

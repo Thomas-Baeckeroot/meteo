@@ -30,6 +30,15 @@ try:
     # Connect or Create DB File
     conn = db_module.get_conn()
     curs = conn.cursor()
+    curs.execute("SELECT sensor, MAX(epochtimestamp), measure FROM raw_measures GROUP BY sensor;")
+    values = curs.fetchall()
+    last_values = {}
+    for value in values:
+        (sensor, max_epoch, measure) = value
+        last_values[sensor.decode("utf-8")] = (max_epoch, measure)
+    # TODO Upper request should be included as LEFT JOIN in below request
+    # but when doing so, response took much more time...
+
     curs.execute(
         "SELECT  name, priority, sensor_label, unit, filepath_data "
         "FROM    sensors"
@@ -70,20 +79,10 @@ try:
                 style_row = "border: .069em solid lightgray;"
                 style_value = ""
 
-            # TODO Below request should be included as join in prior request
-            curs.execute("""
-                SELECT  epochtimestamp, measure
-                FROM    raw_measures 
-                WHERE   sensor = '""" + sensor_name + """'
-                  AND   epochtimestamp = (  SELECT  MAX(epochtimestamp) 
-                                            FROM    raw_measures 
-                                            WHERE   sensor = '""" + sensor_name + """' );""")
-            last_date_and_value = curs.fetchall()
-
             sensor_list = sensor_list + "<tr style=\"" + style_row + "\">"
             sensor_list = sensor_list + "\n\t<td style=\"padding-left: 1em;padding-right: 2em;\">" + sensor_label
-            if len(last_date_and_value) > 0:
-                (epochdate, value) = last_date_and_value[0]
+            if (sensor_name in last_values):
+                (epochdate, value) = last_values[sensor_name]
                 if oldest_date < epochdate:
                     oldest_date = epochdate
                 # locale.getdefaultlocale()
@@ -121,7 +120,7 @@ try:
         "</form></td>\n\t<td colspan=\"3\">" + date_readings + "</td></tr>" + camera_row + \
         "</tr></table></td></tr></table>"
 
-    html = html + "<h3>Dernières valeurs:</h2>" + sensor_list
+    html = html + "<h3>Dernières valeurs:</h3>" + sensor_list
 
 except Exception as err:
     html = html + "<br/>Exception: {0}<br/>".format(err)
