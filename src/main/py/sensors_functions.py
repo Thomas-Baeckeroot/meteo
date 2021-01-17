@@ -76,7 +76,7 @@ def take_picture(camera_name):
             capture_folder = camera_name + "/" + dt_now[0:4] + "/" + dt_now[5:10]
             base_captures_folder = "captures"  # todo get value from config file
             pathlib.Path(METEO_FOLDER + "/" + base_captures_folder + "/" + capture_folder)\
-                .mkdir(parents=True, exist_ok=True)
+                .mkdir(mode=0o755, parents=True, exist_ok=True)
             full_path_filename = capture_folder + "/" + filename
             print(full_path_filename)
             camera.capture(METEO_FOLDER + "/" + base_captures_folder + "/" + full_path_filename)

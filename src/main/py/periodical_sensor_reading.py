@@ -3,6 +3,8 @@
 
 # import calendar
 # import datetime
+import os
+import pathlib
 # import pydevd  # If failing: "pip install pydevd"
 import socket
 # import sqlite3
@@ -157,8 +159,7 @@ def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
 
 
 def create_folders_if_required(destination_file):
-    # TODO Not implemented yet.
-    # Now folders are being created after IF rsync succeed....
+    pathlib.Path(os.path.dirname(destination_file)).mkdir(mode=0o755, parents=True, exist_ok=True)
     return
 
 
@@ -186,10 +187,9 @@ def rsync_pictures_from_server(local_sensor, remote_server_src, conn_local_dest)
         print("\tNo new picture detected for '" + sensor_name + "'. rsync not required.")
         return
     # else:  # filepath_last_src != filepath_last_local:
-    print("\tNew picture has been detected. Starting rsync from '" + remote_server_src + "' to local...")
+    print("\tNew picture has been detected. Starting copying from '" + remote_server_src + "' to local...")
     config = utils.get_config()
     rsync_user = config.get('remote:' + remote_server_src, 'rsync_user', fallback="web")
-
     ssh_port = config.getint('remote:' + remote_server_src, 'ssh_port', fallback=22)
     # rsync connection relies on ssh connection. No password authentication is implemented here.
     # Authentication is done by keys:
@@ -203,7 +203,7 @@ def rsync_pictures_from_server(local_sensor, remote_server_src, conn_local_dest)
     #           + " ('ps|grep' returned code " + str(rsync_already_running) + ").")
     #     return
 
-    print("\tStarting file copy process...")
+    print("\tStarting file copy process (scp)...")
     destination_file = utils.get_home() + "/meteo/captures/" + filepath_last_src
     create_folders_if_required(destination_file)
     command = ["scp",
@@ -211,9 +211,9 @@ def rsync_pictures_from_server(local_sensor, remote_server_src, conn_local_dest)
                rsync_user + "@" + remote_server_src + ":/home/pi/meteo/captures/" + filepath_last_src,
                destination_file]
     cp_return_code = subprocess.call(command)
-    print("\tcp terminated with return code " + str(cp_return_code))
+    print("\tscp terminated with return code " + str(cp_return_code))
     if cp_return_code == 0:
-        print("\trsync successful. Updating local db with values from remote...")
+        print("\tUpdating local db with values from remote...")
         curs_dest = conn_local_dest.cursor()
         update_last_pictures_values = "UPDATE captures" \
                                       "   SET filepath_last = '" + filepath_last_src + "'," \
@@ -223,8 +223,9 @@ def rsync_pictures_from_server(local_sensor, remote_server_src, conn_local_dest)
         conn_local_dest.commit()
         print("\tLocal db updated with ('" + filepath_last_src + "', '" + filepath_data_src + "').")
     else:
-        print("\tcp returned code '" + str(cp_return_code) + "' different from success '0'.\n\tCommand was:"
-              + str(command))
+        print("\tAn error occured, command was: " + str(command))
+        # For more details, add verbosity to command with option '-v'
+        # Return codes can be seen there: https://support.microfocus.com/kb/doc.php?id=7021696
 
     print("\tStarting rsync process...")  # if remote remained offline, previous pictures may miss...
     rsync_return_code = subprocess.call(
@@ -234,6 +235,7 @@ def rsync_pictures_from_server(local_sensor, remote_server_src, conn_local_dest)
          "--verbose",  #   -ra[v]z
          "--compress",  #  -rav[z]
          "--size-only",
+         "--perms",  # preserve permissions
          "--rsh", "ssh -p " + str(ssh_port),
          # "--time-limit", "1",  # not working on some distros (exemple: Synology NAS)
          "--timeout", "2",  # if network is not good, we prefer exit quickly and let next execution finishing.
@@ -241,9 +243,9 @@ def rsync_pictures_from_server(local_sensor, remote_server_src, conn_local_dest)
          utils.get_home() + "/meteo/captures/" + sensor_name + "/"])
     if rsync_return_code != 0:
         print("\trsync returned code '" + str(rsync_return_code) + "' different from success '0'...")
-        return
-    # rsync finished with success, local folder synchronised with remote
-    # TODO set new values 'folder_synchronised' in table 'captures'
+    else:
+        print("\tLocal and remote folder are successfully synchronised.")
+        # TODO set new values 'folder_synchronised' in table 'captures'
     return
 
 
