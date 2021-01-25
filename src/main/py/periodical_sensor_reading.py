@@ -355,6 +355,7 @@ def main():  # Expected to be called once per minute
                 "UPDATE captures         " + \
                 "SET    filepath_last = '" + picture_name + "' "
             data_limit = 512000  # 500 kiB. Below this value, image is considered without data (mostly black)
+            destination_file = utils.get_home() + "/meteo/captures/" + picture_name
             if pathlib.Path(destination_file).stat().st_size > data_limit:
                 sql_update = sql_update + " , filepath_data = '" + picture_name + "' "
             sql_update = sql_update + \
