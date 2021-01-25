@@ -238,7 +238,7 @@ def rsync_pictures_from_server(local_sensor, remote_server_src, conn_local_dest)
          "--perms",  # preserve permissions
          "--rsh", "ssh -p " + str(ssh_port),
          # "--time-limit", "1",  # not working on some distros (exemple: Synology NAS)
-         "--timeout", "2",  # if network is not good, we prefer exit quickly and let next execution finishing.
+         "--timeout", "20",  # if network is not good, we prefer exit quickly and let next execution finishing.
          rsync_user + "@" + remote_server_src + ":/home/pi/meteo/captures/" + sensor_name + "/",
          utils.get_home() + "/meteo/captures/" + sensor_name + "/"])
     if rsync_return_code != 0:
@@ -351,13 +351,15 @@ def main():  # Expected to be called once per minute
         if is_camera_mult:
             print("Once every 15 minutes: Capture picture")
             picture_name = func.take_picture(local_camera_name)
-
-            # try:
             sql_update = \
-                "UPDATE captures         " +\
-                "SET    filepath_last = '" + picture_name + "'," +\
-                "       filepath_data = '" + picture_name + "' " +\
-                "WHERE  sensor_name = '" + local_camera_name + "';"
+                "UPDATE captures         " + \
+                "SET    filepath_last = '" + picture_name + "' "
+            data_limit = 512000  # 500 kiB. Below this value, image is considered without data (mostly black)
+            if pathlib.Path(destination_file).stat().st_size > data_limit:
+                sql_update = sql_update + " , filepath_data = '" + picture_name + "' "
+            sql_update = sql_update + \
+                         "WHERE  sensor_name = '" + local_camera_name + "';"
+            # try:
             # print(sql_update)  # for debugging...
             result = curs.execute(sql_update)
             # except Exception as err:

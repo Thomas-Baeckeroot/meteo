@@ -11,8 +11,6 @@ import urllib.parse
 
 import db_module
 
-from urllib.parse import urlencode, quote_plus
-#import urllib.parse
 # from sensors_functions import iso_timestamp
 
 METEO_FOLDER = "/home/pi/meteo/"
@@ -67,7 +65,7 @@ try:
 
         if unit == "picture":  # Below 10, sensors are not displayed in top list (ie: pictures from camera)
             arguments = {'image':filepath_data}
-            result = urlencode(arguments, quote_via=quote_plus)
+            result = urllib.parse.urlencode(arguments, quote_via=urllib.parse.quote_plus)
 
             # 'password=xyz&username=administrator'   # "image=" + urllib.parse.quote(filepath_data)
             # "<td><a href=\"capture.html?image=" + urllib.parse.quote(filepath_data) + \
