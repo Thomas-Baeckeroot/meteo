@@ -80,6 +80,7 @@ def take_picture(camera_name):
             full_path_filename = capture_folder + "/" + filename
             print(full_path_filename)
             camera.capture(METEO_FOLDER + "/" + base_captures_folder + "/" + full_path_filename)
+            # todo Test upper with , thumbnail=(64, 48, 35)
             camera.stop_preview()
             camera.close()
             return full_path_filename

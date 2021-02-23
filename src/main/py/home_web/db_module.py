@@ -8,6 +8,13 @@ import os
 # import mariadb as db_module  # MariaDB library
 # import mysql.connector as db_module  # MySQL library
 import pymysql as db_module  # PyMySQL
+import time
+
+
+def epoch_now():
+    # Function copied from utils.py
+    # return calendar.timegm(time.gmtime())
+    return int(time.time())
 
 
 def get_home():

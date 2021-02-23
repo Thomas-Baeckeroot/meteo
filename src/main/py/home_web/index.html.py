@@ -27,11 +27,23 @@ html = """<!DOCTYPE html>
 </head>
 <body style="background-color: lightsteelblue;">"""
 
+two_day_ago = str(db_module.epoch_now() - 172800)
+
 try:
     # Connect or Create DB File
     conn = db_module.get_conn()
     curs = conn.cursor()
-    curs.execute("SELECT sensor, MAX(epochtimestamp), measure FROM raw_measures GROUP BY sensor;")
+    curs.execute(
+        "SELECT  sensor, epochtimestamp, measure "
+        "FROM    raw_measures AS raw1 "
+        "WHERE   epochtimestamp > " + two_day_ago + ""
+        "  AND   epochtimestamp ="
+        "          ( SELECT  MAX(epochtimestamp)"
+        "            FROM    raw_measures AS raw2"
+        "            WHERE   epochtimestamp > " + two_day_ago + ""
+        "              AND   raw1.sensor = raw2.sensor"
+        "            GROUP BY sensor"
+        "          ); ")
     values = curs.fetchall()
     last_values = {}
     for value in values:
@@ -72,7 +84,8 @@ try:
             camera_row = \
                 camera_row + \
                 "<td><a href=\"capture.html?" + result + \
-                "\"><img src=\"captures/" + filepath_data + "\" width=\"360em\" height=\"270em\" /></a><br/>" + \
+                "\"><img src=\"captures/" + filepath_data + \
+                "\" width=\"360em\" height=\"270em\" style=\"background-color: lightgray\" /></a><br/>" + \
                 sensor_label + "<br/>" + re.findall(r"(\d{4}-\d{2}-\d{2}.\d{2}-\d{2})", filepath_data)[0] + "</td>"
 
         elif priority > 10:

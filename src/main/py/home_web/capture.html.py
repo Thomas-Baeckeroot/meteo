@@ -11,6 +11,7 @@ from db_module import get_home
 
 METEO_FOLDER = "/home/pi/meteo/"
 CAPTURES_FOLDER = METEO_FOLDER + "captures/"
+data_limit = 512000  # 500 kiB. Below this value, image is considered without data (mostly black)
 
 print("Content-type: text/html; charset=utf-8\n")
 form = cgi.FieldStorage()
@@ -29,7 +30,8 @@ for file in folder_scan:
     file_at_hour[str(hour_key)] = (name, size)
 
 html = """<!DOCTYPE html>
-<head>
+<html>
+  <head>
     <title>Centrale météo St Benoît</title>
     <link rel="icon" type="image/svg+xml" href="html/favicon.svg">
     <style>
@@ -60,8 +62,10 @@ html = """<!DOCTYPE html>
     <th colspan="4" style="border: .02em solid black; background-color: whitesmoke;">11h</td>"""
 
 for meridiem in ["am", "pm"]:
-    html = html + """</tr><tr style="font-size: small;">
-        <td style="font-size: medium; border: .02em solid black; background-color: whitesmoke;">""" + meridiem + """</td>"""
+    html = html \
+           + "</tr><tr style=\"font-size: small;\">" \
+           + "<td style=\"font-size: medium; border: .02em solid black; background-color: whitesmoke;\">" \
+           + meridiem + "</td>"
 
     for h_num in range(0, 12):
         if meridiem == "am":
@@ -69,21 +73,26 @@ for meridiem in ["am", "pm"]:
         else:
             hour = h_num + 12
 
-        for min in ["00", "15", "30", "45"]:
-            hour_key = "{:02d}".format(hour) + "-" + min
-            if (hour_key in file_at_hour):
+        for minute in ["00", "15", "30", "45"]:
+            hour_key = "{:02d}".format(hour) + "-" + minute
+            if hour_key in file_at_hour:
                 (image_name, image_size) = file_at_hour[str(hour_key)]
                 arguments = {'image':image_folder + "/" + image_name}
                 result = urllib.parse.urlencode(arguments, quote_via=urllib.parse.quote_plus)
-                html = html + "<td><a href=\"capture.html?" + result + \
-                       "\"><div style=\"height:100%;width:100%\">" + min + "</div></a></td>"
-                # "<td><a href="Foo.com">00</a>" x4
+                if image_size > data_limit:
+                    cell_style = " style=\"background-color: Khaki;\""
+                else:
+                    cell_style = " style=\"background-color: LightBlue;\""
+                html = html + "<td" + cell_style + "><a href=\"capture.html?" + result + \
+                        "\"><div style=\"height:100%;width:100%\">" + minute + "</div></a></td>"
             else:
-                html = html + "<td>" + min + "</td>"  # style=\"height:100%;width:100%\"
+                html = html + "<td style=\"background-color: DarkGray;\">" + minute + "</td>"
+                # style=\"height:100%;width:100%\"
 
 html = html + """</tr>
 </table>
-<img src=\"captures/""" + image + """\" />
-</body></html>"""
+<img src=\"captures/""" + image + """\" style=\"width: 60em\" />
+  </body>
+</html>"""
 
 print(html)

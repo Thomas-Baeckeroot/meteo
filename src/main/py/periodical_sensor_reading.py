@@ -238,7 +238,7 @@ def rsync_pictures_from_server(local_sensor, remote_server_src, conn_local_dest)
          "--perms",  # preserve permissions
          "--rsh", "ssh -p " + str(ssh_port),
          # "--time-limit", "1",  # not working on some distros (exemple: Synology NAS)
-         "--timeout", "20",  # if network is not good, we prefer exit quickly and let next execution finishing.
+         "--timeout", "60",  # if network is not good, we prefer exit quickly and let next execution finishing.
          rsync_user + "@" + remote_server_src + ":/home/pi/meteo/captures/" + sensor_name + "/",
          utils.get_home() + "/meteo/captures/" + sensor_name + "/"])
     if rsync_return_code != 0:
