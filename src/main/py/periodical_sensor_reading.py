@@ -268,6 +268,7 @@ def main():  # Expected to be called once per minute
         "    LEFT JOIN captures ON sensors.name = captures.sensor_name; "
     curs.execute(read_sensors_query)
     sensors = curs.fetchall()
+    values = []
     for sensor in sensors:
         (sensor_name, sensor_label, decimals, cumulative, unit,
             consolidated, sensor_type, filepath_last, filepath_data) = sensor
@@ -330,21 +331,29 @@ def main():  # Expected to be called once per minute
 
         if measure is not None:
             print("Sensor '" + sensor_name + "' -> " + str(measure))
-            # sql_insert = "INSERT INTO " + raw_table + "(epochtimestamp,value) VALUES(?,?);"
-            # curs.execute(sql_insert, measure)  # not supported by PostgreSQL ?
-            sql_insert = "INSERT INTO raw_measures(epochtimestamp, measure, sensor) VALUES(" \
-                         + str(utils.epoch_now()) + "," \
-                         + str(func.round_value_decimals(measure, decimals)) + ", '" \
-                         + sensor_name + "');"
-            # print(str(sql_insert))
-            curs.execute(sql_insert)
-
-            print("\tAdded value for " + sensor_name + "; committing...")
-            conn.commit()
+            values.append("(" \
+                    + str(utils.epoch_now()) + "," \
+                    + str(func.round_value_decimals(measure, decimals)) + ", '" \
+                    + sensor_name + "')")
         else:
             print("Sensor '" + sensor_name + "' -> No value")
 
     # end of for-loop on each sensor
+    
+    # Add values to database
+    # TODO manage case if 'values' is empty
+    sql_insert = "INSERT INTO raw_measures(epochtimestamp, measure, sensor) VALUES " \
+            + ",".join(values) + ";"
+    print(str(sql_insert))
+    try:
+        curs.execute(sql_insert)
+    except Exception as err:
+        print("\tAn Error occurred when trying to execute the upper request!")
+        print(err)
+        print("#- ERROR -" * 20)
+    finally:
+        conn.commit()
+ 
 
     if local_camera_name is not None:
         is_camera_mult = is_multiple(main_call_epoch, 900)  # is True every 900 s / 15 min
