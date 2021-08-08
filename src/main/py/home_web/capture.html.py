@@ -43,9 +43,9 @@ html = """<!DOCTYPE html>
         }
         A {text-decoration: none;}
     </style>
-</head>
-<body style="background-color: lightsteelblue;">
-<table style="width: 100%; height:4.3em;"> <!-- border: .02em solid black -->
+  </head>
+  <body style="background-color: lightsteelblue;">
+<table style="width: 60em; height:4.3em;"> <!-- border: .02em solid black -->
 <tr style="text-align: left;">
     <td><a href="index.html">index</a></td> <!-- style="border: none; background-color: transparent;" -->
     <th colspan="4" style="border: .02em solid black; background-color: whitesmoke;">0h / 12h</td>
