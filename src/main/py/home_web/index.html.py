@@ -117,7 +117,8 @@ try:
                     "<a href=\"graph.svg?sensor=" + sensor_name + "&maxepoch=" + str(oldest_date) + \
                     "&width=980\">" + \
                     "<img src=\"graph.svg?sensor=" + sensor_name + "&maxepoch=" + str(oldest_date) + \
-                    "&width=100\" style=\"width:100px;height:40px;\" /></a><td></tr>\n"
+                    "&width=100\" style=\"width:100px;height:40px; background-color: whitesmoke\" />" + \
+                    "</a><td></tr>\n"
             else:
                 sensor_list = sensor_list + "</td>\n<td style=\"text-align: center;padding-left: 1em;padding-right: 2em;" \
                               + style_value + "\">-</td>\n" \
