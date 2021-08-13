@@ -66,11 +66,11 @@ try:
     sensor_list =\
         "<table style=\"border: .15em solid black; border-collapse: collapse; background-color: white;\">\n" \
         "<tr style=\"border: .1em solid black; background-color: silver;\">\n" \
-        "\t<th style=\"padding-left: 1em; padding-right: 2em;\">Capteur</th>\n" \
-        "\t<th style=\"padding-left: 1em; padding-right: 2em;\">valeur</th>\n" \
-        "\t<td style=\"padding-left: 1em; padding-right: 2em;\">date</td>\n" \
-        "\t<td style=\"padding-left: 1em; padding-right: 2em;\"></td>\n</tr>"
-    camera_row = "<tr><td colspan=\"4\"><table style=\"text-align: center;\"><tr>"
+        "\t<th style=\"text-align: center;padding-right: 4em;\">Capteur</th>\n" \
+        "\t<th style=\"text-align: center;\">valeur</th>\n" \
+        "\t<td style=\"text-align: center;\">date</td>\n" \
+        "\t<td></td>\n</tr>"
+    camera_row = "<tr><td colspan=\"4\"><table style=\"width: 100%;text-align: center;\"><tr>"
     for sensor in sensors:
         (sensor_name, priority, sensor_label, unit, filepath_data) = sensor
         sensor_name = sensor_name.decode('ascii')
@@ -90,17 +90,17 @@ try:
 
         elif priority > 10:
             if priority > 70:
-                style_row = "border: .069em solid lightgray;"
+                style_row = ""
                 style_value = "font-weight: bold;"
             elif priority < 35:
-                style_row = "color: Silver; border: .069em solid lightgray;"
+                style_row = "color: Silver;"
                 style_value = ""
             else:
-                style_row = "border: .069em solid lightgray;"
+                style_row = ""
                 style_value = ""
 
-            sensor_list = sensor_list + "<tr style=\"" + style_row + "\">"
-            sensor_list = sensor_list + "\n\t<td style=\"padding-left: 1em;padding-right: 2em;\">" + sensor_label
+            sensor_list = sensor_list + "<tr style=\"border: .069em solid lightgray;" + style_row + "\">"
+            sensor_list = sensor_list + "\n\t<td style=\"padding-left: 1em;padding-right: 1em;\">" + sensor_label
             if (sensor_name in last_values):
                 (epochdate, value) = last_values[sensor_name]
                 if oldest_date < epochdate:
@@ -109,15 +109,15 @@ try:
                 date_str = time.strftime('%-d/%m/%Y<br/>%H:%M:%S', time.localtime(epochdate))
                 sensor_list =\
                     sensor_list + \
-                    "</td>\n\t<td style=\"text-align: center;padding-left: 1em;padding-right: 2em;" + \
+                    "</td>\n\t<td style=\"text-align: center;" + \
                     style_value + "\">" + str(value) + " " + unit + "</td>\n" + \
-                    "\t<td style=\"padding-left: 1em;padding-right: 2em;font-size: x-small;text-align: center;\">" + \
+                    "\t<td style=\"text-align: center;font-size: x-small;\">" + \
                     date_str + \
-                    "</td>\n\t<td style=\"padding-left: 1em;padding-right: 2em;\">" + \
+                    "</td>\n\t<td style=\"text-align: center;\">" + \
                     "<a href=\"graph.svg?sensor=" + sensor_name + "&maxepoch=" + str(oldest_date) + \
                     "&width=980\">" + \
                     "<img src=\"graph.svg?sensor=" + sensor_name + "&maxepoch=" + str(oldest_date) + \
-                    "&width=100\" style=\"width:100px;height:40px; background-color: whitesmoke\" />" + \
+                    "&width=100\" style=\"width:6.25em;height:2.5em; background-color: whitesmoke\" />" + \
                     "</a><td></tr>\n"
             else:
                 sensor_list = sensor_list + "</td>\n<td style=\"text-align: center;padding-left: 1em;padding-right: 2em;" \
@@ -138,7 +138,7 @@ try:
         "<tr style=\"border: .15em solid black;\">\n\t<td style=\"padding: 1em;\">" + \
         "<form action=\"index.html\">" + \
         "<input type=\"submit\" style=\"padding: 1.2em;\" value=\"Rafraichir\" />" + \
-        "</form></td>\n\t<td colspan=\"3\">" + date_readings + "</td></tr>" + camera_row + \
+        "</form></td>\n\t<td style=\"padding: 1em;\" colspan=\"3\">" + date_readings + "</td></tr>" + camera_row + \
         "</tr></table></td></tr></table>"
 
     html = html + "<h3>Dernières valeurs:</h3>" + sensor_list
