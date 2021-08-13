@@ -13,7 +13,7 @@ With a raspian (simple 'Raspbian * Lite' ok):
 1. login to console
 2. (launch command line "sudo apt install git" of course...) 
 3. clone this repository with "git clone https://github.com/Thomas-Baeckeroot/meteo.git"
-4. launch "sudo meteo/install.sh" and follow instruction...
+4. launch "sudo meteo/install.sh" and follow the instructions...
 
 # Technical details
 

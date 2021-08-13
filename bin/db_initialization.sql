@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS sensors
         -- sensor_config  TEXT          -- ie 'GPIO23'
     );
 
+ALTER TABLE sensors ADD PRIMARY KEY (name);
+
 CREATE TABLE raw_measures
     (   epochtimestamp  INTEGER,        -- seconds since 1970/01/01, https://www.sqlite.org/draft/lang_datefunc.html
         measure         REAL,
@@ -22,6 +24,8 @@ CREATE TABLE raw_measures
 # CREATE INDEX epoch_bindex
 #     BTREE ON raw_measures (epochtimestamp);
 CREATE INDEX epoch_bindex USING BTREE ON raw_measures (epochtimestamp);
+
+ALTER TABLE raw_measures ADD FOREIGN KEY (sensor) REFERENCES sensors (name);
 
 CREATE TABLE consolidated_measures
     (   minepochtime    INTEGER,

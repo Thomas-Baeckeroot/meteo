@@ -20,7 +20,9 @@ form = cgi.FieldStorage()
 locale.getdefaultlocale()
 print("Content-type: text/html; charset=utf-8\n")
 
-html = """<!DOCTYPE html>
+html = """<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" lang="fr" dir="ltr">
 <head>
     <title>Centrale météo St Benoît</title>
     <link rel="icon" type="image/svg+xml" href="html/favicon.svg">
