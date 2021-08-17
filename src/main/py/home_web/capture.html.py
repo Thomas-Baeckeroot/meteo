@@ -11,7 +11,21 @@ from db_module import get_home
 
 METEO_FOLDER = "/home/pi/meteo/"
 CAPTURES_FOLDER = METEO_FOLDER + "captures/"
-data_limit = 512000  # 500 kiB. Below this value, image is considered without data (mostly black)
+SIZE_LIMIT = 512000  # 500 kiB. Below this value, image is considered without data (mostly black)
+
+
+def get_picture_from_list_for_time(file_at_hour, hour, minute):
+    for i in range(0, 14):
+        hour_key = "{:02d}".format(hour) + "-" + "{:02d}".format(minute + i)
+        if hour_key in file_at_hour:
+            (image_name, image_size) = file_at_hour[str(hour_key)]
+            if image_size > SIZE_LIMIT:
+                background_color = "Khaki"
+            else:
+                background_color = "LightBlue"
+            return (str("{:02d}".format(minute + i)), image_name, str(background_color))
+    return (str("{:02d}".format(minute)), None, str("DarkGray"))
+
 
 print("Content-type: text/html; charset=utf-8\n")
 form = cgi.FieldStorage()
@@ -73,20 +87,15 @@ for meridiem in ["am", "pm"]:
         else:
             hour = h_num + 12
 
-        for minute in ["00", "15", "30", "45"]:
-            hour_key = "{:02d}".format(hour) + "-" + minute
-            if hour_key in file_at_hour:
-                (image_name, image_size) = file_at_hour[str(hour_key)]
-                arguments = {'image':image_folder + "/" + image_name}
+        for minute in [0, 15, 30, 45]:
+            (min_str, image_name, background_color) = get_picture_from_list_for_time(file_at_hour, hour, minute)
+            if image_name:
+                arguments = {'image': image_folder + "/" + image_name}
                 result = urllib.parse.urlencode(arguments, quote_via=urllib.parse.quote_plus)
-                if image_size > data_limit:
-                    cell_style = " style=\"background-color: Khaki;\""
-                else:
-                    cell_style = " style=\"background-color: LightBlue;\""
-                html = html + "<td" + cell_style + "><a href=\"capture.html?" + result + \
-                        "\"><div style=\"height:100%;width:100%\">" + minute + "</div></a></td>"
-            else:
-                html = html + "<td style=\"background-color: DarkGray;\">" + minute + "</td>"
+                html = html + "<td style=\"background-color: " + background_color + ";\"><a href=\"capture.html?" + \
+                       result + "\"><div style=\"height:100%;width:100%\">" + min_str + "</div></a></td>"
+            else:  # image_name is None => no pictures for this quater of an hour
+                html = html + "<td style=\"background-color: " + background_color + ";\">" + min_str + "</td>"
                 # style=\"height:100%;width:100%\"
 
 html = html + """</tr>
