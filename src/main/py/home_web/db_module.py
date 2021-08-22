@@ -11,6 +11,9 @@ import pymysql as db_module  # PyMySQL
 import time
 
 
+# from .. import utils  # FIXME Not working because files here are linked (ln) in home of 'web' user!
+
+
 def epoch_now():
     # Function copied from utils.py
     # return calendar.timegm(time.gmtime())

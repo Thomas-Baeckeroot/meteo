@@ -15,6 +15,7 @@ import time
 # from gpiozero import CPUTemperature  # If failing: "pip install gpiozero"
 # import Adafruit_BMP.BMP085 as BMP085
 
+import failed_request
 import sensors_functions as func
 from time import sleep
 import utils
@@ -26,6 +27,13 @@ import home_web.db_module as db_module
 
 # debugger_ip_address = "192.168.0.63"
 # pydevd.settrace(debugger_ip_address, port=5678)
+import logging
+
+logging.basicConfig(
+    filename=utils.get_home() + "/meteo/logfile.log",
+    level=logging.DEBUG,
+    format='%(asctime)s\t%(levelname)s\t%(name)s\t%(message)s')
+log = logging.getLogger("periodical_sensor_reading.py")
 
 CONSOLIDATE_VAL = False
 
@@ -42,7 +50,7 @@ def consolidate_from_raw(curs, sensor, period):
     #    consolidate_from_raw(curs, "CPU_temp", 900)
     raw_table = "raw_measures_" + sensor
     consolidated_table = "consolidated" + str(period) + "_measures_" + sensor
-    print("consolidate_from_raw:\n\traw_table = " + raw_table + "\n\tconsolidated_table = " + consolidated_table)
+    log.info("consolidate_from_raw:\n\traw_table = " + raw_table + "\n\tconsolidated_table = " + consolidated_table)
 
     sql_req = "SELECT MAX(epochtimestamp) FROM " + raw_table + ";"
     curs.execute(sql_req)
@@ -65,12 +73,12 @@ def consolidate_from_raw(curs, sensor, period):
 
 def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
     (sensor_name, sensor_label_dest, decimals_dest, cumulative_dest, unit_dest,
-        consolidated_dest, sensor_type_dest, filepath_last, filepath_data) = sensor_dest
+     consolidated_dest, sensor_type_dest, filepath_last, filepath_data) = sensor_dest
     sensor_name = sensor_name.decode('ascii')
     try:
         conn_remote_src = db_module.get_conn(host=remote_server_src)  # Connect to REMOTE PostgreSQL DB
     except Exception as err:
-        print("\tException: {0}".format(err))
+        log.error("\tException: {0}".format(err))
         return
     curs_src = conn_remote_src.cursor()
     read_sensors_query = "SELECT sensor_label, decimals, cumulative, unit, consolidated" \
@@ -80,28 +88,29 @@ def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
     (sensor_label_src, decimals_src, cumulative_src, unit_src, consolidated_src) = curs_src.fetchall()[0]
     # FIXME Below UPDATEs have no effect...
     if sensor_label_src != sensor_label_dest:
-        print("\tUPDATING sensor_label: \tsrc='" + sensor_label_src + "'\t>>> dest='" + sensor_label_dest + "'")
-        print("UPDATE sensors   SET sensor_label='" + sensor_label_src + "' WHERE name='" + sensor_name + "';")
+        log.info("\tUPDATING sensor_label: \tsrc='" + sensor_label_src + "'\t>>> dest='" + sensor_label_dest + "'")
+        log.info("UPDATE sensors   SET sensor_label='" + sensor_label_src + "' WHERE name='" + sensor_name + "';")
     #    curs_src.execute("UPDATE sensors"
     #                     "   SET sensor_label='" + sensor_label_src +
     #                     "' WHERE name='" + sensor_name + "';")
     if decimals_src != decimals_dest:
-        print("\tUPDATING Decimals:     \tsrc='" + str(decimals_src) + "'\t>>> dest='" + str(decimals_dest) + "'")
+        log.info("\tUPDATING Decimals:     \tsrc='" + str(decimals_src) + "'\t>>> dest='" + str(decimals_dest) + "'")
         curs_src.execute("UPDATE sensors"
                          "   SET decimals=" + str(decimals_src) +
                          " WHERE name='" + sensor_name + "';")
     if cumulative_src != cumulative_dest:
-        print("\tUPDATING cumulative: \tsrc='" + str(cumulative_src) + "'\t>>> dest='" + str(cumulative_dest) + "'")
+        log.info("\tUPDATING cumulative: \tsrc='" + str(cumulative_src) + "'\t>>> dest='" + str(cumulative_dest) + "'")
         curs_src.execute("UPDATE sensors"
                          "   SET cumulative=" + str(cumulative_src) +
                          " WHERE name='" + sensor_name + "';")
     if unit_src != unit_dest:
-        print("\tUPDATING unit: \tsrc='" + unit_src + "'\t>>> dest='" + unit_dest + "'")
+        log.info("\tUPDATING unit: \tsrc='" + unit_src + "'\t>>> dest='" + unit_dest + "'")
         curs_src.execute("UPDATE sensors"
                          "   SET unit='" + unit_src +
                          "' WHERE name='" + sensor_name + "';")
     if consolidated_src != consolidated_dest:
-        print("\tUPDATING consolidated: \tsrc='" + str(consolidated_src) + "'\t>>> dest='" + str(consolidated_dest) + "'")
+        log.info(
+            "\tUPDATING consolidated: \tsrc='" + str(consolidated_src) + "'\t>>> dest='" + str(consolidated_dest) + "'")
         curs_src.execute("UPDATE sensors"
                          "   SET consolidated='" + str(consolidated_src) +
                          "' WHERE name='" + str(sensor_name) + "';")
@@ -111,7 +120,7 @@ def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
                          " WHERE sensor='" + sensor_name + \
                          "'  AND synchronised='false' " \
                          "ORDER BY epochtimestamp asc LIMIT 3000;"  # PostgreSQL: "FETCH FIRST 10 ROWS ONLY;"
-    # print("\tread_sensors_query =\n" + read_sensors_query + "\n----------------------------")
+    # log.debug("\tread_sensors_query =\n" + read_sensors_query + "\n----------------------------")
     curs_src.execute(read_sensors_query)
     epochs_and_measures_from_src = curs_src.fetchall()
     n_updates = len(epochs_and_measures_from_src)
@@ -123,14 +132,13 @@ def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
             if not_first_value:
                 insert_measures_to_dest_query = insert_measures_to_dest_query + ","
             insert_measures_to_dest_query = insert_measures_to_dest_query \
-                + "(" + str(epoch_src) + ", " + str(measure_src) + ", '" \
-                + sensor_name + "')"
+                                            + "(" + str(epoch_src) + ", " + str(measure_src) + ", '" \
+                                            + sensor_name + "')"
             not_first_value = True
         insert_measures_to_dest_query = insert_measures_to_dest_query + ";"
         curs_dest = conn_local_dest.cursor()
-        # print("\tinsert_measures_to_dest_query = " + str(len(insert_measures_to_dest_query)) + " bytes/chars")
-        # print(insert_measures_to_dest_query)
-        # print("\t-----------------------------------------")
+        # log.debug("\tinsert_measures_to_dest_query = " + str(len(insert_measures_to_dest_query)) + " bytes/chars")
+        # log.debug(insert_measures_to_dest_query)
         curs_dest.execute(insert_measures_to_dest_query)
 
         update_synchronised_query = "UPDATE raw_measures" \
@@ -144,16 +152,15 @@ def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
             update_synchronised_query = update_synchronised_query + str(epoch_src)
             not_first_value = True
         update_synchronised_query = update_synchronised_query + ") AND sensor='" + sensor_name + "'"
-        # print("\tupdate_synchronised_query =" + str(len(update_synchronised_query)) + " bytes/chars")
-        # print(update_synchronised_query)
-        # print("\t-----------------------------------------")
+        # log.debug("\tupdate_synchronised_query =" + str(len(update_synchronised_query)) + " bytes/chars")
+        # log.debug(update_synchronised_query)
         curs_src.execute(update_synchronised_query)
 
         conn_remote_src.commit()
 
     conn_local_dest.commit()  # Can be an update of label name or unit, etc... without value
 
-    print("\tImported " + str(n_updates) + " records from " + remote_server_src)
+    log.info("\tImported " + str(n_updates) + " records from " + remote_server_src)
 
     return
 
@@ -165,29 +172,29 @@ def create_folders_if_required(destination_file):
 
 def rsync_pictures_from_server(local_sensor, remote_server_src, conn_local_dest):
     (sensor_name, sensor_label_dest, decimals_dest, cumulative_dest, unit_dest,
-        consolidated_dest, sensor_type_dest, filepath_last_local, filepath_data_local) = local_sensor
+     consolidated_dest, sensor_type_dest, filepath_last_local, filepath_data_local) = local_sensor
     sensor_name = sensor_name.decode('ascii')
-    print("\tpicture sensor '" + sensor_name + "'")
+    log.info("\tpicture sensor '" + sensor_name + "'")
     try:
         conn_remote_src = db_module.get_conn(host=remote_server_src)  # Connect to REMOTE PostgreSQL DB
     except Exception as err:
-        print("\tException: {0}".format(err))
+        log.error("\tException: {0}".format(err))
         return
     curs_src = conn_remote_src.cursor()
     read_filepath_query = "SELECT filepath_last, filepath_data" \
                           "  FROM captures" \
                           " WHERE sensor_name='" + sensor_name + "';"
-    # print("\tread_filepath_query = '" + read_filepath_query + "'")  # for debugging purpose
+    # log.debug("\tread_filepath_query = '" + read_filepath_query + "'")  # for debugging purpose
     curs_src.execute(read_filepath_query)
     (filepath_last_src, filepath_data_src) = curs_src.fetchall()[0]
-    print("\t(..._last_src  , ..._data_src  ) = (\t'" + filepath_last_src + "',\t'" + filepath_data_src + "')")
-    print("\t(..._last_local, ..._data_local) = (\t'" + filepath_last_local + "',\t'" + filepath_data_local + "')")
+    log.debug("\t(..._last_src  , ..._data_src  ) = (\t'" + filepath_last_src + "',\t'" + filepath_data_src + "')")
+    log.debug("\t(..._last_local, ..._data_local) = (\t'" + filepath_last_local + "',\t'" + filepath_data_local + "')")
 
     if filepath_last_src == filepath_last_local:
-        print("\tNo new picture detected for '" + sensor_name + "'. rsync not required.")
+        log.info("\tNo new picture detected for '" + sensor_name + "'. rsync not required.")
         return
     # else:  # filepath_last_src != filepath_last_local:
-    print("\tNew picture has been detected. Starting copying from '" + remote_server_src + "' to local...")
+    log.info("\tNew picture has been detected. Starting copying from '" + remote_server_src + "' to local...")
     config = utils.get_config()
     rsync_user = config.get('remote:' + remote_server_src, 'rsync_user', fallback="web")
     ssh_port = config.getint('remote:' + remote_server_src, 'ssh_port', fallback=22)
@@ -197,13 +204,13 @@ def rsync_pictures_from_server(local_sensor, remote_server_src, conn_local_dest)
 
     # remote_server_src_regex = "\"[r]sync(.*)" + remote_server_src.replace(".", "\.") + "\""
     # rsync_already_running = subprocess.call(["ps", "-ef", "|", "grep", "-E", remote_server_src_regex], shell=True)  # fixme Always return 0. To be fixed...
-    # print("\t" + str(rsync_already_running) + " <-- 'ps -ef | grep -E " + remote_server_src_regex + "'")
+    # log.debug("\t" + str(rsync_already_running) + " <-- 'ps -ef | grep -E " + remote_server_src_regex + "'")
     # if rsync_already_running == 0:
-    #     print("\tAnother rsync process is detected still running for regex " + remote_server_src_regex
+    #     log.info("\tAnother rsync process is detected still running for regex " + remote_server_src_regex
     #           + " ('ps|grep' returned code " + str(rsync_already_running) + ").")
     #     return
 
-    print("\tStarting file copy process (scp)...")
+    log.info("\tStarting file copy process (scp)...")
     destination_file = utils.get_home() + "/meteo/captures/" + filepath_last_src
     create_folders_if_required(destination_file)
     command = ["scp",
@@ -211,29 +218,29 @@ def rsync_pictures_from_server(local_sensor, remote_server_src, conn_local_dest)
                rsync_user + "@" + remote_server_src + ":/home/pi/meteo/captures/" + filepath_last_src,
                destination_file]
     cp_return_code = subprocess.call(command)
-    print("\tscp terminated with return code " + str(cp_return_code))
+    log.info("\tscp terminated with return code " + str(cp_return_code))
     if cp_return_code == 0:
-        print("\tUpdating local db with values from remote...")
+        log.info("\tUpdating local db with values from remote...")
         curs_dest = conn_local_dest.cursor()
         update_last_pictures_values = "UPDATE captures" \
                                       "   SET filepath_last = '" + filepath_last_src + "'," \
-                                      "       filepath_data = '" + filepath_data_src + "'" \
-                                      " WHERE sensor_name='" + sensor_name + "';"
+                                                                                       "       filepath_data = '" + filepath_data_src + "'" \
+                                                                                                                                        " WHERE sensor_name='" + sensor_name + "';"
         curs_dest.execute(update_last_pictures_values)
         conn_local_dest.commit()
-        print("\tLocal db updated with ('" + filepath_last_src + "', '" + filepath_data_src + "').")
+        log.info("\tLocal db updated with ('" + filepath_last_src + "', '" + filepath_data_src + "').")
     else:
-        print("\tAn error occured, command was: " + str(command))
+        log.info("\tAn error occured, command was: " + str(command))
         # For more details, add verbosity to command with option '-v'
         # Return codes can be seen there: https://support.microfocus.com/kb/doc.php?id=7021696
 
-    print("\tStarting rsync process...")  # if remote remained offline, previous pictures may miss...
+    log.info("\tStarting rsync process...")  # if remote remained offline, previous pictures may miss...
     rsync_return_code = subprocess.call(
         ["rsync",
          "--recursive",  # -[r]avz
-         "--archive",  #   -r[a]vz
-         "--verbose",  #   -ra[v]z
-         "--compress",  #  -rav[z]
+         "--archive",  # -r[a]vz
+         "--verbose",  # -ra[v]z
+         "--compress",  # -rav[z]
          "--size-only",
          "--perms",  # preserve permissions
          "--rsh", "ssh -p " + str(ssh_port),
@@ -242,17 +249,16 @@ def rsync_pictures_from_server(local_sensor, remote_server_src, conn_local_dest)
          rsync_user + "@" + remote_server_src + ":/home/pi/meteo/captures/" + sensor_name + "/",
          utils.get_home() + "/meteo/captures/" + sensor_name + "/"])
     if rsync_return_code != 0:
-        print("\trsync returned code '" + str(rsync_return_code) + "' different from success '0'...")
+        log.error("\trsync returned code '" + str(rsync_return_code) + "' different from success '0'...")
     else:
-        print("\tLocal and remote folder are successfully synchronised.")
+        log.info("\tLocal and remote folder are successfully synchronised.")
         # TODO set new values 'folder_synchronised' in table 'captures'
     return
 
 
 def main():  # Expected to be called once per minute
     main_call_epoch = utils.epoch_now()
-    print(utils.iso_timestamp_now() + " - Starting on " + socket.gethostname()
-          + " ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
+    log.info(" - Starting on " + socket.gethostname() + " ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
     temp = 15  # default value for later calculation of speed of sound
     first_remote = True
     local_camera_name = None
@@ -271,14 +277,14 @@ def main():  # Expected to be called once per minute
     values = []
     for sensor in sensors:
         (sensor_name, sensor_label, decimals, cumulative, unit,
-            consolidated, sensor_type, filepath_last, filepath_data) = sensor
+         consolidated, sensor_type, filepath_last, filepath_data) = sensor
         sensor_name = sensor_name.decode('ascii')
 
         measure = None
         # Below ifs to be replaced by function blocks and dictionary as described
         # at https://stackoverflow.com/questions/11479816/what-is-the-python-equivalent-for-a-case-switch-statement
         if sensor_type == "ignored":
-            print("Sensor '" + sensor_name + "' -> -ignoring-")
+            log.info("Sensor '" + sensor_name + "' -> -ignoring-")
             # measure = None  # kept as None
 
         elif sensor_type == "CPU_temp":
@@ -318,47 +324,46 @@ def main():  # Expected to be called once per minute
             # (those 2 configuration files are usually in /etc/postgresql/11/main/ )
             # fixme the upper "trust" is not secured and should look for a decent unix authentication later...
             remote_server = sensor_type[7:]
-            print("Sensor '" + sensor_name + "' -> reading values from " + remote_server + "...")
+            log.info("Sensor '" + sensor_name + "' -> reading values from " + remote_server + "...")
             if unit == "picture":
                 rsync_pictures_from_server(sensor, remote_server, conn)
             else:
                 copy_values_from_server(sensor, remote_server, conn)
 
         else:
-            print("Sensor '" + sensor_name + "' -> ERROR! Unable to interpret '" + str(sensor_type)
-                  + "' as a sensor type! Skipped...")
+            log.info("Sensor '" + sensor_name + "' -> ERROR! Unable to interpret '" + str(sensor_type)
+                     + "' as a sensor type! Skipped...")
             # measure = None  # kept as None
 
         if measure is not None:
-            print("Sensor '" + sensor_name + "' -> " + str(measure))
+            log.info("Sensor '" + sensor_name + "' -> " + str(measure))
             values.append("(" \
-                    + str(utils.epoch_now()) + "," \
-                    + str(func.round_value_decimals(measure, decimals)) + ", '" \
-                    + sensor_name + "')")
+                          + str(utils.epoch_now()) + "," \
+                          + str(func.round_value_decimals(measure, decimals)) + ", '" \
+                          + sensor_name + "')")
         else:
-            print("Sensor '" + sensor_name + "' -> No value")
+            log.info("Sensor '" + sensor_name + "' -> No value")
 
     # end of for-loop on each sensor
-    
+
     # Add values to database
     # TODO manage case if 'values' is empty
     sql_insert = "INSERT INTO raw_measures(epochtimestamp, measure, sensor) VALUES " \
-            + ",".join(values) + ";"
-    print(str(sql_insert))
+                 + ",".join(values) + ";"
+    log.info(str(sql_insert))
     try:
         curs.execute(sql_insert)
     except Exception as err:
-        print("\tAn Error occurred when trying to execute the upper request!")
-        print(err)
-        print("#- ERROR -" * 20)
+        log.error("An Error occurred when trying to execute the upper request!")
+        log.error(err)
+        failed_request.append(sql_insert)
     finally:
         conn.commit()
- 
 
     if local_camera_name is not None:
         is_camera_mult = is_multiple(main_call_epoch, 900)  # is True every 900 s / 15 min
         if is_camera_mult:
-            print("Once every 15 minutes: Capture picture")
+            log.info("Once every 15 minutes: Capture picture")
             picture_name = func.take_picture(local_camera_name)
             sql_update = \
                 "UPDATE captures         " + \
@@ -370,17 +375,17 @@ def main():  # Expected to be called once per minute
             sql_update = sql_update + \
                          "WHERE  sensor_name = '" + local_camera_name + "';"
             # try:
-            # print(sql_update)  # for debugging...
+            # log.info(sql_update)  # for debugging...
             result = curs.execute(sql_update)
             # except Exception as err:
             if result == 0:
                 sql_insert = \
-                    "INSERT INTO captures (sensor_name, filepath_last, filepath_data) " +\
+                    "INSERT INTO captures (sensor_name, filepath_last, filepath_data) " + \
                     "VALUES ('" + local_camera_name + "', '" + picture_name + "', '" + picture_name + "')"
-                # print(sql_insert)  # for debugging...
+                # log.info(sql_insert)  # for debugging...
                 curs.execute(sql_insert)
-            
-            print("\tUpdated value for camera " + local_camera_name + "; committing...")
+
+            log.info("\tUpdated value for camera " + local_camera_name + "; committing...")
             conn.commit()
 
     if CONSOLIDATE_VAL:
@@ -398,21 +403,21 @@ def main():  # Expected to be called once per minute
             if (max_epoch_from_consolidated is None) or (max_epoch_from_consolidated + period) < max_epoch_from_raw:
                 consolidate_from_raw(curs, sensor, period)
 
-    # print("closing cursor...")
+    # log.debug("closing cursor...")
     curs.close()
 
     # Close DB
-    # print("closing db...")
+    # log.debug("closing db...")
     conn.close()
 
     is_daily_run = is_multiple(main_call_epoch, 86400)  # 60x60x24 s = 1 day
     if is_daily_run:
-        print("Midnight run: trigger the pictures sorting...")
+        log.info("Midnight run: trigger the pictures sorting...")
         # launch_daily_jobs(main_call_epoch)
     else:
-        print("(not midnight run)")
+        log.debug("(not midnight run)")
 
-    print(utils.iso_timestamp_now() + " - Terminates " + "_" * 47)
+    log.info(utils.iso_timestamp_now() + " - Terminates " + "_" * 47)
 
 
 if __name__ == "__main__":
