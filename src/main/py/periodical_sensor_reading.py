@@ -388,6 +388,8 @@ def main():  # Expected to be called once per minute
             log.info("\tUpdated value for camera " + local_camera_name + "; committing...")
             conn.commit()
 
+    failed_request.fix_previously_failed_requests(conn)
+
     if CONSOLIDATE_VAL:
         for sensor in sensors:
             (sensor_name, decimals, consolidated, sensor_type) = sensor

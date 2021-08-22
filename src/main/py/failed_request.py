@@ -36,3 +36,20 @@ def extract_first():
     with open(request_file, 'w') as fout:
         fout.writelines(data[1:])
     return data[0].rstrip()
+
+
+def fix_previously_failed_requests(conn):
+    previously_failed_requests = extract_first()
+    if previously_failed_requests:
+        log.debug("Tentatively re-executing request:" + previously_failed_requests)
+        try:
+            curs = conn.cursor()
+            curs.execute(previously_failed_requests)
+            curs.close()
+            conn.commit()
+            log.info("SQL request executed with success.")
+        except Exception as e:
+            log.debug(e)
+            log.warning("SQL request failed (again).")
+            append(previously_failed_requests)
+    return
