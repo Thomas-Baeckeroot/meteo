@@ -11,6 +11,8 @@ from utils import get_config
 from utils import iso_timestamp_now
 
 # todo Below variables should be stored in config file ~/.config/meteo.conf
+# FIXME To be able to execute shutdown, watchdog must be executed with root (not pi)
+# => config in ~/.config/meteo.conf is not found
 # GPIO_YYY_LED = 23
 # GPIO_ZZZ_LED = 24
 GPIO_WATCHDOG_LED = 25
@@ -74,8 +76,10 @@ def main():  # Expected to be launched at startup
     print(iso_timestamp_now() + " - Starting watchdog...")
 
     config = get_config()
-    GPIO_WATCHDOG_LED = int(config['GPIO']['GPIO_WATCHDOG_LED'])
-    GPIO_SHUTDOWN_BTN_IN = int(config['GPIO']['GPIO_SHUTDOWN_BTN_IN'])
+    # FIXME GPIO_WATCHDOG_LED = int(config['GPIO']['GPIO_WATCHDOG_LED'])
+    GPIO_WATCHDOG_LED = 25
+    # FIXME GPIO_SHUTDOWN_BTN_IN = int(config['GPIO']['GPIO_SHUTDOWN_BTN_IN'])
+    GPIO_SHUTDOWN_BTN_IN = 21
     print(iso_timestamp_now() + " - GPIOs:")
     print(iso_timestamp_now() + "\tWatchdog LED    -> " + str(GPIO_WATCHDOG_LED) + " (output)")
     print(iso_timestamp_now() + "\tShutdown button -> " + str(GPIO_SHUTDOWN_BTN_IN) + " (input)")
