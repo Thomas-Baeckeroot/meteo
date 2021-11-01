@@ -25,7 +25,7 @@ printf -- "\n\n*** APT installs for Python PIP3 (Python package manager)... ***\
 # Instead of the below 'python3-pip' install, depending on your Linux distro, it may be more reliable to follow
 # instructions from https://pip.pypa.io/en/stable/installing/ :
 # curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py
-# python3 /tmp/get-pip.py
+# [sudo] python3 /tmp/get-pip.py
 sudo apt install -y python3-pip
 
 printf -- "\n\n*** APT installs for:... ***\n"
@@ -193,7 +193,7 @@ As admin, add below lines at the end of /etc/rc.local, before last '\''exit 0'\'
 $ sudo vi /etc/rc.local
 [...]
 # Watchdog:
-nohup -- ${HOME}/meteo/src/main/py/watchdog_gpio.py >> /var/log/watchdog_gpio.log 2>&1 &
+nohup -- python3 -u ${HOME}/meteo/src/main/py/watchdog_gpio.py >> /var/log/watchdog_gpio.log 2>&1 &
 
 # Camera trap:
 sudo su - ${INSTALL_USER} --command \"nohup -- ${HOME}/meteo/src/main/py/video_capture_on_motion.py >> ${HOME}/meteo/video.log 2>&1\" &
@@ -208,3 +208,12 @@ exit 0
 
 Also, if willing to start without graphical GUI, this can be configured with 'sudo raspi-config'.
 EOF
+
+# After an upgrade of Python3 on Synology NAS, modules are dropped =>
+# curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py
+# PATH=$PATH:/var/packages/py3k/target/usr/local/bin
+# PATH=$PATH:/volume1/@appstore/MariaDB10/usr/local/mariadb10/bin
+# sudo python3 /tmp/get-pip.py
+# sudo python3 -m pip install pydevd gpiozero svg.charts
+# sudo python3 -m pip install PyMySQL
+# TODO @NAS: Uninstall if still unecessary: PhpMyAdmin ( < Web Station    & < Php7.2?)

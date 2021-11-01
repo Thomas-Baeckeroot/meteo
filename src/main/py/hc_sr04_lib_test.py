@@ -5,8 +5,15 @@ import sys
 from math import pi
 
 import home_web.db_module as db_module
+import logging
 import sensors_functions
 import utils
+
+logging.basicConfig(
+    filename=utils.get_home() + "/meteo/logfile.log",
+    level=logging.DEBUG,
+    format='%(asctime)s\t%(levelname)s\t%(name)s\t%(message)s')
+log = logging.getLogger("hc_sr04_lib_test.py")
 
 # todo Below variables should be stored in config file ~/.config/meteo.conf
 TRIGGER_PIN = 22
@@ -27,9 +34,9 @@ def volume_water_tank(distance_cm):
     h = d_max - distance_cm / 10  # height of water, in dm
     pct_filling = h / (d_max - d_min)  # Percentage of fulfilling of the tank
     # (0 -> at r_base level, 1 -> at r_max level)
-    r_top = r_base * (1. - pct_filling)\
-        + r_max * pct_filling   # Radius of surface of water
-    volume = h * (pi / 3) * (r_base*r_base + r_top*r_base + r_top*r_top)
+    r_top = r_base * (1. - pct_filling) \
+            + r_max * pct_filling  # Radius of surface of water
+    volume = h * (pi / 3) * (r_base * r_base + r_top * r_base + r_top * r_top)
     return volume
 
 
@@ -58,7 +65,7 @@ def insert_raw_measures(timestamp, measure, sensor_short_name):
         read_decimals_query = "SELECT decimals FROM sensors WHERE name = '" + sensor_short_name + "';"
         curs.execute(read_decimals_query)
         decimals = int(curs.fetchone()[0])
-        insert_query = "INSERT INTO raw_measures VALUES("\
+        insert_query = "INSERT INTO raw_measures VALUES(" \
                        + str(timestamp) + "," \
                        + str(sensors_functions.round_value_decimals(measure, decimals)) + ", '" \
                        + sensor_short_name + "');"
@@ -66,23 +73,22 @@ def insert_raw_measures(timestamp, measure, sensor_short_name):
         curs.execute(insert_query)
         conn.commit()
     except Exception as error:
-        print(error)
-        print("Error while creating PostgreSQL table", error)
+        log.exception("Error while creating PostgreSQL table")
     finally:
         # closing database connection.
         if (conn):
             curs.close()
             conn.close()
-            print("PostgreSQL connection is closed")
+            log.info("PostgreSQL connection is closed")
 
 
 if __name__ == "__main__":
-    print("_" * 80)
+    log.info("_" * 80)
     if len(sys.argv) > 1:
-        n_loop = int( sys.argv[1] )
+        n_loop = int(sys.argv[1])
     else:
         n_loop = 1
-    print(utils.local_timestamp_now() + " - " + str(n_loop) + " loops to be performed...")
+    log.info("{0} loops to be performed...".format(n_loop))
 
     d_min = 99999.9
     d_max = -1.0
@@ -101,13 +107,11 @@ if __name__ == "__main__":
 
         # Print result.
         if n_measures != 0:
-            print(utils.local_timestamp_now() + " - %.3f -> min-avg-max\t%.3f\t%.3f\t%.3f\t\tvolume = %.3f L" % (d, d_min, d_total/n_measures, d_max, volume_water_tank(d)))
+            log.info("%.3f -> min-avg-max\t%.3f\t%.3f\t%.3f\t\tvolume = %.3f L" % (d, d_min, d_total / n_measures, d_max, volume_water_tank(d)))
 
             insert_raw_measures(utils.epoch_now(), d, u'WaterRes')
 
             sys.stdout.flush()
 
     sys.stdout.flush()
-    # time.sleep(1)
-    # os.system("sudo /sbin/shutdown -P now &")
     exit(0)
