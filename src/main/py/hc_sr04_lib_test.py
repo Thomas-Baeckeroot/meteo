@@ -16,8 +16,8 @@ logging.basicConfig(
 log = logging.getLogger("hc_sr04_lib_test.py")
 
 # todo Below variables should be stored in config file ~/.config/meteo.conf
-TRIGGER_PIN = 22
-ECHO_PIN = 23
+TRIGGER_PIN = 19
+ECHO_PIN = 13
 MAX_DISTANCE = 800  # Get really noisy over 3~4 meters
 UNIT = u'cm'
 
@@ -40,12 +40,14 @@ def volume_water_tank(distance_cm):
     return volume
 
 
-def measure_distance(temp_celcius=20):
+def measure_distance_once(temp_celcius=20):
+    trigger_gpio = TRIGGER_PIN
+    echo_gpio = ECHO_PIN
     # TODO Move this method to sensors_function.py
     Bluetin_Echo = __import__("Bluetin_Echo")
     # Initialise Sensor with pins, speed of sound.
     speed_of_sound = 331.5 + (0.6 * temp_celcius)
-    echo = Bluetin_Echo.Echo(TRIGGER_PIN, ECHO_PIN, speed_of_sound)
+    echo = Bluetin_Echo.Echo(trigger_gpio, echo_gpio, speed_of_sound)
     # echo.default_unit(UNIT)  # causes 'TypeError: 'str' object is not callable'
     echo.max_distance(value=MAX_DISTANCE, unit=UNIT)
 
@@ -82,22 +84,18 @@ def insert_raw_measures(timestamp, measure, sensor_short_name):
             log.info("PostgreSQL connection is closed")
 
 
-if __name__ == "__main__":
-    log.info("_" * 80)
-    if len(sys.argv) > 1:
-        n_loop = int(sys.argv[1])
-    else:
-        n_loop = 1
-    log.info("{0} loops to be performed...".format(n_loop))
-
-    d_min = 99999.9
+def measure_distance(temp_celcius=20, n_loop=3):
+    d_min = sys.float_info.max
     d_max = -1.0
     d_total = 0.0
     n_measures = 0
-
+    log.debug(" value\t min  \t avg  \t max  \t vol.(L)\tVol(avg)")
     for i in range(n_loop):
-        d = measure_distance()
-        if d != 0. and d <= MAX_DISTANCE:  # ignore measures out of interval [0 MAX_DISTANCE]
+        d = measure_distance_once(temp_celcius)
+        if d == 0. or d > MAX_DISTANCE:  # ignore measures out of interval [0 MAX_DISTANCE]
+            log.warning("Inconsistent measure '{0}' ignored.".format(d))
+            n_loop = n_loop - 0.8  # Retry if unable to read, but not infinitely...
+        else:
             n_measures = n_measures + 1
             if d < d_min:
                 d_min = d
@@ -105,13 +103,24 @@ if __name__ == "__main__":
                 d_max = d
             d_total = d_total + d
 
-        # Print result.
         if n_measures != 0:
-            log.info("%.3f -> min-avg-max\t%.3f\t%.3f\t%.3f\t\tvolume = %.3f L" % (d, d_min, d_total / n_measures, d_max, volume_water_tank(d)))
+            log.debug("%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f" % (d, d_min, d_total / n_measures, d_max, volume_water_tank(d), volume_water_tank( d_total / n_measures )))
 
-            insert_raw_measures(utils.epoch_now(), d, u'WaterRes')
+    if n_measures == 0:
+        log.error("Unable to measure distance after multiple attempts.")
+        return None
+    else:
+        return d_total / n_measures
 
-            sys.stdout.flush()
 
-    sys.stdout.flush()
+if __name__ == "__main__":
+    log.info("_" * 80)
+    if len(sys.argv) > 1:
+        n_loop = int(sys.argv[1])
+    else:
+        n_loop = 5
+    log.info("{0} loops to be performed...".format(n_loop))
+
+    measure_distance(20, n_loop)
+    # sys.stdout.flush()
     exit(0)
