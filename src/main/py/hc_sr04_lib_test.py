@@ -18,7 +18,7 @@ log = logging.getLogger("hc_sr04_lib_test.py")
 # todo Below variables should be stored in config file ~/.config/meteo.conf
 TRIGGER_PIN = 19
 ECHO_PIN = 13
-MAX_DISTANCE = 800  # Get really noisy over 3~4 meters
+MAX_DISTANCE = 400  # Get really noisy over 3~4 meters
 UNIT = u'cm'
 
 
@@ -27,9 +27,9 @@ def volume_water_tank(distance_cm):
     Sensor measures the distance from a certain height to the surface of water, looking down."""
     # Constants for the tank:
     r_max = 6.5  # Internal radius at very top of the tank, in dm
-    d_min = 0.5  # Distance from the sensor to the very top of the tank, in dm
+    d_min = 1.5  # Distance from the sensor to the very top of the tank, in dm
     r_base = 5.2  # Internal radius at the very bottom of the tank (base), in dm
-    d_max = 12.5  # Distance from the sensor to the very bottom of the tank (when water volume is considered to be 0L)
+    d_max = 9.144  # Distance from the sensor to the very bottom of the tank (when water volume is considered to be 0L)
 
     h = d_max - distance_cm / 10  # height of water, in dm
     pct_filling = h / (d_max - d_min)  # Percentage of fulfilling of the tank
@@ -84,11 +84,8 @@ def insert_raw_measures(timestamp, measure, sensor_short_name):
             log.info("PostgreSQL connection is closed")
 
 
-def measure_distance(temp_celcius=20, n_loop=3):
-    d_min = sys.float_info.max
-    d_max = -1.0
-    d_total = 0.0
-    n_measures = 0
+def measure_distance(temp_celcius=20, n_loop=10):
+    measures = []
     log.debug(" value\t min  \t avg  \t max  \t vol.(L)\tVol(avg)")
     for i in range(n_loop):
         d = measure_distance_once(temp_celcius)
@@ -96,21 +93,16 @@ def measure_distance(temp_celcius=20, n_loop=3):
             log.warning("Inconsistent measure '{0}' ignored.".format(d))
             n_loop = n_loop - 0.8  # Retry if unable to read, but not infinitely...
         else:
-            n_measures = n_measures + 1
-            if d < d_min:
-                d_min = d
-            if d > d_max:
-                d_max = d
-            d_total = d_total + d
+            measures.append(d)
+            log.debug("%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f"
+                    % (d, min(measures), sum(measures) / len(measures), max(measures),
+                       volume_water_tank(d), volume_water_tank( sum(measures) / len(measures))))
 
-        if n_measures != 0:
-            log.debug("%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f" % (d, d_min, d_total / n_measures, d_max, volume_water_tank(d), volume_water_tank( d_total / n_measures )))
-
-    if n_measures == 0:
+    if len(measures) == 0:
         log.error("Unable to measure distance after multiple attempts.")
         return None
     else:
-        return d_total / n_measures
+        return sum(measures) / len(measures)
 
 
 if __name__ == "__main__":
