@@ -1,16 +1,36 @@
 #!/usr/bin/env bash
 set -e
-set +x
+#set +x
+set -x
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+printf -- "Script directory: '${SCRIPT_DIR}'\n"
+START_DIR=$(pwd)
+source "${SCRIPT_DIR}/helper_functions.sh"
 
 # todo Below attributions should be replaced by a call to func. that manages a config file ~/.config/meteo.conf (GPIO numbers also could be informed there)
 # Parsing of .ini/.conf files from bash is described:
 #   here:     https://ajdiaz.wordpress.com/2008/02/09/bash-ini-parser/
 #   or there: https://github.com/rudimeier/bash_ini_parser
-WEB_USER="web"
-INSTALL_USER="$(whoami)"  # usually "pi"...
+WEB_USER="web"  # User to run the Web server
+INSTALL_USER="$(whoami)"  # User to run the weather station (usually "pi" for default user on Raspberry Pi...)
+PY_VENV="/usr/local/share/susanoo-py-venv"  # Python virtual environment path
 
-printf -- "\n\n*** APT-install for Python 3... ***\n"
-sudo apt install -y python3 python3-dev
+# Test if the 'apt' package tool is available on running system:
+package_tool_ok=true
+if ! command -v apt &> /dev/null
+then
+	printf -- "No 'apt' tool found.\n"
+	printf -- "(all right if installing on Synology NAS or other unusual places...)\n"
+	package_tool_ok=false
+fi
+
+source "${SCRIPT_DIR}/install_python.sh"
+printf -- "fin\n"
+
+cd "${START_DIR}"
+exit 1
+
 
 # This script can be adapted to be executed from a Synology NAS to use it as web-server
 # Pre-requisites:
@@ -19,39 +39,24 @@ sudo apt install -y python3 python3-dev
 # - add git package
 # command should be 'synopkg install_from_server py3k', 'synopkg install_from_server MariaDB10'
 
-# sudo apt install -y python-pip  # Former Python2, dropped.
-
-printf -- "\n\n*** APT installs for Python PIP3 (Python package manager)... ***\n"
-# Instead of the below 'python3-pip' install, depending on your Linux distro, it may be more reliable to follow
-# instructions from https://pip.pypa.io/en/stable/installing/ :
-# curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py
-# [sudo] python3 /tmp/get-pip.py
-sudo apt install -y python3-pip
+printf -- "Installing MariaDB (database server and required Connector-C, etc...)...\n"
+sudo apt install -y mariadb-server libmariadb-dev
 
 printf -- "\n\n*** APT installs for:... ***\n"
 printf -- "- Picamera Python module\n"
 # printf -- "- postgresql database\n"
 printf -- "- gpac to get 'MP4Box' command for webcam video captures\n"
 # As detailed https://www.raspberrypi.org/documentation/usage/camera/raspicam/raspivid.md
-printf -- "- libmicrohttpd12 for tests with 'motion' (required yet?)\n\n"
-## from https://github.com/Motion-Project/motion/releases
-#echo "\n\n*** Install pi_stretch_motion for ?video-motion-detection?... ***"
-#sudo dpkg -i pi_stretch_motion_4.2.2-1_armhf.deb
-
-# printf -- "Installing PostgreSQL (database server and required Connector-C, etc...)...\n"
-# sudo apt install -y postgresql libpq-dev python-psycopg2 python3-psycopg2 postgresql-client postgresql-client-common \
 
 printf -- "Installing multimedia...\n"
 sudo apt install -y gpac
 
-printf -- "Installing HTTP server functionality...\n"  # Not required anymore?
-sudo apt install -y libmicrohttpd12
+# printf -- "Installing HTTP server functionality...\n"  # Not required anymore?
+# sudo apt install -y libmicrohttpd12
 
 printf -- "Installing MariaDB (database server and required Connector-C, etc...)...\n"
 sudo apt install -y mariadb-server libmariadb-dev
 
-# former Python 2: sudo apt install -y python-picamera || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
-sudo apt install -y python3-picamera || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
 ## Also useful for developing from ssh command-line:
 
 # sudo apt install vim vim-addon-manager
@@ -63,48 +68,6 @@ sudo apt install -y python3-picamera || printf -- "Ignored errors. Ok if not run
 ## echo "filetype plugin indent on" >> ~/.vimrc
 ## cd ~/.vim/bundle
 ## git clone https://github.com/klen/python-mode.git
-
-printf -- "\n\n*** PIP Installs: ***\n"
-printf -- "- postgresql for Python calls\n"
-printf -- "- pydevd for Python remote debugging\n"
-# check https://raspberrypi.stackexchange.com/questions/70018/remotely-debug-python-code-on-pi-using-eclipse-in-windows for further details
-printf -- "- gpiozero for CPU temperature reading and other GPIO\n"
-printf -- "- RPi.GPIO for input/output management\n"
-printf -- "- Adafruit_GPIO for input/output management\n"
-# note: if issues for Adafruit_GPIO install, launch with "python -m pip" instead of "pip"
-printf -- "- tsl2561 for sensors reading\n"
-# A tutorial? about how to use the pressure/humidity/light/temperature sensors with I2C/SPI:
-# https://learn.sparkfun.com/tutorials/raspberry-pi-spi-and-i2c-tutorial/all
-# https://pypi.org/project/tsl2561/
-printf -- "- bluetin.io for HC-SR04 distance sensor reading\n"
-printf -- "- svg.charts for drawing SVG graphics on web server\n\n"
-# Uncomment below to update all pip packages:
-# sudo pip list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo pip install -U
-# sudo pip3 list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo pip3 install -U
-# sudo pip3 list | grep -v "Package" | grep -v "\-\-\-\-\-\-\-" | cut -d ' ' -f 1 | xargs -n1 sudo pip3 install -U
-
-sudo pip install pydevd gpiozero  # svg.charts works only for Python 3 (web sever)
-sudo pip install RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
-sudo pip3 install pydevd gpiozero svg.charts mariadb pymysql
-sudo pip3 install RPi.GPIO Adafruit_GPIO tsl2561 Bluetin_Echo || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
-
-
-# Replaced by apt install (preferable)
-# sudo pip install psycopg2
-# sudo pip3 install psycopg2
-
-printf -- "\n\n*** Install BMP sensors library... ***\n"
-cd /tmp
-# sudo apt-get install git build-essential python-dev python-smbus
-# Remove any pre-existing folder:
-sudo rm -rf /tmp/Adafruit_Python_BMP
-printf -- "*** BMP sensors: cloning... ***\n\n"
-git clone https://github.com/adafruit/Adafruit_Python_BMP.git
-cd Adafruit_Python_BMP
-printf -- "\n*** BMP sensors: Python 2... ***\n\n"
-sudo python setup.py install || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
-printf -- "\n*** BMP sensors: Python 3... ***\n\n"
-sudo python3 setup.py install || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
 
 printf -- "\n\n*** Create folder where images will be saved... ***\n"
 mkdir -p "${HOME}/meteo/captures/"
@@ -209,11 +172,3 @@ exit 0
 Also, if willing to start without graphical GUI, this can be configured with 'sudo raspi-config'.
 EOF
 
-# After an upgrade of Python3 on Synology NAS, modules are dropped =>
-# curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py
-# PATH=$PATH:/var/packages/py3k/target/usr/local/bin
-# PATH=$PATH:/volume1/@appstore/MariaDB10/usr/local/mariadb10/bin
-# sudo python3 /tmp/get-pip.py
-# sudo python3 -m pip install pydevd gpiozero svg.charts
-# sudo python3 -m pip install PyMySQL
-# TODO @NAS: Uninstall if still unecessary: PhpMyAdmin ( < Web Station    & < Php7.2?)
