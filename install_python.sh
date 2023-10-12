@@ -6,9 +6,9 @@ source "${SCRIPT_DIR}/helper_functions.sh"
 
 printf -- "Install Python & dependencies...\n\n"
 
-printf -- "WEB_USER = ${WEB_USER}\n"
-printf -- "package_tool_ok = ${package_tool_ok}\n"
-printf -- "Python(3) Virtual environment = ${PY_VENV}\n"
+printf -- "WEB_USER = %s\n" "${WEB_USER}"
+printf -- "package_tool_ok = %s\n" "${package_tool_ok}"
+printf -- "Python(3) Virtual environment = %s\n" "${PY_VENV}"
 
 
 printf -- "\n\n*** APT-install for Python 3... ***\n"
@@ -27,8 +27,8 @@ printf -- "\n\n*** Create Python virtual environment... ***\n"
 printf -- "(administrator rights required to create venv in shared folder)\n"
 sudo python3 -m venv ${PY_VENV}
 sudo chmod -R 755 ${PY_VENV}
-printf -- "\nActivate the environment with 'source ${PY_VENV}/bin/activate'\n"
-source ${PY_VENV}/bin/activate
+printf -- "\nActivate the environment with 'source %s/bin/activate'\n" "${PY_VENV}"
+source "${PY_VENV}/bin/activate"
 
 printf -- "\n\n*** APT installs for Python PIP3 (Python package manager)... ***\n"
 # Instead of the below 'python3-pip' install, depending on your Linux distro, it may be more reliable to follow

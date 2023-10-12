@@ -4,7 +4,7 @@ set -e
 set -x
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-printf -- "Script directory: '${SCRIPT_DIR}'\n"
+printf -- "Script directory: '%s'\n" "${SCRIPT_DIR}"
 START_DIR=$(pwd)
 source "${SCRIPT_DIR}/helper_functions.sh"
 
@@ -127,7 +127,7 @@ printf -- "> CREATE USER 'remote_pi'@'192.168.0.{server-IP}' IDENTIFIED BY 'SetR
 printf -- "> GRANT all privileges on meteo.* TO 'remote_pi'@'192.168.0.{server-IP}';\n"
 printf -- "\n"
 
-if [[ "${WEB_USER}" != ${INSTALL_USER} ]] ; then
+if [[ "${WEB_USER}" != "${INSTALL_USER}" ]] ; then
     createuser ${WEB_USER} --no-superuser --no-createdb --no-createrole || printf -- "Ignoring error and proceeding: already existing\n"
 fi
 psql --dbname meteo --command "GRANT SELECT ON ALL TABLES IN SCHEMA public TO ${WEB_USER};"
