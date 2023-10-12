@@ -7,7 +7,7 @@ import os
 # import psycopg2 as db_module  # PostgreSQL library
 # import mariadb as db_module  # MariaDB library
 # import mysql.connector as db_module  # MySQL library
-import pymysql as db_module  # PyMySQL
+import pymysql as db_module  # PyMySQL - If failing here, try: `sudo python3 -m pip install PyMySQL` or check/rerun /home/meteo/meteo/install.sh
 import time
 
 

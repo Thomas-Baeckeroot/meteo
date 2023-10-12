@@ -15,6 +15,14 @@ logging.basicConfig(
     format='%(asctime)s\t%(levelname)s\t%(name)s\t%(message)s')
 log = logging.getLogger("hc_sr04_lib_test.py")
 
+import logging
+
+logging.basicConfig(
+    filename=utils.get_home() + "/meteo/logfile.log",
+    level=logging.DEBUG,
+    format='%(asctime)s\t%(levelname)s\t%(name)s\t%(message)s')
+log = logging.getLogger("hc_sr04_lib_test.py")
+
 # todo Below variables should be stored in config file ~/.config/meteo.conf
 TRIGGER_PIN = 19
 ECHO_PIN = 13

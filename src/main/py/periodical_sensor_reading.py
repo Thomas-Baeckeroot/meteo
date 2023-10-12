@@ -11,6 +11,7 @@ import socket
 import subprocess
 import sys
 import time
+import traceback
 # import tsl2561  # If failing: pip install: Adafruit_GPIO tsl2561 (and also RPi.GPIO ?)
 # from gpiozero import CPUTemperature  # If failing: "pip install gpiozero"
 # import Adafruit_BMP.BMP085 as BMP085
@@ -77,8 +78,9 @@ def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
     sensor_name = sensor_name.decode('ascii')
     try:
         conn_remote_src = db_module.get_conn(host=remote_server_src)  # Connect to REMOTE PostgreSQL DB
+        log.debug("\tSuccessfully connected to remote DB at '{0}'".format(remote_server_src))
     except Exception as err:
-        log.error("\tException: {0}".format(err))
+        log.exception("\tException '{0}' when getting DB connection to '{1}'".format(err, remote_server_src))
         return
     curs_src = conn_remote_src.cursor()
     read_sensors_query = "SELECT sensor_label, decimals, cumulative, unit, consolidated" \
@@ -178,7 +180,7 @@ def rsync_pictures_from_server(local_sensor, remote_server_src, conn_local_dest)
     try:
         conn_remote_src = db_module.get_conn(host=remote_server_src)  # Connect to REMOTE PostgreSQL DB
     except Exception as err:
-        log.error("\tException: {0}".format(err))
+        log.exception("Exception when trying to connect to remote DB:")
         return
     curs_src = conn_remote_src.cursor()
     read_filepath_query = "SELECT filepath_last, filepath_data" \
@@ -347,18 +349,20 @@ def main():  # Expected to be called once per minute
     # end of for-loop on each sensor
 
     # Add values to database
-    # TODO manage case if 'values' is empty
-    sql_insert = "INSERT INTO raw_measures(epochtimestamp, measure, sensor) VALUES " \
-                 + ",".join(values) + ";"
-    log.info(str(sql_insert))
-    try:
-        curs.execute(sql_insert)
-    except Exception as err:
-        log.error("An Error occurred when trying to execute the upper request!")
-        log.error(err)
-        failed_request.append(sql_insert)
-    finally:
-        conn.commit()
+    if values:
+        sql_insert = "INSERT INTO raw_measures(epochtimestamp, measure, sensor) VALUES " \
+                     + ",".join(values) + ";"
+        log.info(str(sql_insert))
+        try:
+            curs.execute(sql_insert)
+        except Exception as err:
+            log.exception("Error '{0}' occurred when trying to execute the upper request!".format(err))
+            failed_request.append(sql_insert)
+        finally:
+            conn.commit()
+    else:
+        log.debug("values = {0}".format(values))
+        log.warning("No values to insert into DB!")
 
     if local_camera_name is not None:
         is_camera_mult = is_multiple(main_call_epoch, 900)  # is True every 900 s / 15 min
