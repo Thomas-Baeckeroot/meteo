@@ -10,7 +10,7 @@ printf -- "WEB_USER = %s\n" "${WEB_USER}"
 printf -- "package_tool_ok = %s\n" "${package_tool_ok}"
 printf -- "Python(3) Virtual environment = %s\n" "${PY_VENV}"
 
-
+# Check for Python3
 printf -- "\n\n*** APT-install for Python 3... ***\n"
 if [ "$package_tool_ok" = true ]
 then
@@ -23,13 +23,6 @@ else
 	fi
 fi
 
-printf -- "\n\n*** Create Python virtual environment... ***\n"
-printf -- "(administrator rights required to create venv in shared folder)\n"
-sudo python3 -m venv ${PY_VENV}
-sudo chmod -R 755 ${PY_VENV}
-printf -- "\nActivate the environment with 'source %s/bin/activate'\n" "${PY_VENV}"
-source "${PY_VENV}/bin/activate"
-
 printf -- "\n\n*** APT installs for Python PIP3 (Python package manager)... ***\n"
 # Instead of the below 'python3-pip' install, depending on your Linux distro, it may be more reliable to follow
 # instructions from https://pip.pypa.io/en/stable/installing/ :
@@ -38,67 +31,19 @@ printf -- "\n\n*** APT installs for Python PIP3 (Python package manager)... ***\
 if [ "$package_tool_ok" = true ]
 then
 	sudo apt install -y python3-pip
+	sudo apt install -y python3-venv
 else
 	sudo python3 -m ensurepip
 	sudo python3 -m pip install --upgrade pip
 fi
 
+# Create virtual environment with required libraries
+sudo ./install_python_venv_and_libs.sh "${PY_VENV}"
+# sudo sh -c ./install_python_venv_and_libs.sh
+# sudo sh -c ./install_python_venv_and_libs.sh
+
+printf -- "\n\n*** Install Python3 camera module... ***\n"
 apt_install_or_skip python3-picamera
-
-printf -- "\n\nUpgrade existing packages to last version:\n"
-sudo pip3 list | grep -v "Package" | grep -v "\-\-\-\-\-\-\-" | cut -d ' ' -f 1 | xargs -n1 sudo pip3 install -U
-
-printf -- "\n\n*** PIP Installs: ***\n"
-
-printf -- "- pydevd for Python remote debugging\n"
-# check https://raspberrypi.stackexchange.com/questions/70018/remotely-debug-python-code-on-pi-using-eclipse-in-windows for further details
-sudo pip3 install -U pydevd
-
-printf -- "- gpiozero for CPU temperature reading and other GPIO\n"
-sudo pip3 install gpiozero
-
-printf -- "- RPi.GPIO for input/output management\n"
-sudo pip3 install RPi.GPIO || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
-
-printf -- "- Adafruit_GPIO for input/output management\n"
-sudo pip3 install Adafruit_GPIO || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
-
-# note: if issues for Adafruit_GPIO install, launch with "python -m pip" instead of "pip"
-printf -- "- tsl2561 for sensors reading\n"
-# A tutorial? about how to use the pressure/humidity/light/temperature sensors with I2C/SPI:
-# https://learn.sparkfun.com/tutorials/raspberry-pi-spi-and-i2c-tutorial/all
-# https://pypi.org/project/tsl2561/
-sudo pip3 install tsl2561 || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
-
-printf -- "- bluetin.io for HC-SR04 distance sensor reading\n"
-sudo pip3 install Bluetin_Echo || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
-
-printf -- "- svg.charts for drawing SVG graphics on web server\n\n"
-sudo pip3 install svg.charts
-
-# Uncomment below to update all pip packages:
-# sudo pip3 list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo pip3 install -U
-# sudo pip3 list | grep -v "Package" | grep -v "\-\-\-\-\-\-\-" | cut -d ' ' -f 1 | xargs -n1 sudo pip3 install -U
-
-# sudo pip3 install mariadb
-sudo pip3 install pymysql
-
-
-# Replaced by apt install (preferable)
-# sudo pip3 install psycopg2
-
-printf -- "\n\n*** Install BMP sensors library... ***\n"
-cd /tmp
-# sudo apt-get install git build-essential python-dev python-smbus
-# Remove any pre-existing folder:
-sudo rm -rf /tmp/Adafruit_Python_BMP
-printf -- "*** BMP sensors: cloning... ***\n\n"
-git clone https://github.com/adafruit/Adafruit_Python_BMP.git
-cd Adafruit_Python_BMP
-# printf -- "\n*** BMP sensors: Python 2... ***\n\n"
-# sudo python setup.py install || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
-printf -- "\n*** BMP sensors: Python 3... ***\n\n"
-sudo python3 setup.py install || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
 
 # Executed on dev machine / includes GitHub projet:
 # mkdir -p ~/workspace/meteo/src/lib

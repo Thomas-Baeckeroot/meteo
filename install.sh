@@ -3,6 +3,7 @@ set -e
 #set +x
 set -x
 
+# Constants
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 printf -- "Script directory: '%s'\n" "${SCRIPT_DIR}"
 START_DIR=$(pwd)
