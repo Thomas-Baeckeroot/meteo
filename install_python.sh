@@ -14,6 +14,7 @@ printf -- "Python(3) Virtual environment = %s\n" "${PY_VENV}"
 printf -- "\n\n*** APT-install for Python 3... ***\n"
 if [ "$package_tool_ok" = true ]
 then
+  printf -- "\nAdministrator password is required for some actions: installing necessary package on system, creating venv, ...\n"
 	sudo apt install -y python3 python3-dev
 else
 	if ! command -v python3 &> /dev/null
