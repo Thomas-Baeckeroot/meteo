@@ -3,6 +3,7 @@
 
 import cgi
 import locale
+import logging
 import re
 import sys
 import time
@@ -13,8 +14,17 @@ import db_module
 
 # from sensors_functions import iso_timestamp
 
+HOME = db_module.get_home()
+logging.basicConfig(
+    filename= HOME + "/server3.log",  # = "/home/web/server3.log"
+    level=logging.DEBUG,
+    format='%(asctime)s\t%(levelname)s\t%(name)s\t%(message)s')
+log = logging.getLogger("index.html.py")
+
 METEO_FOLDER = "/home/pi/meteo/"
 CAPTURES_FOLDER = METEO_FOLDER + "captures/"
+
+log.info("Start generating index.html")
 
 form = cgi.FieldStorage()
 locale.getdefaultlocale()
@@ -152,3 +162,4 @@ except Exception as err:
 
 html = html + "</body></html>"
 print(html)
+log.info("Terminated generating index.html")

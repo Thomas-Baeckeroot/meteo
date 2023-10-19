@@ -41,7 +41,7 @@ def get_conn(host=None):
         user = config.get('DATABASE', 'User')  # Could have default fallback to os.getusername()
         password = config.get('DATABASE', 'Password')
         port = config.getint('DATABASE', 'Port', fallback=3306)
-        conn = db_module.connect(
+        conn = db_module.Connect(
             database=database,
             user=user,
             password=password,
@@ -51,7 +51,7 @@ def get_conn(host=None):
         user = config.get('remote:' + host, 'User')  # Could have default fallback to os.getusername()
         password = config.get('remote:' + host, 'Password')
         port = config.getint('remote:' + host, 'Port', fallback=3306)
-        conn = db_module.connect(
+        conn = db_module.Connect(
             host=host,
             database=database,
             user=user,

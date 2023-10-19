@@ -4,45 +4,59 @@
 
 import http.server
 import cgitb
-# import logging
+import logging
+import signal
 import sys
 
 from utils import get_config
+from home_web.db_module import get_home
+
+
+def sigterm_handler(signum, frame):
+    log.info("Received SIGTERM signal. Exiting gracefully...")
+    close_server()
+
+
+def close_server():
+    # Close the server socket to stop accepting new connections
+    try:
+        httpd.socket.close()
+    except Exception as e:
+        log.error(f"Error while closing the server socket: {e}")
+    sys.exit(0)
+
+
+signal.signal(signal.SIGTERM, sigterm_handler)
+
+HOME = get_home()
 
 # Due to Logger unable to get error message details, then it has been commented.
 # Outputs will tentatively be catch by redirection on call.
 
+logging.basicConfig(
+    filename= HOME + "/server3.log",  # = "/home/web/server3.log"
+    level=logging.DEBUG,
+    format='%(asctime)s\t%(levelname)s\t%(name)s\t%(message)s')
+log = logging.getLogger("server3.py")
 
-class LoggerWriter:
-    def __init__(self, level):
-        # self.level is really like using log.debug(message)
-        # at least in my case
-        self.level = level
-                                    
-    def write(self, message):
-        # if statement reduces the amount of newlines that are
-        # printed to the logger
-        if message != '\n':
-            self.level(message)
-                                                                                    
-    def flush(self):
-        # create a flush method so things can be flushed when
-        # the system wants to. Not sure if simply 'printing'
-        # sys.stderr is the correct way to do it, but it seemed
-        # to work properly for me.
-        self.level(sys.stderr)
-        
 
-# print = logging.info
+log.info("Path to Python binary (expected starting with venv): {0}".format(sys.executable))
 
-# logging.basicConfig(filename='/home/web/server3.log',level=logging.DEBUG)
+log.info("Checking list of modules available in current environment...")
+required_modules = ["pymysql", "chart.svg"]
+i = 1
+for module_name, module in sys.modules.items():
+    log.debug("  - {:3d} - {}".format(i, module_name))
+    if module_name in required_modules:
+        required_modules.remove(module_name)
+    i += 1
 
-# log = logging.getLogger()
-# sys.stdout = LoggerWriter(log.info)
-# sys.stderr = LoggerWriter(log.warning)
-
-# logging.info('log started - INFO level')
-# logging.error('log started - ERROR level')
+if required_modules:
+    log.error("The following required modules are missing:")
+    for missing_module in required_modules:
+        log.error("- {}".format(missing_module))
+else:
+    log.info("All required modules are present.")
 
 cgitb.enable()
 
@@ -54,13 +68,13 @@ server = http.server.HTTPServer
 handler = http.server.CGIHTTPRequestHandler
 # handler.cgi_directories = ["/home_web/"]  # Should be better if other than '/' but never worked...
 handler.cgi_directories = ["/"]
-print("Serveur P3 actif sur le port: " + str(port))
-print("handler.cgi_directories = ")
-print(handler.cgi_directories)
+log.debug("Serveur P3 actif sur le port: " + str(port))
+log.debug("handler.cgi_directories = ")
+log.debug(handler.cgi_directories)
 
 httpd = server(server_address, handler)
 try:
     httpd.serve_forever()
 except KeyboardInterrupt:
-    print("\nKeyboard interruption intercepted. Exiting...")
-    httpd.socket.close()
+    log.info("Keyboard interruption intercepted. Exiting gracefully...")
+    close_server()
