@@ -132,6 +132,20 @@ psql --dbname meteo --command "GRANT SELECT ON ALL TABLES IN SCHEMA public TO ${
 
 # todo check that user ${INSTALL_USER} has access to /var/log/meteo.log
 
+printf -- "\n\n*** Create folder where images will be saved... ***\n"
+init_script_folder=$(get_init_script_folder)
+if [ "${init_script_folder}" = "${UNKNOWN_LOCATION_ERROR}" ]; then
+  printf -- "Initialization script folder not found. Please install manually.\n"
+  read -p "Press Enter to continue..."
+else
+  # The init_script_folder exists
+  # FIXME NOT IMPLEMENTED
+  read -p "NOT IMPLEMENTED"
+  # cp "${SCRIPT_DIR}/susanoo_WeatherStation_startWebServer.sh /usr/local/etc/rc.d/weatherStationWeb.sh
+  # Insert set of instructions here
+fi
+
+
 # TODO Scripts launched at startup might be done with a .sh file in  /usr/local/etc/rc.d/
 
 cat << EOF

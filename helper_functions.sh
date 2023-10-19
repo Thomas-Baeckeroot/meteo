@@ -61,3 +61,21 @@ create_link() {
   sudo ln -f -s "${target_file}" "${link_file}"
   sudo chmod 755 "${link_file}"
 }
+
+UNKNOWN_LOCATION_ERROR="Unknown location for init scripts"
+get_init_script_folder() {
+    if [ -d /etc/rc.d ]; then
+        echo "/etc/rc.d"
+    elif [ -d /usr/local/etc/rc.d ]; then
+        echo "/usr/local/etc/rc.d"
+    elif [ -d /etc/init.d ]; then
+        echo "/etc/init.d"
+    elif [ -f /etc/rc.local ]; then
+        echo "/etc/rc.local"
+    elif [ -d /etc/systemd/system ]; then
+        echo "/etc/systemd/system"
+    else
+        echo "${UNKNOWN_LOCATION_ERROR}"
+    fi
+}
+
