@@ -40,25 +40,16 @@ source "${SCRIPT_DIR}/install_python.sh"
 # command should be 'synopkg install_from_server py3k', 'synopkg install_from_server MariaDB10'
 
 printf -- "Installing MariaDB (database server and required Connector-C, etc...)...\n"
-sudo apt install -y mariadb-server libmariadb-dev
+apt_install_or_skip mariadb-server
+apt_install_or_skip libmariadb-dev
 
 printf -- "\n\n*** APT installs for:... ***\n"
-printf -- "- Picamera Python module\n"
-# printf -- "- postgresql database\n"
 printf -- "- gpac to get 'MP4Box' command for webcam video captures\n"
 # As detailed https://www.raspberrypi.org/documentation/usage/camera/raspicam/raspivid.md
-
 printf -- "Installing multimedia...\n"
-sudo apt install -y gpac
-
-# printf -- "Installing HTTP server functionality...\n"  # Not required anymore?
-# sudo apt install -y libmicrohttpd12
-
-printf -- "Installing MariaDB (database server and required Connector-C, etc...)...\n"
-sudo apt install -y mariadb-server libmariadb-dev
+apt_install_or_skip gpac
 
 ## Also useful for developing from ssh command-line:
-
 # sudo apt install vim vim-addon-manager
 
 ## mkdir -p ~/.vim/autoload ~/.vim/bundle
@@ -78,8 +69,8 @@ mkdir -p "${HOME}/meteo/captures/"
 
 printf -- "\n\n*** User to run web-server from... ***\n"
 
-if [[ $(id "${WEB_USER}" &>/dev/null) ]]; then
-  printf -- "User \"%s\" already exists.\n" "${WEB_USER}"
+if id "${WEB_USER}" &>/dev/null; then
+  printf -- "User \"%s\" already exists. No need to create it.\n" "${WEB_USER}"
 else
   printf -- "\nUser \"%s\" does not exist but is required to run the web-server.\n" "${WEB_USER}"
   # Ask for confirmation before creating the user
@@ -99,12 +90,13 @@ fi
 
 # sudo su - ${WEB_USER}
 # TODO Create a variable that replaces '${HOME}/../${WEB_USER}' by direct '${HOME_WEB_USER}' (without '..')
-sudo runuser --login --command "ln -f -s ${HOME}/meteo/src/main/py/home_web/index.html.py ${HOME}/../${WEB_USER}/index.html"
-sudo runuser --login --command "ln -f -s ${HOME}/meteo/src/main/py/home_web/graph.svg.py ${HOME}/../${WEB_USER}/graph.svg"
-sudo runuser --login --command "ln -f -s ${HOME}/meteo/src/main/py/home_web/capture.html.py ${HOME}/../${WEB_USER}/capture.html"
-sudo runuser --login --command "mkdir -p ${HOME}/../${WEB_USER}/html"
-sudo runuser --login --command "ln -f -s ${HOME}/meteo/src/main/py/home_web/html/favicon.svg ${HOME}/../${WEB_USER}/html/favicon.svg"
-sudo runuser --login --command "ln -f -s ${HOME}/meteo/captures ${HOME}/../${WEB_USER}/captures"
+create_link "${HOME}/meteo/src/main/py/home_web/index.html.py" "${HOME}/../${WEB_USER}/index.html"
+create_link "${HOME}/meteo/src/main/py/home_web/graph.svg.py" "${HOME}/../${WEB_USER}/graph.svg"
+create_link "${HOME}/meteo/src/main/py/home_web/capture.html.py" "${HOME}/../${WEB_USER}/capture.html"
+sudo mkdir -p "${HOME}/../${WEB_USER}/html"
+sudo chmod 755 "${HOME}/../${WEB_USER}/html" 
+create_link "${HOME}/meteo/src/main/py/home_web/html/favicon.svg" "${HOME}/../${WEB_USER}/html/favicon.svg"
+create_link "${HOME}/meteo/captures" "${HOME}/../${WEB_USER}/captures"
 
 if ask_confirmation "Should we create database?" "yes"; then
   printf -- "Create database...\n"
@@ -167,7 +159,7 @@ nohup -- ${PY_VENV}/bin/python3 -u ${HOME}/meteo/src/main/py/watchdog_gpio.py >>
 # Camera trap:
 sudo su - ${INSTALL_USER} --command \"nohup -- ${PY_VENV}/bin/python3 ${HOME}/meteo/src/main/py/video_capture_on_motion.py >> ${HOME}/meteo/video.log 2>&1\" &
 
-# Webserver:
+# Webserver: (on a Synology NAS, it should be in /usr/local/etc/rc.d/weatherStationWeb.sh)
 sudo su - ${WEB_USER} --command \"nohup -- ${PY_VENV}/bin/python3 ${HOME}/meteo/src/main/py/server3.py >> ${HOME}/../${WEB_USER}/server3.log\" &
 # Required to keep WiFi always on:
 sleep 30 && sudo iw dev wlan0 set power_save off &

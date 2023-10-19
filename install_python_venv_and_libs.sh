@@ -11,8 +11,9 @@ chmod -R 755 "${PY_VENV}"
 printf -- "\nActivate the environment with 'source %s/bin/activate'\n" "${PY_VENV}"
 source "${PY_VENV}/bin/activate"
 
-printf -- "\n\nUpgrade existing packages to last version:\n"
-python3 -m pip list | grep -v "Package" | grep -v "\-\-\-\-\-\-\-" | cut -d ' ' -f 1 | xargs -n1 pip3 install -U
+printf -- "\n\nUpgrade of existing packages to last version:\n"
+python3 -m pip list | grep -v "Package" | grep -v "\-\-\-\-\-\-\-" | cut -d ' ' -f 1 | xargs -n1 pip3 install -U \
+|| printf -- "WARNING! Upgrade of packages to last version FAILED (may happen during re-install). Proceeding anyway...\n"
 
 printf -- "\n\n*** PIP Installs: ***\n"
 

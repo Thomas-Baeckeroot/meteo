@@ -48,3 +48,16 @@ ask_confirmation() {
     # Check if the user confirmed (yes or y)
     [ "${user_input}" = "y" ] || [ "${user_input}" = "yes" ]
 }
+
+# Create symbolic link ${link_file} pointing to ${target_file}
+create_link() {
+  local target_file="$1"  # file targeted by link
+  local link_file  # link to be created
+  link_file="$2"
+
+  # sudo runuser --login --command "ln -f -s ${HOME}/meteo/src/main/py/home_web/index.html.py ${HOME}/../${WEB_USER}/index.html"
+  # Used to be the upper. Why complicated?
+  # no command "runuser" on Synology NAS,
+  sudo ln -f -s "${target_file}" "${link_file}"
+  sudo chmod 755 "${link_file}"
+}

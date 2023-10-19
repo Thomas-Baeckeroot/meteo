@@ -25,6 +25,7 @@ else
 fi
 
 printf -- "\n\n*** APT installs for Python PIP3 (Python package manager)... ***\n"
+printf -- "(administrator/sudo password may be required)\n"
 # Instead of the below 'python3-pip' install, depending on your Linux distro, it may be more reliable to follow
 # instructions from https://pip.pypa.io/en/stable/installing/ :
 # curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py
@@ -39,7 +40,7 @@ else
 fi
 
 # Create virtual environment with required libraries
-sudo ./install_python_venv_and_libs.sh "${PY_VENV}"
+sudo "${SCRIPT_DIR}/install_python_venv_and_libs.sh" "${PY_VENV}"
 # sudo sh -c ./install_python_venv_and_libs.sh
 # sudo sh -c ./install_python_venv_and_libs.sh
 
@@ -59,3 +60,4 @@ apt_install_or_skip python3-picamera
 # sudo python3 -m pip install pydevd gpiozero svg.charts
 # sudo python3 -m pip install PyMySQL
 # TODO @NAS: Uninstall if still unecessary: PhpMyAdmin ( < Web Station    & < Php7.2?)
+
