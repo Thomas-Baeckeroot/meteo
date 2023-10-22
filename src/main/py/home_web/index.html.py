@@ -16,7 +16,7 @@ import db_module
 
 HOME = db_module.get_home()
 logging.basicConfig(
-    filename= HOME + "/server3.log",  # = "/home/web/server3.log"
+    filename= HOME + "/susanoo-web.log",  # = "/home/web/susanoo-web.log"
     level=logging.DEBUG,
     format='%(asctime)s\t%(levelname)s\t%(name)s\t%(message)s')
 log = logging.getLogger("index.html.py")

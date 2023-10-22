@@ -1,41 +1,27 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# import calendar
-# import datetime
+import failed_request
+import hc_sr04_lib_test
+import home_web.db_module as db_module
+import logging
 import os
 import pathlib
-# import pydevd  # If failing: "pip install pydevd"
+import sensors_functions as func
 import socket
-# import sqlite3
 import subprocess
 import sys
 import time
 import traceback
-# import tsl2561  # If failing: pip install: Adafruit_GPIO tsl2561 (and also RPi.GPIO ?)
-# from gpiozero import CPUTemperature  # If failing: "pip install gpiozero"
-# import Adafruit_BMP.BMP085 as BMP085
-
-import failed_request
-import sensors_functions as func
-from time import sleep
 import utils
-import hc_sr04_lib_test
-import home_web.db_module as db_module
 
-# path_to_pydevd = "home/pi/.local/bin/pydevd"  # found by 'find / -name pydevd'
-# sys.path.append(path_to_pydevd)
-
-# debugger_ip_address = "192.168.0.63"
-# pydevd.settrace(debugger_ip_address, port=5678)
-import logging
+from time import sleep
 
 logging.basicConfig(
-    filename=utils.get_home() + "/meteo/logfile.log",
+    filename=utils.get_home() + "/susanoo-data.log",  # = /home/pi/susanoo-data.log
     level=logging.DEBUG,
     format='%(asctime)s\t%(levelname)s\t%(name)s\t%(message)s')
 log = logging.getLogger("periodical_sensor_reading.py")
-
 CONSOLIDATE_VAL = False
 
 

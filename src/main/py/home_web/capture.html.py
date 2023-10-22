@@ -13,7 +13,7 @@ from db_module import get_home
 
 HOME = get_home()
 logging.basicConfig(
-    filename= HOME + "/server3.log",  # = "/home/web/server3.log"
+    filename= HOME + "/susanoo-web.log",  # = /home/web/susanoo-web.log
     level=logging.DEBUG,
     format='%(asctime)s\t%(levelname)s\t%(name)s\t%(message)s')
 log = logging.getLogger("capture.html.py")
@@ -83,7 +83,7 @@ def get_newest_folder(folder):
     return last_folder
 
 
-log.debug("Starting building a capture page")
+log.info("Starting building a capture page")
 print("Content-type: text/html; charset=utf-8\n")
 bottom_note = BOTTOM_NOTE
 
@@ -234,4 +234,4 @@ Nom de l'appareil: <a style="font-family: monospace">""" + camera + """</a>&nbsp
 </html>"""
 
 print(html)
-log.debug("Terminated building a capture page")
+log.info("Terminated building a capture page")

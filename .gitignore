@@ -1,5 +1,8 @@
 *.log
+*.log.gz
 *.pyc
 .idea/
+captures/
 meteo.ini
 meteo.db
+failed_request.sql

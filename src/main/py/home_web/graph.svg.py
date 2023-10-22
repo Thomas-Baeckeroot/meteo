@@ -6,17 +6,17 @@ Serves SVG chart of requested sensor.
 """
 
 import cgi
-# import os
-# from svg.charts.plot import Plot
-# from svg.charts import bar
-# from svg.charts import time_series
-# from svg.charts import pie
-# from svg.charts import schedule
-from svg.charts import line
-# import time
 
 import db_module
+import logging
 
+from svg.charts import line
+
+logging.basicConfig(
+    filename=db_module.get_home() + "/susanoo-web.log",  # = /home/pi/susanoo-web.log
+    level=logging.DEBUG,
+    format='%(asctime)s\t%(levelname)s\t%(name)s\t%(message)s')
+log = logging.getLogger("graph.svg.py")
 
 SECONDS_IN_ONE_DAY = 86400
 METEO_FOLDER = "/home/pi/meteo/"
@@ -128,7 +128,10 @@ def save_samples():
 
 
 if __name__ == '__main__':
+    log.info("Start creating SVG")
     print("Content-type: image/svg+xml; charset=utf-8\r\n\r\n")
     print("""<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
         "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\r\n""")
     save_samples()
+    log.info("Terminated creating SVG")
+
