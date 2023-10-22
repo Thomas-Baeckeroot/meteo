@@ -10,9 +10,6 @@ import pathlib
 import sensors_functions as func
 import socket
 import subprocess
-import sys
-import time
-import traceback
 import utils
 
 from time import sleep
@@ -20,7 +17,7 @@ from time import sleep
 logging.basicConfig(
     filename=utils.get_home() + "/susanoo-data.log",  # = /home/pi/susanoo-data.log
     level=logging.DEBUG,
-    format='%(asctime)s\t%(levelname)s\t%(name)s\t%(message)s')
+    format='%(asctime)s\t%(levelname)s\t%(name)s (%(process)d)\t%(message)s')
 log = logging.getLogger("periodical_sensor_reading.py")
 CONSOLIDATE_VAL = False
 

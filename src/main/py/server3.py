@@ -34,9 +34,9 @@ HOME = get_home()
 # Outputs will tentatively be catch by redirection on call.
 
 logging.basicConfig(
-    filename= HOME + "/server3.log",  # = "/home/web/server3.log"
+    filename=HOME + "/susanoo-web.log",
     level=logging.DEBUG,
-    format='%(asctime)s\t%(levelname)s\t%(name)s\t%(message)s')
+    format='%(asctime)s\t%(levelname)s\t%(name)s (%(process)d)\t%(message)s')
 log = logging.getLogger("server3.py")
 
 

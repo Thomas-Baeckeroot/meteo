@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import cgi
+import db_module
 import locale
 import logging
 import re
@@ -10,15 +11,13 @@ import time
 import traceback
 import urllib.parse
 
-import db_module
-
 # from sensors_functions import iso_timestamp
 
 HOME = db_module.get_home()
 logging.basicConfig(
-    filename= HOME + "/susanoo-web.log",  # = "/home/web/susanoo-web.log"
+    filename=HOME + "/susanoo-web.log",  # = "/home/web/susanoo-web.log"
     level=logging.DEBUG,
-    format='%(asctime)s\t%(levelname)s\t%(name)s\t%(message)s')
+    format='%(asctime)s\t%(levelname)s\t%(name)s (%(process)d)\t%(message)s')
 log = logging.getLogger("index.html.py")
 
 METEO_FOLDER = "/home/pi/meteo/"
@@ -88,7 +87,7 @@ try:
         sensor_name = sensor_name.decode('ascii')
 
         if unit == "picture":  # Below 10, sensors are not displayed in top list (ie: pictures from camera)
-            arguments = {'image':filepath_data}
+            arguments = {'image': filepath_data}
             result = urllib.parse.urlencode(arguments, quote_via=urllib.parse.quote_plus)
 
             # 'password=xyz&username=administrator'   # "image=" + urllib.parse.quote(filepath_data)
@@ -113,7 +112,7 @@ try:
 
             sensor_list = sensor_list + "<tr style=\"border: .069em solid lightgray;" + style_row + "\">"
             sensor_list = sensor_list + "\n\t<td style=\"padding-left: 1em;padding-right: 1em;\">" + sensor_label
-            if (sensor_name in last_values):
+            if sensor_name in last_values:
                 (epochdate, value) = last_values[sensor_name]
                 if oldest_date < epochdate:
                     oldest_date = epochdate
@@ -132,9 +131,10 @@ try:
                     "&width=100\" style=\"width:6.25em;height:2.5em; background-color: whitesmoke\" />" + \
                     "</a><td></tr>\n"
             else:
-                sensor_list = sensor_list + "</td>\n<td style=\"text-align: center;padding-left: 1em;padding-right: 2em;" \
-                              + style_value + "\">-</td>\n" \
-                              + "<td style=\"padding-left: 1em;padding-right: 2em;font-size: x-small;text-align: center;\">-" \
+                sensor_list = sensor_list + "</td>\n" \
+                              + "<td style=\"text-align: center;padding-left: 1em;padding-right: 2em;" \
+                              + style_value + "\">-</td>\n<td style=" \
+                              + "\"padding-left: 1em;padding-right: 2em;font-size: x-small;text-align: center;\">-" \
                               + "</td>\n<td style=\"padding-left: 1em;padding-right: 2em;\"><td></tr>\n"
 
         # end of 'for sensor in sensors:'

@@ -1,26 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import sys
-from math import pi
-
+import Bluetin_Echo
+import dbmodule_import as db
 import home_web.db_module as db_module
 import logging
 import sensors_functions
+import sys
 import utils
 
-logging.basicConfig(
-    filename=utils.get_home() + "/meteo/logfile.log",
-    level=logging.DEBUG,
-    format='%(asctime)s\t%(levelname)s\t%(name)s\t%(message)s')
-log = logging.getLogger("hc_sr04_lib_test.py")
-
-import logging
+from math import pi
 
 logging.basicConfig(
-    filename=utils.get_home() + "/meteo/logfile.log",
+    filename=utils.get_home() + "/susanoo-data.log",
     level=logging.DEBUG,
-    format='%(asctime)s\t%(levelname)s\t%(name)s\t%(message)s')
+    format='%(asctime)s\t%(levelname)s\t%(name)s (%(process)d)\t%(message)s')
 log = logging.getLogger("hc_sr04_lib_test.py")
 
 # todo Below variables should be stored in config file ~/.config/meteo.conf

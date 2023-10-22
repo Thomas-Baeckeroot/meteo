@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import utils
 import logging
+import utils
 
 logging.basicConfig(
     filename=utils.get_home() + "/susanoo-data.log",
     level=logging.DEBUG,
-    format='%(asctime)s\t%(levelname)s\t%(name)s\t%(message)s')
+    format='%(asctime)s\t%(levelname)s\t%(name)s (%(process)d)\t%(message)s')
 log = logging.getLogger("failed_request.py")
 
 request_file = utils.get_home() + "/meteo/failed_request.sql"

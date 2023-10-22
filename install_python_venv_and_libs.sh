@@ -4,6 +4,9 @@ set -x
 
 PY_VENV=$1
 
+printf -- "\n\n*** APT installs for Python Virtual Environment... ***\n"
+apt_install_or_skip python3-venv
+
 printf -- "\n\n*** Create Python virtual environment '%s'... ***\n" "${PY_VENV}"
 # printf -- "(administrator rights required to create venv in shared folder)\n"
 python3 -m venv "${PY_VENV}"
@@ -24,22 +27,20 @@ pip3 install -U pydevd
 printf -- "- gpiozero for CPU temperature reading and other GPIO\n"
 pip3 install gpiozero
 
-printf -- "- RPi.GPIO for input/output management\n"
+printf -- "- RPi.GPIO for input/output management (may fail on non-raspberry systems)\n"
 pip3 install RPi.GPIO || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
 
-printf -- "- Adafruit_GPIO for input/output management\n"
+printf -- "- Adafruit_GPIO for input/output management (may fail on non-raspberry systems)\n"
 pip3 install Adafruit_GPIO || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
 
-printf -- "- Adafruit_GPIO INSTALLED\n"
-
 # note: if issues for Adafruit_GPIO install, launch with "python -m pip" instead of "pip"
-printf -- "- tsl2561 for sensors reading\n"
+printf -- "- tsl2561 for sensors reading (may fail on non-raspberry systems)\n"
 # A tutorial? about how to use the pressure/humidity/light/temperature sensors with I2C/SPI:
 # https://learn.sparkfun.com/tutorials/raspberry-pi-spi-and-i2c-tutorial/all
 # https://pypi.org/project/tsl2561/
 pip3 install tsl2561 || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
 
-printf -- "- bluetin.io for HC-SR04 distance sensor reading\n"
+printf -- "- bluetin.io for HC-SR04 distance sensor reading (may fail on non-raspberry systems)\n"
 pip3 install Bluetin_Echo || printf -- "Ignored errors. Ok if not run on Raspberry.\n"
 
 printf -- "- svg.charts for drawing SVG graphics on web server\n\n"

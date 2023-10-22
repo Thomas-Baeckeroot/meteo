@@ -94,7 +94,7 @@ create_link "${HOME}/meteo/src/main/py/home_web/index.html.py" "${HOME}/../${WEB
 create_link "${HOME}/meteo/src/main/py/home_web/graph.svg.py" "${HOME}/../${WEB_USER}/graph.svg"
 create_link "${HOME}/meteo/src/main/py/home_web/capture.html.py" "${HOME}/../${WEB_USER}/capture.html"
 sudo mkdir -p "${HOME}/../${WEB_USER}/html"
-sudo chmod 755 "${HOME}/../${WEB_USER}/html" 
+sudo chmod 755 "${HOME}/../${WEB_USER}/html"
 create_link "${HOME}/meteo/src/main/py/home_web/html/favicon.svg" "${HOME}/../${WEB_USER}/html/favicon.svg"
 create_link "${HOME}/meteo/captures" "${HOME}/../${WEB_USER}/captures"
 

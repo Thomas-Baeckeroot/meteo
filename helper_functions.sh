@@ -53,7 +53,7 @@ ask_confirmation() {
 create_link() {
   local target_file="$1"  # file targeted by link
   local link_file  # link to be created
-  link_file="$2"
+  link_file="$2"  # not using $(realpath "$2")
 
   # sudo runuser --login --command "ln -f -s ${HOME}/meteo/src/main/py/home_web/index.html.py ${HOME}/../${WEB_USER}/index.html"
   # Used to be the upper. Why complicated?
