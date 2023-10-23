@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import Bluetin_Echo
-import dbmodule_import as db
+# import dbmodule_import as db
 import home_web.db_module as db_module
 import logging
 import sensors_functions
