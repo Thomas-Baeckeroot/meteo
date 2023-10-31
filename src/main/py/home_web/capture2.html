@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <meta http-equiv="refresh" content="300">
+    <title>Picture selector</title>
+    <script src="script.js"></script>
+</head>
+<body>
+<div class="page">
+    <div class="picture-selector">
+
+        <table class="table-picture-selector">
+            <!-- border: .02em solid black -->
+            <tbody>
+            <tr style="text-align: left;">
+                <td><a href="index.html">accueil</a></td> <!-- style="border: none; background-color: transparent;" -->
+                <th colspan="4" class="cell-hours">0h/12h*</th>
+                <th colspan="4" class="cell-hours">1h</th>
+                <th colspan="4" class="cell-hours">2h</th>
+                <th colspan="4" class="cell-hours">3h</th>
+                <th colspan="4" class="cell-hours">4h</th>
+                <th colspan="4" class="cell-hours">5h</th>
+                <th colspan="4" class="cell-hours">6h</th>
+                <th colspan="4" class="cell-hours">7h</th>
+                <th colspan="4" class="cell-hours">8h</th>
+                <th colspan="4" class="cell-hours">9h</th>
+                <th colspan="4" class="cell-hours">10h</th>
+                <th colspan="4" class="cell-hours">11h</th>
+            </tr>
+            <tr style="font-size: small;">
+                <td class="cell-meridiem">am</td>
+                <td class="cell-mm" id="00h00">00</td>
+                <td class="cell-mm" id="00h15">15</td>
+                <td class="cell-mm" id="00h30">30</td>
+                <td class="cell-mm" id="00h45">45</td>
+                <td class="cell-mm" id="01h00">00</td>
+                <td class="cell-mm" id="01h15">15</td>
+                <td class="cell-mm" id="01h30">30</td>
+                <td class="cell-mm" id="01h45">45</td>
+                <td class="cell-mm" id="02h00">00</td>
+                <td class="cell-mm" id="02h15">15</td>
+                <td class="cell-mm" id="02h30">30</td>
+                <td class="cell-mm" id="02h45">45</td>
+                <td class="cell-mm" id="03h00">00</td>
+                <td class="cell-mm" id="03h15">15</td>
+                <td class="cell-mm" id="03h30">30</td>
+                <td class="cell-mm" id="03h45">45</td>
+                <td class="cell-mm" id="04h00">00</td>
+                <td class="cell-mm" id="04h15">15</td>
+                <td class="cell-mm" id="04h30">30</td>
+                <td class="cell-mm" id="04h45">45</td>
+                <td class="cell-mm" id="05h00">00</td>
+                <td class="cell-mm" id="05h15">15</td>
+                <td class="cell-mm" id="05h30">30</td>
+                <td class="cell-mm" id="05h45">45</td>
+                <td class="cell-mm" id="06h00">00</td>
+                <td class="cell-mm" id="06h15">15</td>
+                <td class="cell-mm" id="06h30">30</td>
+                <td class="cell-mm" id="06h45">45</td>
+                <td class="cell-mm" id="07h00">00</td>
+                <td class="cell-mm" id="07h15">15</td>
+                <td class="cell-mm" id="07h30">30</td>
+                <td class="cell-mm" id="07h45">45</td>
+                <td class="cell-mm" id="08h00">00</td>
+                <td class="cell-mm" id="08h15">15</td>
+                <td class="cell-mm" id="08h30">30</td>
+                <td class="cell-mm" id="08h45">45</td>
+                <td class="cell-mm" id="09h00">00</td>
+                <td class="cell-mm" id="09h15">15</td>
+                <td class="cell-mm" id="09h30">30</td>
+                <td class="cell-mm" id="09h45">45</td>
+                <td class="cell-mm" id="10h00">00</td>
+                <td class="cell-mm" id="10h15">15</td>
+                <td class="cell-mm" id="10h30">30</td>
+                <td class="cell-mm" id="10h45">45</td>
+                <td class="cell-mm" id="11h00">00</td>
+                <td class="cell-mm" id="11h15">15</td>
+                <td class="cell-mm" id="11h30">30</td>
+                <td class="cell-mm" id="11h45">45</td>
+            <tr style="font-size: small;">
+                <td class="cell-meridiem">pm</td>
+                <td class="cell-mm" id="12h00">00</td>
+                <td class="cell-mm" id="12h15">15</td>
+                <td class="cell-mm" id="12h30">30</td>
+                <td class="cell-mm" id="12h45">45</td>
+                <td class="cell-mm" id="13h00">00</td>
+                <td class="cell-mm" id="13h15">15</td>
+                <td class="cell-mm" id="13h30">30</td>
+                <td class="cell-mm" id="13h45">45</td>
+                <td class="cell-mm" id="14h00">00</td>
+                <td class="cell-mm" id="14h15">15</td>
+                <td class="cell-mm" id="14h30">30</td>
+                <td class="cell-mm" id="14h45">45</td>
+                <td class="cell-mm" id="15h00">00</td>
+                <td class="cell-mm" id="15h15">15</td>
+                <td class="cell-mm" id="15h30">30</td>
+                <td class="cell-mm" id="15h45">45</td>
+                <td class="cell-mm" id="16h00">00</td>
+                <td class="cell-mm" id="16h15">15</td>
+                <td class="cell-mm" id="16h30">30</td>
+                <td class="cell-mm" id="16h45">45</td>
+                <td class="cell-mm" id="17h00">00</td>
+                <td class="cell-mm" id="17h15">15</td>
+                <td class="cell-mm" id="17h30">30</td>
+                <td class="cell-mm" id="17h45">45</td>
+                <td class="cell-mm" id="18h00">00</td>
+                <td class="cell-mm" id="18h15">15</td>
+                <td class="cell-mm" id="18h30">30</td>
+                <td class="cell-mm" id="18h45">45</td>
+                <td class="cell-mm" id="19h00">00</td>
+                <td class="cell-mm" id="19h15">15</td>
+                <td class="cell-mm" id="19h30">30</td>
+                <td class="cell-mm" id="19h45">45</td>
+                <td class="cell-mm" id="20h00">00</td>
+                <td class="cell-mm" id="20h15">15</td>
+                <td class="cell-mm" id="20h30">30</td>
+                <td class="cell-mm" id="20h45">45</td>
+                <td class="cell-mm" id="21h00">00</td>
+                <td class="cell-mm" id="21h15">15</td>
+                <td class="cell-mm" id="21h30">30</td>
+                <td class="cell-mm" id="21h45">45</td>
+                <td class="cell-mm" id="22h00">00</td>
+                <td class="cell-mm" id="22h15">15</td>
+                <td class="cell-mm" id="22h30">30</td>
+                <td class="cell-mm" id="22h45">45</td>
+                <td class="cell-mm" id="23h00">00</td>
+                <td class="cell-mm" id="23h15">15</td>
+                <td class="cell-mm" id="23h30">30</td>
+                <td class="cell-mm" id="23h45">45</td>
+            </tr>
+            </tbody>
+        </table>
+
+    </div>
+    <div class="pict-container">
+        <div class="picture-frame" style="border: 1px solid #000;">
+            <img class="picture-img" src="capture/tilleul/2020/12-29/tilleul_2020-12-29Z10-30-09.jpg" id="capture-img"
+                 alt="camera image">
+        </div>
+        <div class="picture-info" style="border: 1px solid #000;">
+            <!-- TODO Place-holder for 'loading' gif -->
+
+            <!-- Image browser (next/previous year/month/day) -->
+            <table style="width: 100%;">
+                <tr>
+                    <td></td>
+                    <td>◂ &#9208; ▸<br/>
+                        ▶⏯ ▶▷▹►▻<br/>
+                        <!-- <button id="playPauseButton">▶</button> -->
+                    </td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>&lt;</td>
+                    <td><span id="current-hour">{hour}</span>:<span id="current-minute">{minute}</span></td>
+                    <td>&gt;</td>
+                </tr>
+                <tr>
+                    <td>&lt;</td>
+                    <td><span id="current-day">{day}</span></td>
+                    <td>&gt;</td>
+                </tr>
+                <tr>
+                    <td>&lt;&lt;</td>
+                    <td><span id="current-month">{month}</span></td>
+                    <td>&gt;&gt;</td>
+                </tr>
+                <tr>
+                    <td>&lt;&lt;&lt;<br/>⏮</td>
+                    <td><span id="current-year">{year}</span></td>
+                    <td>&gt;&gt;&gt;<br/>⏭</td>
+                </tr>
+            </table>
+            <br/>
+            <!-- TODO Place-holder for analog clock -->
+            <!-- TODO Place-holder for timezone selector
+                 [ GMT ]v
+                 | CET |
+                 | CEST|
+                 -->
+            <!-- TODO Place-holder for list of available years
+                 ( prerequisite: calendar.json )
+                 [ 2020 | 2021 | 2022 | 2023 ]
+                 -->
+            <!-- TODO Place-holder for calendar of selected year
+                 ( prerequisite: calendar.json )
+                 [ J |  1  2  3  4  5  6  7  8  9 10    ]
+                 [   | 11 12 13 14 15 16 17 18 19 20    ]
+                 [   | 21 22 23 24 25 26 27 28 29 30 31 ]
+                 [ F |  1  2  3  4  5  6  7  8  9 10    ]
+                 [   | 11 12 13 14 15 16 17 18 19 20    ]
+                 [   | 21 22 23 24 25 26 27 28          ]
+                 [ ... ]
+                 -->
+            <!-- TODO Place-holder for list of sensors
+                 ( prerequisite: calendar.json )
+                 [ > tilleul   < ]
+                 [   grangette   ]
+                 -->
+            <p>Sensor name: <span id="current-sensorName">{sensorName}</span><br/></p>
+        </div>
+    </div>
+</div> <!-- page -->
+</body>
+</html>
