@@ -5,6 +5,7 @@
 import http.server
 import cgitb
 import logging
+import os
 import signal
 import sys
 
@@ -26,6 +27,59 @@ def close_server():
     sys.exit(0)
 
 
+def file_exists(filename):
+    if os.path.exists(filename):
+        # log.debug(f"File '{filename}' exists in the current folder.")
+        return True
+    else:
+        log.debug(f"File '{filename}' not found in the current folder.")
+        return False
+
+
+def check_symlinks():
+    for filename in ["capture.html", "capture.json", "graph.svg", "index.html"]:  # finishing with "index.html"
+        if file_exists(filename):
+            log.debug(f"File '{filename}' found in working directory.")
+        else:
+            if file_exists(filename + ".py"):
+                os.symlink(filename + ".py", filename)
+                log.warning(f"Symbolic link '{filename}' -> '{filename}.py' created in working directory.")
+            else:
+                log.error(f"Failed to find '{filename}.py' in working directory!")
+    return
+
+
+def current_dir_is_valid_working_dir():
+    if file_exists("index.html") or file_exists("index.html.py"):
+        log.debug(f"Current folder looks good as working directory for server.")
+        return True
+    else:
+        log.info("Working directory does not contain expected files for web server.")
+        log.warning("Please review the way the server is launched: "
+                    "it should be launched from the folder that contains 'index.html', etc...")
+        return False
+
+
+def check_working_dir():
+    # Server MUST be started from the folder containing index.html(.py)
+    log.info("Path to Python binary (expected starting with venv): {0}".format(sys.executable))
+    if not current_dir_is_valid_working_dir():
+        if file_exists("home_web"):
+            os.chdir("home_web")
+            if not current_dir_is_valid_working_dir():
+                os.chdir(get_home())
+                if not current_dir_is_valid_working_dir():
+                    log.critical("Unable to find pages to serve!")
+        else:
+            os.chdir(get_home())
+            if not current_dir_is_valid_working_dir():
+                log.critical("Unable to find pages to serve!")
+
+    check_symlinks()
+
+    return
+
+
 signal.signal(signal.SIGTERM, sigterm_handler)
 
 HOME = get_home()
@@ -39,14 +93,13 @@ logging.basicConfig(
     format='%(asctime)s\t%(levelname)s\t%(name)s (%(process)d)\t%(message)s')
 log = logging.getLogger("server3.py")
 
-
-log.info("Path to Python binary (expected starting with venv): {0}".format(sys.executable))
+check_working_dir()
 
 log.info("Checking list of modules available in current environment...")
 required_modules = ["pymysql", "chart.svg"]
 i = 1
 for module_name, module in sys.modules.items():
-    log.debug("  - {:3d} - {}".format(i, module_name))
+    # log.debug("  - {:3d} - {}".format(i, module_name))
     if module_name in required_modules:
         required_modules.remove(module_name)
     i += 1
@@ -71,6 +124,7 @@ handler.cgi_directories = ["/"]
 log.debug("Serveur P3 actif sur le port: " + str(port))
 log.debug("handler.cgi_directories = ")
 log.debug(handler.cgi_directories)
+log.debug("Launching server from path '{}'".format(os.getcwd()))
 
 httpd = server(server_address, handler)
 try:
