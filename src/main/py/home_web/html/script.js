@@ -120,7 +120,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const currentImage = data.img
 
         // Change the src attribute of the main image
-        document.getElementById("capture-img").src = "capture/tilleul/2020/12-29/" + currentImage;
+        document.getElementById("capture-img").src = "../captures/tilleul/2020/12-29/" + currentImage;
 
         // Extract sensorName using a regular expression
         let sensorName = currentImage.match(/^(.*?)_\d{4}-\d{2}-\d{2}/)[1];
