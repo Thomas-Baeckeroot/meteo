@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
-#set +x
-set -x
+set +x
+# set -x
 
 # Constants
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
@@ -13,10 +13,13 @@ source "${SCRIPT_DIR}/helper_functions.sh"
 # Parsing of .ini/.conf files from bash is described:
 #   here:     https://ajdiaz.wordpress.com/2008/02/09/bash-ini-parser/
 #   or there: https://github.com/rudimeier/bash_ini_parser
+printf -- "\n"
 WEB_USER=$(ask_with_default "Inform user to run the Web server or press ENTER for default" "web")
 
-INSTALL_USER=$(ask_with_default "Inform user to run the weather station (usually \"pi\" for default user on Raspberry Pi...) or press ENTER for default" "$(whoami)")
+printf -- "\nInform user to run the weather station\n(by default: user who launched the script, usually \"pi\" for default user on Raspberry Pi...)\n"
+INSTALL_USER=$(ask_with_default "or press ENTER for default" "$(whoami)")
 
+printf -- "\n"
 PY_VENV=$(ask_with_default "Inform Python virtual environment path or press ENTER for default" "/usr/local/share/susanoo-py-venv")
 
 # Test if the 'apt' package tool is available on running system:
@@ -84,7 +87,7 @@ else
 fi
 
 # TODO Create a variable that replaces '${HOME}/../${WEB_USER}' by direct '${HOME_WEB_USER}' (without '..')
-sudo mkdir "${HOME}/../${WEB_USER}/public_html"
+sudo mkdir -p "${HOME}/../${WEB_USER}/public_html"
 sudo chmod 755 "${HOME}/../${WEB_USER}/public_html"
 create_link "${HOME}/meteo/src/main/py/public_html/index.html.py" "${HOME}/../${WEB_USER}/public_html/index.html"
 create_link "${HOME}/meteo/src/main/py/public_html/graph.svg.py" "${HOME}/../${WEB_USER}/public_html/graph.svg"
@@ -93,6 +96,8 @@ sudo mkdir -p "${HOME}/../${WEB_USER}/public_html/html"
 sudo chmod 755 "${HOME}/../${WEB_USER}/public_html/html"
 create_link "${HOME}/meteo/src/main/py/public_html/html/favicon.svg" "${HOME}/../${WEB_USER}/public_html/html/favicon.svg"
 create_link "${HOME}/meteo/captures" "${HOME}/../${WEB_USER}/public_html/captures"
+
+
 
 if ask_confirmation "Should we create database?" "yes"; then
   printf -- "Create database...\n"
@@ -118,27 +123,31 @@ if ask_confirmation "Should we create database?" "yes"; then
   printf -- "> CREATE USER 'remote_pi'@'192.168.0.{server-IP}' IDENTIFIED BY 'SetRandomPassword123';\n"
   printf -- "> GRANT all privileges on meteo.* TO 'remote_pi'@'192.168.0.{server-IP}';\n"
   printf -- "\n"
+
+  if [[ "${WEB_USER}" != "${INSTALL_USER}" ]] ; then
+    # FIXME Below is for PostGreSQL, must be adapted for mariadb
+    createuser "${WEB_USER}" --no-superuser --no-createdb --no-createrole || printf -- "Ignoring error and proceeding: DB user already exists?\n"
+  fi
+  # FIXME Below was used for PostgreSQL, the same command will probably be required for MariaDB/MySQL
+  # psql --dbname meteo --command "GRANT SELECT ON ALL TABLES IN SCHEMA public TO ${WEB_USER};"
 fi
 
-if [[ "${WEB_USER}" != "${INSTALL_USER}" ]] ; then
-  # FIXME Below is for PostGreSQL, must be adapted for mariadb
-  createuser "${WEB_USER}" --no-superuser --no-createdb --no-createrole || printf -- "Ignoring error and proceeding: already existing\n"
-fi
-psql --dbname meteo --command "GRANT SELECT ON ALL TABLES IN SCHEMA public TO ${WEB_USER};"
 
-# todo check that user ${INSTALL_USER} has access to /var/log/meteo.log
 
-printf -- "\n\n*** Create folder where images will be saved... ***\n"
+printf -- "\n\n*** Setup startup to launch Web server... ***\n"
+# get location of '/etc/rc.d' for this system:
 init_script_folder=$(get_init_script_folder)
 if [ "${init_script_folder}" = "${UNKNOWN_LOCATION_ERROR}" ]; then
   printf -- "Initialization script folder not found. Please install manually.\n"
   read -p "Press Enter to continue..."
 else
-  # The init_script_folder exists
-  # FIXME NOT IMPLEMENTED
-  read -p "NOT IMPLEMENTED"
-  # cp "${SCRIPT_DIR}/susanoo_WeatherStation_startWebServer.sh /usr/local/etc/rc.d/weatherStationWeb.sh
-  # Insert set of instructions here
+  if ask_confirmation "Should we make web server launched at startup?" "yes"; then
+    # The init_script_folder exists
+    # FIXME NOT IMPLEMENTED
+    read -p "NOT IMPLEMENTED"
+    # cp "${SCRIPT_DIR}/susanoo_WeatherStation_startWebServer.sh /usr/local/etc/rc.d/weatherStationWeb.sh
+    # Insert set of instructions here
+  fi
 fi
 
 
@@ -163,7 +172,7 @@ If user can be specified in your OS (other than Raspbian):
 As admin, add below lines at the end of /etc/rc.local, before last '\''exit 0'\'':
 $ sudo vi /etc/rc.local
 [...]
-# Watchdog:
+# Watchdog (only used for optional visible LED and possibility of shutting down the Raspberry Pi with button):
 nohup -- ${PY_VENV}/bin/python3 -u ${HOME}/meteo/src/main/py/watchdog_gpio.py >> /var/log/watchdog_gpio.log 2>&1 &
 
 # Camera trap:
@@ -188,5 +197,5 @@ Also, if willing to start without graphical GUI, this can be configured with 'su
 EOF
 
 cd "${START_DIR}"
-printf -- "\n\n\n%s script terminated successfully." "${BASH_SOURCE[0]}"
+printf -- "\n\n\n%s script terminated successfully.\n" "${BASH_SOURCE[0]}"
 exit 0

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -e
-# set +x
+# set -x  # uncomment this line for debugging...
 
 source "${SCRIPT_DIR}/helper_functions.sh"
 

@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 set -e
-set -x
+# set -x  # uncomment this line for debugging...
 
 PY_VENV=$1
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+printf -- "source \"${SCRIPT_DIR}/helper_functions.sh\"\n"  # fixme for debugging, drop line after
+source "${SCRIPT_DIR}/helper_functions.sh"
 
 printf -- "\n\n*** APT installs for Python Virtual Environment... ***\n"
 apt_install_or_skip python3-venv

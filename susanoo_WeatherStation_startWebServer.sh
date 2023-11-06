@@ -11,7 +11,7 @@ PY_VENV="/usr/local/share/susanoo-py-venv"
 export PATH="${PY_VENV}/bin:$PATH"
 export PYTHONUNBUFFERED=1  # To enforce Python3 to flush immediately the log to the file
 
-cd /var/services/homes/web
+cd /var/services/homes/web/public_html
 
 # Start the Python web server as the "web" user using sudo
 sudo -u "${WEB_USER}" python3 /var/services/homes/meteo/meteo/src/main/py/server3.py >> /var/services/homes/web/server3.log 2>&1 &
