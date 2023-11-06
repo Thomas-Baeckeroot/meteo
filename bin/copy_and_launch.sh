@@ -7,7 +7,7 @@ rsync -r /home/thomas/workspace/meteo pi@${raspberry_ip_address}:/home/pi
 echo "Copy/rsync returned $?"
 echo
 echo "Copying web files to Raspberry PI at ${raspberry_ip_address}..."
-rsync -r /home/thomas/workspace/meteo/src/main/py/home_web/ web@${raspberry_ip_address}:/home/web
+rsync -r /home/thomas/workspace/meteo/src/main/py/public_html/ web@${raspberry_ip_address}:/home/web
 echo "Copy/rsync returned $?"
 echo
 echo "Launching python..."

@@ -83,20 +83,16 @@ else
   fi
 fi
 
-# TODO Check if below is still required...
-## makes sure .py script are executable
-#chmod +x ~/meteo/src/main/py/*.py || printf -- "chmod errors ignored\n"
-#chmod +x ~/meteo/src/main/py/home_web/*.py || printf -- "chmod errors ignored\n"
-
-# sudo su - ${WEB_USER}
 # TODO Create a variable that replaces '${HOME}/../${WEB_USER}' by direct '${HOME_WEB_USER}' (without '..')
-create_link "${HOME}/meteo/src/main/py/home_web/index.html.py" "${HOME}/../${WEB_USER}/index.html"
-create_link "${HOME}/meteo/src/main/py/home_web/graph.svg.py" "${HOME}/../${WEB_USER}/graph.svg"
-create_link "${HOME}/meteo/src/main/py/home_web/capture.html.py" "${HOME}/../${WEB_USER}/capture.html"
-sudo mkdir -p "${HOME}/../${WEB_USER}/html"
-sudo chmod 755 "${HOME}/../${WEB_USER}/html"
-create_link "${HOME}/meteo/src/main/py/home_web/html/favicon.svg" "${HOME}/../${WEB_USER}/html/favicon.svg"
-create_link "${HOME}/meteo/captures" "${HOME}/../${WEB_USER}/captures"
+sudo mkdir "${HOME}/../${WEB_USER}/public_html"
+sudo chmod 755 "${HOME}/../${WEB_USER}/public_html"
+create_link "${HOME}/meteo/src/main/py/public_html/index.html.py" "${HOME}/../${WEB_USER}/public_html/index.html"
+create_link "${HOME}/meteo/src/main/py/public_html/graph.svg.py" "${HOME}/../${WEB_USER}/public_html/graph.svg"
+create_link "${HOME}/meteo/src/main/py/public_html/capture.html.py" "${HOME}/../${WEB_USER}/public_html/capture.html"
+sudo mkdir -p "${HOME}/../${WEB_USER}/public_html/html"
+sudo chmod 755 "${HOME}/../${WEB_USER}/public_html/html"
+create_link "${HOME}/meteo/src/main/py/public_html/html/favicon.svg" "${HOME}/../${WEB_USER}/public_html/html/favicon.svg"
+create_link "${HOME}/meteo/captures" "${HOME}/../${WEB_USER}/public_html/captures"
 
 if ask_confirmation "Should we create database?" "yes"; then
   printf -- "Create database...\n"
@@ -175,6 +171,13 @@ sudo su - ${INSTALL_USER} --command \"nohup -- ${PY_VENV}/bin/python3 ${HOME}/me
 
 # Webserver: (on a Synology NAS, it should be in /usr/local/etc/rc.d/weatherStationWeb.sh)
 sudo su - ${WEB_USER} --command \"nohup -- ${PY_VENV}/bin/python3 ${HOME}/meteo/src/main/py/server3.py >> ${HOME}/../${WEB_USER}/server3.log\" &
+
+
+# FIXME:
+sudo -u ${WEB_USER} --login sh -c "cd /path/to/working_directory && python3 your_script.py"
+sudo --user=${WEB_USER} --login sh -c "cd ${WEB_USER_HOME}/public_html/ && ${PY_VENV}/bin/python3 your_script.py"
+
+
 # Required to keep WiFi always on:
 sleep 30 && sudo iw dev wlan0 set power_save off &
 

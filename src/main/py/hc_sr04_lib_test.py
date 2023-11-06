@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # import dbmodule_import as db
-import home_web.db_module as db_module
+import public_html.db_module as db_module
 import logging
 import sensors_functions
 import sys

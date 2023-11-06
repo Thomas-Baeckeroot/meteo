@@ -55,7 +55,7 @@ create_link() {
   local link_file  # link to be created
   link_file="$2"  # not using $(realpath "$2")
 
-  # sudo runuser --login --command "ln -f -s ${HOME}/meteo/src/main/py/home_web/index.html.py ${HOME}/../${WEB_USER}/index.html"
+  # sudo runuser --login --command "ln -f -s ${HOME}/meteo/src/main/py/public_html/index.html.py ${HOME}/../${WEB_USER}/index.html"
   # Used to be the upper. Why complicated?
   # no command "runuser" on Synology NAS,
   sudo ln -f -s "${target_file}" "${link_file}"

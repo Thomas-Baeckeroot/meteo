@@ -3,7 +3,7 @@
 
 import failed_request
 import hc_sr04_lib_test
-import home_web.db_module as db_module
+import public_html.db_module as db_module
 import logging
 import os
 import pathlib
@@ -163,7 +163,7 @@ def rsync_pictures_from_server(local_sensor, remote_server_src, conn_local_dest)
     try:
         conn_remote_src = db_module.get_conn(host=remote_server_src)  # Connect to REMOTE PostgreSQL DB
     except Exception as err:
-        log.exception("Exception when trying to connect to remote DB:")
+        log.exception("\tException '{0}' when connecting to DB.".format(err))
         return
     curs_src = conn_remote_src.cursor()
     read_filepath_query = "SELECT filepath_last, filepath_data" \
@@ -298,18 +298,13 @@ def main():  # Expected to be called once per minute
             local_camera_name = sensor_name
 
         elif sensor_type.startswith("remote:"):
+            # Value of current sensor is hosted by another remote DB.
+            # Values that are not "synchronised" here will be copied now.
             if first_remote:
                 sleep(5)  # give time for very last value of remote sensors to be updated
                 first_remote = False
-            # Another remote PostgreSQL contains the measures. Those not "synchronised" will be copied
-            # if having ~Connection refused~~port 5432?~ issues then
-            #   -> On remote server, in file postgresql.conf, set "listen_addresses = '*'"
-            # 
-            #   -> in file pg_hba.conf, add "host    meteo           pi              192.168.0.94/32         trust"
-            # (those 2 configuration files are usually in /etc/postgresql/11/main/ )
-            # fixme the upper "trust" is not secured and should look for a decent unix authentication later...
             remote_server = sensor_type[7:]
-            log.info("Sensor '" + sensor_name + "' -> reading values from " + remote_server + "...")
+            log.info("Remote sensor '{0}' -> reading values from '{1}'...".format(sensor_name, remote_server))
             if unit == "picture":
                 rsync_pictures_from_server(sensor, remote_server, conn)
             else:
@@ -326,7 +321,7 @@ def main():  # Expected to be called once per minute
                           + str(utils.epoch_now()) + "," \
                           + str(func.round_value_decimals(measure, decimals)) + ", '" \
                           + sensor_name + "')")
-        else:
+        elif not sensor_type.startswith("remote:"):
             log.info("Sensor '" + sensor_name + "' -> No value")
 
     # end of for-loop on each sensor

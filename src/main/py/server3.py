@@ -10,7 +10,7 @@ import signal
 import sys
 
 from utils import get_config
-from home_web.db_module import get_home
+from public_html.db_module import get_home
 
 
 def sigterm_handler(signum, frame):
@@ -61,11 +61,14 @@ def current_dir_is_valid_working_dir():
 
 
 def check_working_dir():
-    # Server MUST be started from the folder containing index.html(.py)
+
+    # Path of Python 3 binary (Virtual Env.):
     log.info("Path to Python binary (expected starting with venv): {0}".format(sys.executable))
+
+    # Working path: server should be started from the folder containing index.html(.py)
     if not current_dir_is_valid_working_dir():
-        if file_exists("home_web"):
-            os.chdir("home_web")
+        if file_exists("public_html"):
+            os.chdir("public_html")
             if not current_dir_is_valid_working_dir():
                 os.chdir(get_home())
                 if not current_dir_is_valid_working_dir():
@@ -119,7 +122,7 @@ server_address = ("", port)
 
 server = http.server.HTTPServer
 handler = http.server.CGIHTTPRequestHandler
-# handler.cgi_directories = ["/home_web/"]  # Should be better if other than '/' but never worked...
+# handler.cgi_directories = ["~/public_html/"]  # Should be better if other than '/' but never worked...
 handler.cgi_directories = ["/"]
 log.debug("Serveur P3 actif sur le port: " + str(port))
 log.debug("handler.cgi_directories = ")
