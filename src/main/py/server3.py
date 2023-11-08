@@ -75,6 +75,7 @@ def check_working_dir():
                     log.critical("Unable to find pages to serve!")
         else:
             os.chdir(get_home())
+            # TODO Server should start by default in "~/public_html/" ('captures' folder has to be moved there also)
             if not current_dir_is_valid_working_dir():
                 log.critical("Unable to find pages to serve!")
 
@@ -83,12 +84,30 @@ def check_working_dir():
     return
 
 
+def check_python_modules():
+    log.info("Checking list of modules available in current environment...")
+    required_modules = ["pymysql", "chart.svg"]
+    i = 1
+    for module_name, module in sys.modules.items():
+        # log.debug("  - {:3d} - {}".format(i, module_name))
+        if module_name in required_modules:
+            required_modules.remove(module_name)
+        i += 1
+
+    if required_modules:
+        log.error("The following required modules are missing:")
+        for missing_module in required_modules:
+            log.error("- {}".format(missing_module))
+    else:
+        log.info("All required modules are present.")
+
+
 signal.signal(signal.SIGTERM, sigterm_handler)
 
 HOME = get_home()
 
 # Due to Logger unable to get error message details, then it has been commented.
-# Outputs will tentatively be catch by redirection on call.
+# Outputs will tentatively be caught by redirection on call.
 
 logging.basicConfig(
     filename=HOME + "/susanoo-web.log",
@@ -98,21 +117,7 @@ log = logging.getLogger("server3.py")
 
 check_working_dir()
 
-log.info("Checking list of modules available in current environment...")
-required_modules = ["pymysql", "chart.svg"]
-i = 1
-for module_name, module in sys.modules.items():
-    # log.debug("  - {:3d} - {}".format(i, module_name))
-    if module_name in required_modules:
-        required_modules.remove(module_name)
-    i += 1
-
-if required_modules:
-    log.error("The following required modules are missing:")
-    for missing_module in required_modules:
-        log.error("- {}".format(missing_module))
-else:
-    log.info("All required modules are present.")
+check_python_modules()
 
 cgitb.enable()
 
