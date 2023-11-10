@@ -2,6 +2,8 @@
 set -e
 # set +x
 
+# FIXME Make sure we have 2 arguments
+
 L_SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 L_HOME="$1"
 L_WEB_USER="$2"
