@@ -2,7 +2,7 @@
 set -e
 # set -x  # uncomment this line for debugging...
 
-source "${SCRIPT_DIR}/helper_functions.sh"
+source "${SCRIPT_DIR}/bin/helper_functions.sh"
 
 printf -- "Install Python & dependencies...\n\n"
 

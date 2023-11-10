@@ -7,7 +7,7 @@ set +x
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 printf -- "Script directory: '%s'\n" "${SCRIPT_DIR}"
 START_DIR=$(pwd)
-source "${SCRIPT_DIR}/helper_functions.sh"
+source "${SCRIPT_DIR}/bin/helper_functions.sh"
 
 # todo Below attributions should be replaced by a call to func. that manages a config file ~/.config/meteo.conf (GPIO numbers also could be informed there)
 # Parsing of .ini/.conf files from bash is described:
@@ -86,18 +86,7 @@ else
   fi
 fi
 
-# TODO Create a variable that replaces '${HOME}/../${WEB_USER}' by direct '${HOME_WEB_USER}' (without '..')
-sudo mkdir -p "${HOME}/../${WEB_USER}/public_html"
-sudo chmod 755 "${HOME}/../${WEB_USER}/public_html"
-create_link "${HOME}/meteo/src/main/py/public_html/index.html.py" "${HOME}/../${WEB_USER}/public_html/index.html"
-create_link "${HOME}/meteo/src/main/py/public_html/graph.svg.py" "${HOME}/../${WEB_USER}/public_html/graph.svg"
-create_link "${HOME}/meteo/src/main/py/public_html/capture.html.py" "${HOME}/../${WEB_USER}/public_html/capture.html"
-sudo mkdir -p "${HOME}/../${WEB_USER}/public_html/html"
-sudo chmod 755 "${HOME}/../${WEB_USER}/public_html/html"
-create_link "${HOME}/meteo/src/main/py/public_html/html/favicon.svg" "${HOME}/../${WEB_USER}/public_html/html/favicon.svg"
-create_link "${HOME}/meteo/captures" "${HOME}/../${WEB_USER}/public_html/captures"
-
-
+create_server_pages "${HOME}" "${WEB_USER}"
 
 if ask_confirmation "Should we create database?" "yes"; then
   printf -- "Create database...\n"
