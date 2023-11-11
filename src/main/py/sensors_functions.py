@@ -14,7 +14,8 @@ logging.basicConfig(
     format='%(asctime)s\t%(levelname)s\t%(name)s (%(process)d)\t%(message)s')
 log = logging.getLogger("sensors_functions.py")
 
-# todo Below variable should be stored in a config file ~/.config/meteo.conf (GPIO numbers also could be informed there)
+# todo Below variable should be stored in a config file ~/.config/susanoo_WeatherStation.conf
+# (GPIO numbers also could be informed there)
 METEO_FOLDER = "/home/pi/meteo"
 
 

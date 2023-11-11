@@ -43,5 +43,5 @@ def get_home():
 
 def get_config():
     config = configparser.ConfigParser()
-    config.read(get_home() + '/.config/meteo.conf')
+    config.read(get_home() + '/.config/susanoo_WeatherStation.conf')
     return config

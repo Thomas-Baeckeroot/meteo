@@ -32,7 +32,7 @@ As much as possible, things have been kept simple so that it is possible to inst
 
 # GPIO pins used for my personal configuration...
 
-Configuration is either in ~/meteo/meteo.conf or in table *sensors" of database.
+Configuration is either in ~/.config/susanoo_WeatherStation.conf or in table *sensors" of database.
 
 |                     |                         |     |     |                         |                   |
 |--------------------:| -----------------------:|:---:|:---:|:----------------------- |:------------------|

@@ -16,7 +16,7 @@ logging.basicConfig(
     format='%(asctime)s\t%(levelname)s\t%(name)s (%(process)d)\t%(message)s')
 log = logging.getLogger("hc_sr04_lib_test.py")
 
-# todo Below variables should be stored in config file ~/.config/meteo.conf
+# todo Below variables should be stored in config file ~/.config/susanoo_WeatherStation.conf
 TRIGGER_PIN = 19
 ECHO_PIN = 13
 MAX_DISTANCE = 400  # Get really noisy over 3~4 meters

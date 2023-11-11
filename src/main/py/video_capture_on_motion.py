@@ -12,7 +12,7 @@ import sensors_functions as func
 import utils
 
 
-# todo Below variables should be stored in config file ~/.config/meteo.conf
+# todo Below variables should be stored in config file ~/.config/susanoo_WeatherStation.conf
 METEO_FOLDER = "/home/pi/meteo/"
 VIDEOS_FOLDER = METEO_FOLDER + "videos/"
 

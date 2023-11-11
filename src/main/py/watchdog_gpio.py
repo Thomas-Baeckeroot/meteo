@@ -10,9 +10,9 @@ import time  # Import the sleep function from the time module
 from utils import get_config
 from utils import iso_timestamp_now
 
-# todo Below variables should be stored in config file ~/.config/meteo.conf
+# todo Below variables should be stored in config file ~/.config/susanoo_WeatherStation.conf
 # FIXME To be able to execute shutdown, watchdog must be executed with root (not pi)
-# => config in ~/.config/meteo.conf is not found
+# => config in ~/.config/susanoo_WeatherStation.conf is not found
 # GPIO_YYY_LED = 23
 # GPIO_ZZZ_LED = 24
 GPIO_WATCHDOG_LED = 25
