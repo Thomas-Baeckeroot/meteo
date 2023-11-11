@@ -86,7 +86,7 @@ else
   fi
 fi
 
-create_server_pages "${HOME}" "${WEB_USER}"
+source "${SCRIPT_DIR}/bin/create_server_pages.sh" "${HOME}" "${WEB_USER}"
 
 if ask_confirmation "Should we create database?" "yes"; then
   printf -- "Create database...\n"
@@ -128,19 +128,19 @@ printf -- "\n\n*** Setup startup to launch Web server... ***\n"
 init_script_folder=$(get_init_script_folder)
 if [ "${init_script_folder}" = "${UNKNOWN_LOCATION_ERROR}" ]; then
   printf -- "Initialization script folder not found. Please install manually.\n"
-  read -p "Press Enter to continue..."
+  read -r -p "Press Enter to continue..."
 else
   if ask_confirmation "Should we make web server launched at startup?" "yes"; then
     # The init_script_folder exists
-    # FIXME NOT IMPLEMENTED
-    read -p "NOT IMPLEMENTED"
     # cp "${SCRIPT_DIR}/susanoo_WeatherStation_startWebServer.sh /usr/local/etc/rc.d/weatherStationWeb.sh
-    # Insert set of instructions here
+    # FIXME For some systems (like Synology NAS) scripts launched at startup are in folder /usr/local/etc/rc.d/
+    sudo cp "${SCRIPT_DIR}/bin/susanoo_WeatherStation_startWebServer.sh" "/etc/init.d/weatherStationWeb.sh"
+    sudo chmod +x "/etc/init.d/weatherStationWeb.sh"
+    sudo ln -s "/etc/init.d/weatherStationWeb.sh" "/etc/rc3.d/weatherStationWeb.sh"
+    printf -- "Web server will be launched at restart.\n"
+    read -r -p "Press Enter to continue..."
   fi
 fi
-
-
-# TODO Scripts launched at startup might be done with a .sh file in  /usr/local/etc/rc.d/
 
 cat << EOF
 
@@ -152,10 +152,10 @@ cat << EOF
 
 -
 Add below line to crontab of user '\''${INSTALL_USER}'\'' by executing '\''crontab -e'\'':
-* * * * *  ${PY_VENV}/bin/python3 ${HOME}/meteo/src/main/py/periodical_sensor_reading.py >> ${HOME}/meteo/periodical_sensor_reading.log 2>&1
+* * * * *  ${PY_VENV}/bin/python3 ${HOME}/meteo/src/main/py/periodical_sensor_reading.py >> ${HOME}/susanoo-data.log 2>&1
 -
 If user can be specified in your OS (other than Raspbian):
-* * * * *  ${INSTALL_USER}    ${PY_VENV}/bin/python3 "${HOME}/meteo/src/main/py/periodical_sensor_reading.py" >> "${HOME}/meteo/periodical_sensor_reading.log" 2>&1
+* * * * *  ${INSTALL_USER}    ${PY_VENV}/bin/python3 "${HOME}/meteo/src/main/py/periodical_sensor_reading.py" >> "${HOME}/susanoo-data.log" 2>&1
 
 
 As admin, add below lines at the end of /etc/rc.local, before last '\''exit 0'\'':

@@ -86,7 +86,7 @@ def check_working_dir():
 
 def check_python_modules():
     log.info("Checking list of modules available in current environment...")
-    required_modules = ["pymysql", "chart.svg"]
+    required_modules = ["pymysql", "svg.charts"]
     i = 1
     for module_name, module in sys.modules.items():
         # log.debug("  - {:3d} - {}".format(i, module_name))
