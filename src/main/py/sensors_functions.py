@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import logging
 import pathlib
-import sys
 import time
 import utils
 
 from gpiozero import CPUTemperature  # If failing: "pip install gpiozero"
+
+logging.basicConfig(
+    filename=utils.get_home() + "/susanoo-data.log",  # = /home/pi/susanoo-data.log
+    level=logging.DEBUG,
+    format='%(asctime)s\t%(levelname)s\t%(name)s (%(process)d)\t%(message)s')
+log = logging.getLogger("sensors_functions.py")
 
 # todo Below variable should be stored in a config file ~/.config/meteo.conf (GPIO numbers also could be informed there)
 METEO_FOLDER = "/home/pi/meteo"
@@ -48,7 +54,7 @@ def value_sealevelpressure():
 
 
 def take_picture(camera_name):
-    sys.stdout.write("Take picture:\t")
+    log.debug("Take picture:\t")
     capture_tentatives = 0
     while capture_tentatives < 23:
         picamera = __import__("picamera")
@@ -78,16 +84,16 @@ def take_picture(camera_name):
             pathlib.Path(METEO_FOLDER + "/" + base_captures_folder + "/" + capture_folder)\
                 .mkdir(mode=0o755, parents=True, exist_ok=True)
             full_path_filename = capture_folder + "/" + filename
-            print(full_path_filename)
+            log.debug(full_path_filename)
             camera.capture(METEO_FOLDER + "/" + base_captures_folder + "/" + full_path_filename)
             # todo Test upper with , thumbnail=(64, 48, 35)
             camera.stop_preview()
             camera.close()
             return full_path_filename
         except picamera.exc.PiCameraMMALError:
-            sys.stdout.write(".")
+            log.debug(f"PiCameraMMALError - retrying ({capture_tentatives})")
             time.sleep(capture_tentatives)
 
         # End of 'while not captured_success and capture_tentatives < 23:'
-    print("Failed " + str(capture_tentatives) + " times to take picture. Gave up!")
+    log.error("Failed " + str(capture_tentatives) + " times to take picture. Gave up!")
     return None
