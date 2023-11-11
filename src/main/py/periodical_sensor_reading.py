@@ -71,43 +71,51 @@ def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
                          " WHERE name='" + sensor_name + "';"
     curs_src.execute(read_sensors_query)
     (sensor_label_src, decimals_src, cumulative_src, unit_src, consolidated_src) = curs_src.fetchall()[0]
+
+    # TODO Should be moved to dedicated function "Update_sensors_param_from_src_to_dest
+    # only happens on configuration changes
     # FIXME Below UPDATEs have no effect...
+    log.debug("\tSensor parameters: Checking consistency...")
     if sensor_label_src != sensor_label_dest:
-        log.info("\tUPDATING sensor_label: \tsrc='" + sensor_label_src + "'\t>>> dest='" + sensor_label_dest + "'")
+        log.warning("\tUPDATING sensor_label: \tsrc='" + sensor_label_src + "'\t>>> dest='" + sensor_label_dest + "'")
         log.info("UPDATE sensors   SET sensor_label='" + sensor_label_src + "' WHERE name='" + sensor_name + "';")
-    #    curs_src.execute("UPDATE sensors"
-    #                     "   SET sensor_label='" + sensor_label_src +
-    #                     "' WHERE name='" + sensor_name + "';")
+        log.critical("NOT IMPLEMENTED!")  # FIXME NOT IMPLEMENTED!
+        # curs_src.execute("UPDATE sensors"
+        #                  "   SET sensor_label='" + sensor_label_src +
+        #                  "' WHERE name='" + sensor_name + "';")
     if decimals_src != decimals_dest:
-        log.info("\tUPDATING Decimals:     \tsrc='" + str(decimals_src) + "'\t>>> dest='" + str(decimals_dest) + "'")
+        log.warning("\tUPDATING Decimals:     \tsrc='" + str(decimals_src) + "'\t>>> dest='" + str(decimals_dest) + "'")
         curs_src.execute("UPDATE sensors"
                          "   SET decimals=" + str(decimals_src) +
                          " WHERE name='" + sensor_name + "';")
     if cumulative_src != cumulative_dest:
-        log.info("\tUPDATING cumulative: \tsrc='" + str(cumulative_src) + "'\t>>> dest='" + str(cumulative_dest) + "'")
+        log.warning(
+            "\tUPDATING cumulative: \tsrc='" + str(cumulative_src) + "'\t>>> dest='" + str(cumulative_dest) + "'")
         curs_src.execute("UPDATE sensors"
                          "   SET cumulative=" + str(cumulative_src) +
                          " WHERE name='" + sensor_name + "';")
     if unit_src != unit_dest:
-        log.info("\tUPDATING unit: \tsrc='" + unit_src + "'\t>>> dest='" + unit_dest + "'")
+        log.warning("\tUPDATING unit: \tsrc='" + unit_src + "'\t>>> dest='" + unit_dest + "'")
         curs_src.execute("UPDATE sensors"
                          "   SET unit='" + unit_src +
                          "' WHERE name='" + sensor_name + "';")
     if consolidated_src != consolidated_dest:
-        log.info(
+        log.warning(
             "\tUPDATING consolidated: \tsrc='" + str(consolidated_src) + "'\t>>> dest='" + str(consolidated_dest) + "'")
         curs_src.execute("UPDATE sensors"
                          "   SET consolidated='" + str(consolidated_src) +
                          "' WHERE name='" + str(sensor_name) + "';")
+    log.debug("\tSensor parameters: Checked.")
 
     read_sensors_query = "SELECT epochtimestamp, measure" \
                          "  FROM raw_measures" \
                          " WHERE sensor='" + sensor_name + \
                          "'  AND synchronised='false' " \
                          "ORDER BY epochtimestamp asc LIMIT 3000;"  # PostgreSQL: "FETCH FIRST 10 ROWS ONLY;"
-    # log.debug("\tread_sensors_query =\n" + read_sensors_query + "\n----------------------------")
-    curs_src.execute(read_sensors_query)
+    curs_src.execute(read_sensors_query)  # Requires ~5 seconds to execute (on remote Raspberry Pi)
+    # log.debug("\tDB src (remote): read_sensors_query executed.")
     epochs_and_measures_from_src = curs_src.fetchall()
+    # log.debug("\tDB src (remote): .fetchall() executed.")
     n_updates = len(epochs_and_measures_from_src)
     if n_updates > 0:
         insert_measures_to_dest_query = "INSERT INTO raw_measures(epochtimestamp, measure, sensor) VALUES "
@@ -121,15 +129,17 @@ def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
                                             + sensor_name + "')"
             not_first_value = True
         insert_measures_to_dest_query = insert_measures_to_dest_query + ";"
+        # log.debug("\tDB dest (locale): getting cursor...")
         curs_dest = conn_local_dest.cursor()
-        # log.debug("\tinsert_measures_to_dest_query = " + str(len(insert_measures_to_dest_query)) + " bytes/chars")
+        # log.debug("\tDB dest (locale): query = " + str(len(insert_measures_to_dest_query)) + " bytes/chars")
         # log.debug(insert_measures_to_dest_query)
         curs_dest.execute(insert_measures_to_dest_query)
+        # log.debug("\tDB dest (locale): query executed.")
 
         update_synchronised_query = "UPDATE raw_measures" \
                                     "   SET synchronised=true" \
                                     " WHERE epochtimestamp IN ("
-        # PostgreSQL? was "UPDATE raw_measures(synchronised) SET true""
+        # PostgreSQL was "UPDATE raw_measures(synchronised) SET true"
         not_first_value = False
         for (epoch_src, measure_src) in epochs_and_measures_from_src:
             if not_first_value:
@@ -137,15 +147,17 @@ def copy_values_from_server(sensor_dest, remote_server_src, conn_local_dest):
             update_synchronised_query = update_synchronised_query + str(epoch_src)
             not_first_value = True
         update_synchronised_query = update_synchronised_query + ") AND sensor='" + sensor_name + "'"
-        # log.debug("\tupdate_synchronised_query =" + str(len(update_synchronised_query)) + " bytes/chars")
-        # log.debug(update_synchronised_query)
+        # log.debug("\tDB src (remote): query = " + str(len(update_synchronised_query)) + " bytes/chars.")
         curs_src.execute(update_synchronised_query)
+        # log.debug("\tDB src (remote): query executed.")
 
         conn_remote_src.commit()
+        # log.debug("\tDB src (remote): commited.")
 
     conn_local_dest.commit()  # Can be an update of label name or unit, etc... without value
+    log.debug("\tDB dest (locale): commited.")
 
-    log.info("\tImported " + str(n_updates) + " records from " + remote_server_src)
+    log.info("\t=> Imported '{0}' records from '{1}'.".format(n_updates, remote_server_src))
 
     return
 
@@ -163,7 +175,7 @@ def rsync_pictures_from_server(local_sensor, remote_server_src, conn_local_dest)
     try:
         conn_remote_src = db_module.get_conn(host=remote_server_src)  # Connect to REMOTE PostgreSQL DB
     except Exception as err:
-        log.exception("\tException '{0}' when connecting to DB.".format(err))
+        log.error("\tException '{0}' when connecting to DB.".format(err))
         return
     curs_src = conn_remote_src.cursor()
     read_filepath_query = "SELECT filepath_last, filepath_data" \
@@ -176,10 +188,10 @@ def rsync_pictures_from_server(local_sensor, remote_server_src, conn_local_dest)
     log.debug("\t(..._last_local, ..._data_local) = (\t'" + filepath_last_local + "',\t'" + filepath_data_local + "')")
 
     if filepath_last_src == filepath_last_local:
-        log.info("\tNo new picture detected for '" + sensor_name + "'. rsync not required.")
+        log.info(f"\t=> No new picture detected for '{sensor_name}'. rsync not required.")
         return
     # else:  # filepath_last_src != filepath_last_local:
-    log.info("\tNew picture has been detected. Starting copying from '" + remote_server_src + "' to local...")
+    log.info(f"\tNew picture has been detected. Starting copying from '{remote_server_src}' to local...")
     config = utils.get_config()
     rsync_user = config.get('remote:' + remote_server_src, 'rsync_user', fallback="web")
     ssh_port = config.getint('remote:' + remote_server_src, 'ssh_port', fallback=22)
@@ -316,13 +328,13 @@ def main():  # Expected to be called once per minute
             # measure = None  # kept as None
 
         if measure is not None:
-            log.info("Sensor '" + sensor_name + "' -> " + str(measure))
+            log.info(f"\t=> Sensor '{sensor_name}' -> {measure}")
             values.append("(" \
                           + str(utils.epoch_now()) + "," \
                           + str(func.round_value_decimals(measure, decimals)) + ", '" \
                           + sensor_name + "')")
         elif not sensor_type.startswith("remote:"):
-            log.info("Sensor '" + sensor_name + "' -> No value")
+            log.info(f"\t=> Sensor '{sensor_name}' -> No value")
 
     # end of for-loop on each sensor
 
