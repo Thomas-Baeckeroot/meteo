@@ -9,7 +9,7 @@ PY_VENV="/usr/local/share/susanoo-py-venv"
 
 # Set environment variables
 export PATH="${PY_VENV}/bin:$PATH"
-export PYTHONUNBUFFERED=1  # To enforce Python3 to flush immediately the log to the file
+# export PYTHONUNBUFFERED=1  # Uncomment to enforce Python3 to flush immediately the log to files
 
 cd /var/services/homes/web/public_html
 

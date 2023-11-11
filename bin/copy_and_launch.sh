@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Used at early time for debugging - TODO Drop this file?
 # set -x
 raspberry_ip_address=192.168.0.174
 echo "Copying all files to Raspberry PI at ${raspberry_ip_address}..."
