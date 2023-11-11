@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -e
-# set +x
+# set -x
 
 # FIXME Make sure we have 2 arguments
 

@@ -121,7 +121,7 @@ if ask_confirmation "Should we create database?" "yes"; then
   # psql --dbname meteo --command "GRANT SELECT ON ALL TABLES IN SCHEMA public TO ${WEB_USER};"
 fi
 
-if [ -f "${HOME}~/.config/susanoo_WeatherStation.conf" ]; then
+if [ -f "${HOME}/.config/susanoo_WeatherStation.conf" ]; then
   printf -- "An existing config file has been found\n"
   check diff and message
 else
@@ -131,6 +131,10 @@ else
   printf -- "vi %s/.config/susanoo_WeatherStation.conf\n\n" "${HOME}"
   read -r -p "Press Enter to continue..."
 fi
+sudo ln -f -s "${HOME}/.config/susanoo_WeatherStation.conf" "${HOME}/../${WEB_USER}/.config/susanoo_WeatherStation.conf"
+chmod +x "${HOME}/.config"
+sudo chown "${WEB_USER}" "${HOME}/../${WEB_USER}/.config/susanoo_WeatherStation.conf"
+sudo chgrp "${WEB_USER}" "${HOME}/../${WEB_USER}/.config/susanoo_WeatherStation.conf"
 
 printf -- "\n\n*** Setup startup to launch Web server... ***\n"
 # get location of '/etc/rc.d' for this system:
