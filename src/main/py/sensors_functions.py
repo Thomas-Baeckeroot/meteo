@@ -55,26 +55,43 @@ def value_sealevelpressure():
 
 def take_picture(camera_name):
     log.debug("Take picture:\t")
+    config = utils.get_config()
+    # see https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera
+    awb_mode = config.get("CAMERA:" + camera_name, "awb_mode", fallback=None)
+    awb_gains_red = config.getfloat("CAMERA:" + camera_name, "awb_gains_red", fallback=None)
+    awb_gains_blue = config.getfloat("CAMERA:" + camera_name, "awb_gains_blue", fallback=None)
+    brightness = config.getint("CAMERA:" + camera_name, "brightness", fallback=None)
+    resolution_x = config.getint("CAMERA:" + camera_name, "resolution_x", fallback=None)
+    resolution_y = config.getint("CAMERA:" + camera_name, "resolution_y", fallback=None)
     capture_tentatives = 0
     while capture_tentatives < 23:
         picamera = __import__("picamera")
         capture_tentatives = capture_tentatives + 1
         try:
             camera = picamera.PiCamera()  # TODO Duplicated with video_capture_on_motion.py:61
-            # camera.awb_mode = 'sunlight'
-            # camera.awb_mode = 'cloudy'
-            # camera.awb_mode = 'tungsten'
-            camera.awb_mode = 'off'
-            # camera.awb_gains = (0.9, 1.9)  # Default (red, blue); each between 0.0 and 8.0
-            # camera.awb_gains = (2.0, 1.9) trop rouge
-            camera.awb_gains = (1.6, 1.0)
-            # camera.awb_gains = (1.6, 1.9) pas assez vert?
-            # camera.awb_gains = (1.4, 1.9) un peu trop bleu
-            # camera.awb_gains = (1.0, 1.9) trop bleu
-            camera.brightness = 46
-            camera.resolution = (1296, 972)  # binned mode below 1296x972
-            # camera.resolution = (1920, 1080)  # FullHD (unbinned)
-            # camera.resolution = (2592, 1944)  # Max. resolution
+
+            if awb_mode:
+                camera.awb_mode = awb_mode
+
+            if awb_gains_red or awb_gains_blue:
+                if not awb_gains_red:
+                    (awb_gains_red, ignored) = camera.awb_gains
+                if not awb_gains_blue:
+                    (ignored, awb_gains_blue) = camera.awb_gains
+                camera.awb_gains = (awb_gains_red, awb_gains_blue)
+
+            if brightness:
+                camera.brightness = brightness
+
+            if resolution_x or resolution_y:  # TODO To be replaced by 'resolution' as String to allow values like 'HD', ...
+                if not resolution_x:
+                    (resolution_x, ignored) = camera.resolution
+                if not resolution_y:
+                    (ignored, resolution_y) = camera.resolution
+                camera.resolution = (resolution_x, resolution_y)
+
+            log.debug(f"Using camera params: awb_mode={awb_mode} awb_gains=({awb_gains_red},{awb_gains_blue}) "
+                      f"brightness={brightness} resolution=({resolution_x},{resolution_y})")
             camera.start_preview()
             time.sleep(5)
             dt_now = utils.iso_timestamp4files()
