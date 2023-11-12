@@ -18,7 +18,7 @@ logging.basicConfig(
     filename=utils.get_home() + "/susanoo-data.log",  # = /home/pi/susanoo-data.log
     level=logging.DEBUG,
     format='%(asctime)s\t%(levelname)s\t%(name)s (%(process)d)\t%(message)s')
-log = logging.getLogger("periodical_sensor_reading.py")
+log = logging.getLogger("periodical_sensor_readi…")
 CONSOLIDATE_VAL = False
 
 
@@ -219,10 +219,10 @@ def rsync_pictures_from_server(local_sensor, remote_server_src, conn_local_dest)
     if cp_return_code == 0:
         log.info("\tUpdating local db with values from remote...")
         curs_dest = conn_local_dest.cursor()
-        update_last_pictures_values = "UPDATE captures" \
-                                      "   SET filepath_last = '" + filepath_last_src + "'," \
-                                                                                       "       filepath_data = '" + filepath_data_src + "'" \
-                                                                                                                                        " WHERE sensor_name='" + sensor_name + "';"
+        update_last_pictures_values = "UPDATE captures" + \
+                                      "   SET filepath_last = '" + filepath_last_src + "'," + \
+                                      "       filepath_data = '" + filepath_data_src + "'" + \
+                                      " WHERE sensor_name='" + sensor_name + "';"
         curs_dest.execute(update_last_pictures_values)
         conn_local_dest.commit()
         log.info("\tLocal db updated with ('" + filepath_last_src + "', '" + filepath_data_src + "').")

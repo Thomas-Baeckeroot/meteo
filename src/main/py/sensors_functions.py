@@ -55,19 +55,18 @@ def value_sealevelpressure():
 
 
 def log_camera_settings(l_camera):
-    log.debug("╭────────┤ camera settings ├────────┄┄┄┄┄┄┄\n"
-              f"│ resolution = '{l_camera.resolution}'\n"
-              f"│ awb_mode = '{l_camera.awb_mode}'\n"
-              f"│ awb_gains = '{l_camera.awb_gains}'\n"
-              f"│ brightness = '{l_camera.brightness}'\n"
-              f"│ contrast = '{l_camera.contrast}'\n"
-              f"│ saturation = '{l_camera.saturation}'\n"
-              f"│ analog_gain = '{l_camera.analog_gain}'\n"
-              f"│ digital_gain = '{l_camera.digital_gain}'\n"
-              f"│ iso = '{l_camera.iso}'\n"
-              f"│ image_denoise = '{l_camera.image_denoise}'\n"
-              f"│ thumbnail = '{l_camera.thumbnail}'\n"
-              "╰────────┄┄┄┄┄┄┄")
+    log.debug("╭────────┤ camera settings ├────────┄┄┄┄┄┄┄")
+    log.debug(f"│ resolution = '{l_camera.resolution}'")
+    log.debug(f"│ awb_mode = '{l_camera.awb_mode}'")
+    log.debug(f"│ awb_gains = '{l_camera.awb_gains}'")
+    log.debug(f"│ brightness = '{l_camera.brightness}'")
+    log.debug(f"│ contrast = '{l_camera.contrast}'")
+    log.debug(f"│ saturation = '{l_camera.saturation}'")
+    log.debug(f"│ analog_gain = '{l_camera.analog_gain}'")
+    log.debug(f"│ digital_gain = '{l_camera.digital_gain}'")
+    log.debug(f"│ iso = '{l_camera.iso}'")
+    log.debug(f"│ image_denoise = '{l_camera.image_denoise}'")
+    log.debug("╰────────┄┄┄┄┄┄┄")
 
 def take_picture(camera_name):
     log.debug(f"Taking picture for camera name '{camera_name}'...")
@@ -110,7 +109,6 @@ def take_picture(camera_name):
                       f"brightness={brightness} resolution=({resolution_x},{resolution_y})")
             camera.start_preview()
             time.sleep(5)
-            log_camera_settings(camera)
             dt_now = utils.iso_timestamp4files()
             filename = camera_name + "_" + dt_now + ".jpg"
             capture_folder = camera_name + "/" + dt_now[0:4] + "/" + dt_now[5:10]
@@ -118,8 +116,9 @@ def take_picture(camera_name):
             pathlib.Path(METEO_FOLDER + "/" + base_captures_folder + "/" + capture_folder)\
                 .mkdir(mode=0o755, parents=True, exist_ok=True)
             full_path_filename = capture_folder + "/" + filename
-            log.debug(f"Capturing picture '{full_path_filename}'...")
+            log.debug(f"🖼 Capturing picture '{full_path_filename}'...")
             camera.capture(METEO_FOLDER + "/" + base_captures_folder + "/" + full_path_filename)
+            log_camera_settings(camera)
             camera.stop_preview()
             camera.close()
             return full_path_filename
