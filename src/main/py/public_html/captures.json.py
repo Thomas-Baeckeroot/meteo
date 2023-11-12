@@ -49,7 +49,7 @@ def get_oldest_created_folder(l_folder):
             try:
                 timestamp = os.path.getctime(dir_path)  # Date of creation
                 if timestamp < oldest_timestamp:
-                    oldest_folder = dir_path
+                    oldest_folder = os.path.basename(dir_path)  # Extract only the folder name
                     oldest_timestamp = timestamp
             except OSError:
                 pass  # Ignore any errors, such as permission denied
@@ -69,7 +69,7 @@ def get_newest_modified_folder(l_folder):
             try:
                 timestamp = os.path.getmtime(dir_path)  # Date of modification
                 if timestamp > newest_timestamp:
-                    newest_folder = dir_path
+                    newest_folder = os.path.basename(dir_path)  # Extract only the folder name
                     newest_timestamp = timestamp
             except OSError:
                 pass  # Ignore any errors, such as permission denied
@@ -113,7 +113,7 @@ def get_json_from_folder(l_sensor, l_year, l_month, l_day):
 
     if l_year:
         if os.path.exists(sensor_folder + l_year):
-            year_folder = sensor_folder + l_year
+            year_folder = l_year
         else:
             year_folder = get_newest_modified_folder(sensor_folder)
             log.warning(f"Given year '{l_year}' was not valid. Will use '{year_folder}' instead")
@@ -122,22 +122,22 @@ def get_json_from_folder(l_sensor, l_year, l_month, l_day):
     log.debug(f"       + year = '{year_folder}'")
 
     if l_month and l_day:
-        if os.path.exists(year_folder + "/" + l_month + "-" + l_day):
-            pictures_folder = year_folder + "/" + l_month + "-" + l_day
+        if os.path.exists(f"{sensor_folder}/{year_folder}/{l_month}-{l_day}"):
+            month_day_folder = f"{l_month}-{l_day}"
         else:
-            pictures_folder = get_newest_modified_folder(year_folder)
+            month_day_folder = get_newest_modified_folder(f"{sensor_folder}/{year_folder}")
             log.warning(f"Given that month-day '{l_month}-{l_day}' was not a valid folder,"
-                        f" '{pictures_folder}' will be used instead")
+                        f" '{month_day_folder}' will be used instead")
     else:
-        pictures_folder = get_newest_modified_folder(year_folder)
-    log.debug(f"      + mm-dd = '{pictures_folder}'")
+        month_day_folder = get_newest_modified_folder(f"{sensor_folder}/{year_folder}")
+    log.debug(f"      + mm-dd = '{month_day_folder}'")
 
-    log.info(f"Will get pictures from folder '{pictures_folder}'")
+    log.info(f"Will get pictures from folder '{month_day_folder}'")
 
-    pictures_json = get_json_pictures_from_folder(pictures_folder)
+    pictures_json = get_json_pictures_from_folder(f"{sensor_folder}/{year_folder}/{month_day_folder}")
     metadata_json = {"sensor": sensor_folder,
                      "year": year_folder,
-                     "month-day": pictures_folder}
+                     "month-day": month_day_folder}
     data_json = {"pictures": pictures_json,
                  "metadata": metadata_json}
     return data_json
