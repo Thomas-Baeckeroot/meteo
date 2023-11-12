@@ -98,46 +98,53 @@ def get_json_pictures_from_folder(pictures_folder):
 
 
 def get_json_from_folder(l_sensor, l_year, l_month, l_day):
-    captures_folder = "captures/"
-    log.debug(os.getcwd())
+    # log.debug(os.getcwd())
+    error_message = ""
 
     if l_sensor:
-        if os.path.exists(captures_folder + l_sensor):
-            sensor_folder = captures_folder + l_sensor
+        if os.path.exists(f"captures/{l_sensor}"):
+            sensor_folder = l_sensor
         else:
-            sensor_folder = get_oldest_created_folder(captures_folder)
-            log.warning(f"Given sensor '{l_sensor}' was not valid. Will use '{sensor_folder}' instead")
+            sensor_folder = get_oldest_created_folder("captures")
+            message = f"Sensor '{l_sensor}' was not valid, '{sensor_folder}' will be used instead."
+            log.warning(message)
+            error_message = message + "\n"
     else:
-        sensor_folder = get_oldest_created_folder(captures_folder)
+        sensor_folder = get_oldest_created_folder("captures")
     log.debug(f"sensor_folder = '{sensor_folder}'")
 
     if l_year:
-        if os.path.exists(sensor_folder + l_year):
+        if os.path.exists(f"captures/{sensor_folder}/{l_year}"):
             year_folder = l_year
         else:
-            year_folder = get_newest_modified_folder(sensor_folder)
-            log.warning(f"Given year '{l_year}' was not valid. Will use '{year_folder}' instead")
+            year_folder = get_newest_modified_folder(f"captures/{sensor_folder}")
+            message = f"Given year '{l_year}' was not valid, '{year_folder}' will be used instead."
+            log.warning(message)
+            error_message = error_message + message + "\n"
     else:
-        year_folder = get_newest_modified_folder(sensor_folder)
+        year_folder = get_newest_modified_folder(f"captures/{sensor_folder}")
     log.debug(f"       + year = '{year_folder}'")
 
     if l_month and l_day:
-        if os.path.exists(f"{sensor_folder}/{year_folder}/{l_month}-{l_day}"):
+        if os.path.exists(f"captures/{sensor_folder}/{year_folder}/{l_month}-{l_day}"):
             month_day_folder = f"{l_month}-{l_day}"
         else:
-            month_day_folder = get_newest_modified_folder(f"{sensor_folder}/{year_folder}")
-            log.warning(f"Given that month-day '{l_month}-{l_day}' was not a valid folder,"
-                        f" '{month_day_folder}' will be used instead")
+            month_day_folder = get_newest_modified_folder(f"captures/{sensor_folder}/{year_folder}")
+            message = f"Given that month-day '{l_month}-{l_day}' was not a valid folder," \
+                      f" '{month_day_folder}' will be used instead"
+            log.warning(message)
+            error_message = error_message + message + "\n"
     else:
-        month_day_folder = get_newest_modified_folder(f"{sensor_folder}/{year_folder}")
+        month_day_folder = get_newest_modified_folder(f"captures/{sensor_folder}/{year_folder}")
     log.debug(f"      + mm-dd = '{month_day_folder}'")
 
     log.info(f"Will get pictures from folder '{month_day_folder}'")
 
-    pictures_json = get_json_pictures_from_folder(f"{sensor_folder}/{year_folder}/{month_day_folder}")
+    pictures_json = get_json_pictures_from_folder(f"captures/{sensor_folder}/{year_folder}/{month_day_folder}")
     metadata_json = {"sensor": sensor_folder,
                      "year": year_folder,
-                     "month-day": month_day_folder}
+                     "month-day": month_day_folder,
+                     "error_message": error_message}
     data_json = {"pictures": pictures_json,
                  "metadata": metadata_json}
     return data_json
