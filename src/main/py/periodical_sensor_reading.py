@@ -254,7 +254,7 @@ def rsync_pictures_from_server(local_sensor, remote_server_src, conn_local_dest)
 
 def main():  # Expected to be called once per minute
     main_call_epoch = utils.epoch_now()
-    log.info("Starting ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
+    log.info("Starting ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
     temp = 15  # default value for later calculation of speed of sound
     first_remote = True
     local_camera_name = None
@@ -412,7 +412,7 @@ def main():  # Expected to be called once per minute
     else:
         log.debug("(not midnight run)")
 
-    log.info("Terminates _________________________________________________")
+    log.info("Terminates ______________________________________________\n")
 
 
 if __name__ == "__main__":

@@ -68,6 +68,19 @@ def log_camera_settings(l_camera):
     log.debug(f"│ image_denoise = '{l_camera.image_denoise}'")
     log.debug("╰────────┄┄┄┄┄┄┄")
 
+
+def binned_resolution(resolution):
+    # Split the resolution string into width and height
+    width, height = map(int, resolution.split('x'))
+
+    # Calculate half of the width and height
+    half_width = width // 2
+    half_height = height // 2
+
+    # Return the binned resolution as a formatted string
+    return f"{half_width}x{half_height}"
+
+
 def take_picture(camera_name):
     log.debug(f"Taking picture for camera name '{camera_name}'...")
     picamera = __import__("picamera")
@@ -77,8 +90,8 @@ def take_picture(camera_name):
     awb_gains_red = config.getfloat("CAMERA:" + camera_name, "awb_gains_red", fallback=None)
     awb_gains_blue = config.getfloat("CAMERA:" + camera_name, "awb_gains_blue", fallback=None)
     brightness = config.getint("CAMERA:" + camera_name, "brightness", fallback=None)
-    resolution_x = config.getint("CAMERA:" + camera_name, "resolution_x", fallback=None)
-    resolution_y = config.getint("CAMERA:" + camera_name, "resolution_y", fallback=None)
+    resolution = config.getint("CAMERA:" + camera_name, "resolution", fallback=None)
+    binned_if_analog_gain_over = config.getint("CAMERA:" + camera_name, "binned_if_analog_gain_over", fallback=None)
     capture_tentatives = 0
     while capture_tentatives < 23:
         capture_tentatives = capture_tentatives + 1
@@ -98,27 +111,33 @@ def take_picture(camera_name):
             if brightness:
                 camera.brightness = brightness
 
-            if resolution_x or resolution_y:  # TODO To be replaced by 'resolution' as String to allow values like 'HD', ...
-                if not resolution_x:
-                    (resolution_x, ignored) = camera.resolution
-                if not resolution_y:
-                    (ignored, resolution_y) = camera.resolution
-                camera.resolution = (resolution_x, resolution_y)
+            if resolution:
+                camera.resolution = resolution
 
             log.debug(f"Given camera params: awb_mode={awb_mode} awb_gains=({awb_gains_red},{awb_gains_blue}) "
-                      f"brightness={brightness} resolution=({resolution_x},{resolution_y})")
+                      f"brightness={brightness} resolution={resolution}")
             camera.start_preview()
             time.sleep(5)
             dt_now = utils.iso_timestamp4files()
             filename = camera_name + "_" + dt_now + ".jpg"
             capture_folder = camera_name + "/" + dt_now[0:4] + "/" + dt_now[5:10]
             base_captures_folder = "captures"  # todo get value from config file
-            pathlib.Path(METEO_FOLDER + "/" + base_captures_folder + "/" + capture_folder)\
+            pathlib.Path(METEO_FOLDER + "/" + base_captures_folder + "/" + capture_folder) \
                 .mkdir(mode=0o755, parents=True, exist_ok=True)
             full_path_filename = capture_folder + "/" + filename
             log.debug(f"🖼  Capturing picture '{full_path_filename}'...")
             camera.capture(METEO_FOLDER + "/" + base_captures_folder + "/" + full_path_filename)
             log_camera_settings(camera)
+
+            camera.resolution = binned_resolution(resolution)
+            time.sleep(2)
+            dt_now = utils.iso_timestamp4files()
+            filename = camera_name + "_" + dt_now + "_binned.jpg"
+            full_path_filename = capture_folder + "/" + filename
+            log.debug(f"🖼  Capturing picture '{full_path_filename}'...")
+            camera.capture(METEO_FOLDER + "/" + base_captures_folder + "/" + full_path_filename)
+            log_camera_settings(camera)
+
             camera.stop_preview()
             camera.close()
             return full_path_filename
