@@ -9,6 +9,38 @@ printf -- "Script directory: '%s'\n" "${SCRIPT_DIR}"
 START_DIR=$(pwd)
 source "${SCRIPT_DIR}/bin/helper_functions.sh"
 
+function install_config_files() {
+  if [ -f "${HOME}/.config/susanoo_WeatherStation.conf" ]; then
+    printf -- "An existing config file has been found\n"
+    printf -- "Here is a diff of current version vs. template:\n"
+    diff "${HOME}/.config/susanoo_WeatherStation.conf" "${SCRIPT_DIR}/bin/susanoo_WeatherStation_template.conf"
+  else
+    printf -- "No pre-existing config file found\n"
+    cp "${SCRIPT_DIR}/bin/susanoo_WeatherStation_template.conf" "${HOME}/.config/susanoo_WeatherStation.conf"
+    printf -- "New config file has been copied for user collecting the sensors data.\n"
+  fi
+  printf -- "After install script is done, adjust it with:\n"
+  printf -- "vi %s/.config/susanoo_WeatherStation.conf\n\n" "${HOME}"
+  read -r -p "Press Enter to continue..."
+
+  if [ -f "${HOME}/../${WEB_USER}/.config/susanoo_WeatherStation.conf" ]; then
+    printf -- "An existing config file has been found\n"
+    printf -- "Here is a diff of current version vs. template:\n"
+    diff "${HOME}/../${WEB_USER}/.config/susanoo_WeatherStation.conf" "${SCRIPT_DIR}/bin/susanoo_WeatherStation_template_Web.conf"
+  else
+    printf -- "No pre-existing config file found\n"
+    cp "${SCRIPT_DIR}/bin/susanoo_WeatherStation_template_Web.conf" "${HOME}/../${WEB_USER}/.config/susanoo_WeatherStation.conf"
+    sudo chown "${WEB_USER}" "${HOME}/../${WEB_USER}/.config/susanoo_WeatherStation.conf"
+    sudo chgrp "${WEB_USER}" "${HOME}/../${WEB_USER}/.config/susanoo_WeatherStation.conf"
+    # fixme Depending on system, the upper command may fail (when group for user is different than username).
+    printf -- "New config file has been copied for web server.\n"
+  fi
+  printf -- "After install script is done, adjust it with:\n"
+  printf -- "vi %s/.config/susanoo_WeatherStation.conf\n\n" "${HOME}/../${WEB_USER}"
+  read -r -p "Press Enter to continue..."
+}
+
+
 # todo Below attributions should be replaced by a call to func. that manages a config file ~/.config/susanoo_WeatherStation.conf (GPIO numbers also could be informed there)
 # Parsing of .ini/.conf files from bash is described:
 #   here:     https://ajdiaz.wordpress.com/2008/02/09/bash-ini-parser/
@@ -121,20 +153,9 @@ if ask_confirmation "Should we create database?" "yes"; then
   # psql --dbname meteo --command "GRANT SELECT ON ALL TABLES IN SCHEMA public TO ${WEB_USER};"
 fi
 
-if [ -f "${HOME}/.config/susanoo_WeatherStation.conf" ]; then
-  printf -- "An existing config file has been found\n"
-  check diff and message
-else
-  printf -- "No pre-existing config file found\n"
-  cp "${SCRIPT_DIR}/bin/susanoo_WeatherStation_template.conf" "${HOME}/.config/susanoo_WeatherStation.conf"
-  printf -- "New config file has been copied. After install script is done, adjust it with:\n"
-  printf -- "vi %s/.config/susanoo_WeatherStation.conf\n\n" "${HOME}"
-  read -r -p "Press Enter to continue..."
-fi
-sudo ln -f -s "${HOME}/.config/susanoo_WeatherStation.conf" "${HOME}/../${WEB_USER}/.config/susanoo_WeatherStation.conf"
-chmod +x "${HOME}/.config"
-sudo chown "${WEB_USER}" "${HOME}/../${WEB_USER}/.config/susanoo_WeatherStation.conf"
-sudo chgrp "${WEB_USER}" "${HOME}/../${WEB_USER}/.config/susanoo_WeatherStation.conf"
+
+install_config_files
+
 
 printf -- "\n\n*** Setup startup to launch Web server... ***\n"
 # get location of '/etc/rc.d' for this system:

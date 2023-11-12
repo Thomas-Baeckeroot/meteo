@@ -116,7 +116,7 @@ def take_picture(camera_name):
             pathlib.Path(METEO_FOLDER + "/" + base_captures_folder + "/" + capture_folder)\
                 .mkdir(mode=0o755, parents=True, exist_ok=True)
             full_path_filename = capture_folder + "/" + filename
-            log.debug(f"🖼 Capturing picture '{full_path_filename}'...")
+            log.debug(f"🖼  Capturing picture '{full_path_filename}'...")
             camera.capture(METEO_FOLDER + "/" + base_captures_folder + "/" + full_path_filename)
             log_camera_settings(camera)
             camera.stop_preview()

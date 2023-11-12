@@ -8,7 +8,6 @@ import logging
 import os
 import pathlib
 import sensors_functions as func
-import socket
 import subprocess
 import utils
 
@@ -18,7 +17,7 @@ logging.basicConfig(
     filename=utils.get_home() + "/susanoo-data.log",  # = /home/pi/susanoo-data.log
     level=logging.DEBUG,
     format='%(asctime)s\t%(levelname)s\t%(name)s (%(process)d)\t%(message)s')
-log = logging.getLogger("periodical_sensor_readi…")
+log = logging.getLogger("periodical_sensor_read…")
 CONSOLIDATE_VAL = False
 
 
@@ -255,7 +254,7 @@ def rsync_pictures_from_server(local_sensor, remote_server_src, conn_local_dest)
 
 def main():  # Expected to be called once per minute
     main_call_epoch = utils.epoch_now()
-    log.info(" - Starting on " + socket.gethostname() + " ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
+    log.info("Starting ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
     temp = 15  # default value for later calculation of speed of sound
     first_remote = True
     local_camera_name = None
@@ -413,7 +412,7 @@ def main():  # Expected to be called once per minute
     else:
         log.debug("(not midnight run)")
 
-    log.info(utils.iso_timestamp_now() + " - Terminates " + "_" * 47)
+    log.info("Terminates _________________________________________________")
 
 
 if __name__ == "__main__":
