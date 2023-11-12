@@ -54,8 +54,24 @@ def value_sealevelpressure():
     return sealevelpressure_hpa
 
 
+def log_camera_settings(l_camera):
+    log.debug("╭────────┤ camera settings ├────────┄┄┄┄┄┄┄\n"
+              f"│ resolution = '{l_camera.resolution}'\n"
+              f"│ awb_mode = '{l_camera.awb_mode}'\n"
+              f"│ awb_gains = '{l_camera.awb_gains}'\n"
+              f"│ brightness = '{l_camera.brightness}'\n"
+              f"│ contrast = '{l_camera.contrast}'\n"
+              f"│ saturation = '{l_camera.saturation}'\n"
+              f"│ analog_gain = '{l_camera.analog_gain}'\n"
+              f"│ digital_gain = '{l_camera.digital_gain}'\n"
+              f"│ iso = '{l_camera.iso}'\n"
+              f"│ image_denoise = '{l_camera.image_denoise}'\n"
+              f"│ thumbnail = '{l_camera.thumbnail}'\n"
+              "╰────────┄┄┄┄┄┄┄")
+
 def take_picture(camera_name):
-    log.debug("Take picture:\t")
+    log.debug(f"Taking picture for camera name '{camera_name}'...")
+    picamera = __import__("picamera")
     config = utils.get_config()
     # see https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera
     awb_mode = config.get("CAMERA:" + camera_name, "awb_mode", fallback=None)
@@ -66,10 +82,9 @@ def take_picture(camera_name):
     resolution_y = config.getint("CAMERA:" + camera_name, "resolution_y", fallback=None)
     capture_tentatives = 0
     while capture_tentatives < 23:
-        picamera = __import__("picamera")
         capture_tentatives = capture_tentatives + 1
         try:
-            camera = picamera.PiCamera()  # TODO Duplicated with video_capture_on_motion.py:61
+            camera = picamera.PiCamera()
 
             if awb_mode:
                 camera.awb_mode = awb_mode
@@ -91,10 +106,11 @@ def take_picture(camera_name):
                     (ignored, resolution_y) = camera.resolution
                 camera.resolution = (resolution_x, resolution_y)
 
-            log.debug(f"Using camera params: awb_mode={awb_mode} awb_gains=({awb_gains_red},{awb_gains_blue}) "
+            log.debug(f"Given camera params: awb_mode={awb_mode} awb_gains=({awb_gains_red},{awb_gains_blue}) "
                       f"brightness={brightness} resolution=({resolution_x},{resolution_y})")
             camera.start_preview()
             time.sleep(5)
+            log_camera_settings(camera)
             dt_now = utils.iso_timestamp4files()
             filename = camera_name + "_" + dt_now + ".jpg"
             capture_folder = camera_name + "/" + dt_now[0:4] + "/" + dt_now[5:10]
@@ -102,14 +118,13 @@ def take_picture(camera_name):
             pathlib.Path(METEO_FOLDER + "/" + base_captures_folder + "/" + capture_folder)\
                 .mkdir(mode=0o755, parents=True, exist_ok=True)
             full_path_filename = capture_folder + "/" + filename
-            log.debug(full_path_filename)
+            log.debug(f"Capturing picture '{full_path_filename}'...")
             camera.capture(METEO_FOLDER + "/" + base_captures_folder + "/" + full_path_filename)
-            # todo Test upper with , thumbnail=(64, 48, 35)
             camera.stop_preview()
             camera.close()
             return full_path_filename
         except picamera.exc.PiCameraMMALError:
-            log.debug(f"PiCameraMMALError - retrying ({capture_tentatives})")
+            log.warning(f"PiCameraMMALError - retrying ({capture_tentatives})")
             time.sleep(capture_tentatives)
 
         # End of 'while not captured_success and capture_tentatives < 23:'

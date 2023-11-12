@@ -59,8 +59,7 @@ def start_video_capture():
         capture_tentatives = capture_tentatives + 1
         try:
             camera = picamera.PiCamera()
-            # TODO Duplicated with sensors_functions.py:54
-            # Implementation here is deprecated, please use preferably sensors_functions.py
+            # TODO This implementation is deprecated! Duplicated version sensors_functions.py:72 is preferable.
             camera.awb_mode = 'off'
             camera.awb_gains = (1.6, 1.0)
             camera.brightness = 46
