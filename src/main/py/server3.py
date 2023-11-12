@@ -37,7 +37,7 @@ def file_exists(filename):
 
 
 def check_symlinks():
-    for filename in ["capture.html", "capture.json", "graph.svg", "index.html"]:  # finishing with "index.html"
+    for filename in ["capture.html", "captures.json", "graph.svg", "index.html"]:  # finishing with "index.html"
         if file_exists(filename):
             log.debug(f"File '{filename}' found in working directory.")
         else:

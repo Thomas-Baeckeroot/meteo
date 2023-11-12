@@ -90,7 +90,7 @@ def take_picture(camera_name):
     awb_gains_red = config.getfloat("CAMERA:" + camera_name, "awb_gains_red", fallback=None)
     awb_gains_blue = config.getfloat("CAMERA:" + camera_name, "awb_gains_blue", fallback=None)
     brightness = config.getint("CAMERA:" + camera_name, "brightness", fallback=None)
-    resolution = config.getint("CAMERA:" + camera_name, "resolution", fallback=None)
+    resolution = config.get("CAMERA:" + camera_name, "resolution", fallback=None)
     binned_if_analog_gain_over = config.getint("CAMERA:" + camera_name, "binned_if_analog_gain_over", fallback=None)
     capture_tentatives = 0
     while capture_tentatives < 23:
