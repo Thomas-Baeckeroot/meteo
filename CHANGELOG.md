@@ -21,7 +21,4 @@
 
       mv ${HOME}/.config/meteo.conf ${HOME}/.config/susanoo_WeatherStation.conf
       WEB_USER=web
-      sudo ln -f -s "${HOME}/.config/susanoo_WeatherStation.conf" "${HOME}/../${WEB_USER}/.config/susanoo_WeatherStation.conf"
-      chmod +x "${HOME}/.config"
-      sudo chown "${WEB_USER}" "${HOME}/../${WEB_USER}/.config/susanoo_WeatherStation.conf"
-      sudo chgrp "${WEB_USER}" "${HOME}/../${WEB_USER}/.config/susanoo_WeatherStation.conf"
+      sudo mv "${HOME}/../${WEB_USER}/.config/meteo.conf" "${HOME}/../${WEB_USER}/.config/susanoo_WeatherStation.conf"
