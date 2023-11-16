@@ -143,7 +143,7 @@ def get_json_from_folder(l_sensor, l_year, l_month, l_day):
     pictures_json = get_json_pictures_from_folder(f"captures/{sensor_folder}/{year_folder}/{month_day_folder}")
     metadata_json = {"sensor": sensor_folder,
                      "year": year_folder,
-                     "month-day": month_day_folder,
+                     "month_day": month_day_folder,
                      "error_message": error_message}
     data_json = {"pictures": pictures_json,
                  "metadata": metadata_json}
