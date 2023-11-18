@@ -34,6 +34,7 @@ body {
 .cell-hours {
     border: .02em solid black;
     background-color: whitesmoke;
+    width: 7.8%;
 }
 
 .cell-meridiem {
@@ -96,7 +97,8 @@ body {
     width: 20%;
     min-height: 10em;
     border: 0;
-    padding: 0;
+    /* padding: 0; */
+    padding-top: 0.5em;
     text-align: center;
 }
 
