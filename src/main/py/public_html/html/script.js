@@ -26,7 +26,7 @@ async function fetchData() {
             picturesData = data.pictures;
             // Update metadata with data from capture.json
             metadata = data.metadata;
-            console.log(".fetchData() - Données mises à jour avec succès:", picturesData, metadata);
+            console.log(".fetchData() - Data updated successfully:", picturesData, metadata);
 
             sensorName = metadata.sensor
             // FIXME string>int year = metadata.year
@@ -37,15 +37,14 @@ async function fetchData() {
             console.error(".fetchData() - Incorrect JSON format.");
         }
     } catch (error) {
-        console.error(".fetchData() - Une erreur s'est produite lors de la récupération des données:", error.message);
+        console.error(".fetchData() - An error occurred during the fetching of data from captures.json:", error.message);
     }
 }
 
 // Function to update the current_image element
 function updateCurrentImage(pictureData) {
-    console.log("---updateCurrentImage(" + pictureData + ")---");
-
     const currentImage = pictureData.img;
+    console.log(".updateCurrentImage('" + currentImage + "')");
 
     // Change the src attribute of the main image
     document.getElementById("capture-img").src = "../captures/" + metadata.sensor + "/" + metadata.year + "/" + metadata.month_day + "/" + currentImage;
@@ -61,12 +60,14 @@ function updateCurrentImage(pictureData) {
     hour = parseInt(parts[4], 10);
     minute = parseInt(parts[5], 10);
 
-    document.getElementById("current-minute").textContent = minute.toString().padStart(2, '0');
-    document.getElementById("current-hour").textContent = hour;
-    document.getElementById("current-day").textContent = day;
-    document.getElementById("current-month").textContent = month;
-    document.getElementById("current-year").textContent = year;
-    document.getElementById("current-sensorName").textContent = sensorName;
+    document.getElementById("current_hh_mm").textContent = hour + ":" + minute.toString().padStart(2, '0');
+    document.getElementById("current_day").textContent = day;
+    document.getElementById("current_month").textContent = month;
+    document.getElementById("current_year").textContent = year;
+    document.getElementById("current_sensorName").textContent = sensorName;
+
+    // TODO Check consistency with metadata
+    document.getElementById("error_message").textContent = metadata.error_message; // TODO Implement error message display
 }
 
 document.addEventListener("DOMContentLoaded", async function () {

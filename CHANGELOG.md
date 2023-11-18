@@ -2,7 +2,7 @@
 
 ---
 
-### Version 0.0.9 (2023-11-??, Very soon...)
+### Version 0.0.9 (2023-11-18)
 
 ###### Features
 

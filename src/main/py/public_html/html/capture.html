@@ -145,32 +145,30 @@
             <!-- Image browser (next/previous year/month/day) -->
             <table style="width: 100%;">
                 <tr>
-                    <td></td>
-                    <td>◂ &#9208; ▸<br/>
-                        ▶⏯ ▶▷▹►▻<br/>
-                        <!-- <button id="playPauseButton">▶</button> -->
-                    </td>
-                    <td></td>
+                    <td>◂</td>
+                    <td> <!-- ▶▷▹►▻ --> <button id="playPauseButton" disabled>▶</button></td>
+                    <td>▸</td>
                 </tr>
                 <tr>
-                    <td>&lt;</td>
-                    <td><span id="current-hour">{hour}</span>:<span id="current-minute">{minute}</span></td>
-                    <td>&gt;</td>
+                    <td id="previous_hh_mm">&lt;</td>
+                    <td id="current_hh_mm">hh:mm</td>
+                    <td id="next_hh_mm">&gt;</td>
                 </tr>
                 <tr>
-                    <td>&lt;</td>
-                    <td><span id="current-day">{day}</span></td>
-                    <td>&gt;</td>
+                    <td id="previous_day" >&lt;</td>
+                    <td><span id="current_day">{day}</span></td>
+                    <td id="next_day">&gt;</td>
                 </tr>
                 <tr>
-                    <td>&lt;&lt;</td>
-                    <td><span id="current-month">{month}</span></td>
-                    <td>&gt;&gt;</td>
+                    <td id="previous_month">&lt;&lt;</td>
+                    <td><span id="current_month">{month}</span></td>
+                    <td id="next_month">&gt;&gt;</td>
                 </tr>
                 <tr>
-                    <td>&lt;&lt;&lt;<br/>⏮</td>
-                    <td><span id="current-year">{year}</span></td>
-                    <td>&gt;&gt;&gt;<br/>⏭</td>
+                    <td id="previous_year">&lt;&lt;&lt;</td>
+                    <!--<td>&lt;&lt;&lt;</td>-->
+                    <td id="current_year">{year}</td>
+                    <td id="next_year">&gt;&gt;&gt;</td>
                 </tr>
             </table>
             <br/>
@@ -199,8 +197,11 @@
                  [ > tilleul   < ]
                  [   grangette   ]
                  -->
-            <p>Sensor name: <span id="current-sensorName">{sensorName}</span><br/></p>
+            <p>Sensor name: <span id="current_sensorName">{sensorName}</span><br/></p>
         </div>
+    </div>
+    <div class="footer">
+        <span id="error_message">loading...</span>
     </div>
 </div> <!-- page -->
 </body>
