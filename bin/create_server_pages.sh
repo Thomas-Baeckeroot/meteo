@@ -32,6 +32,7 @@ create_link "${L_HOME}/meteo/src/main/py/public_html/html/script.js" "${L_HOME}/
 create_link "${L_HOME}/meteo/src/main/py/public_html/html/styles.css" "${L_HOME}/../${L_WEB_USER}/public_html/html/styles.css"
 create_link "${L_HOME}/meteo/src/main/py/public_html/html/undefined_4x3.png" "${L_HOME}/../${L_WEB_USER}/public_html/html/undefined_4x3.png"
 
-create_link "${L_HOME}/meteo/captures" "${L_HOME}/../${L_WEB_USER}/public_html/captures"
-sudo chmod --recursive --verbose 555 "${L_HOME}/../${L_WEB_USER}/public_html"
+create_link "${L_HOME}/meteo/captures" "${L_HOME}/../${L_WEB_USER}/public_html/"
+sudo chmod --verbose 555 "${L_HOME}"/../"${L_WEB_USER}"/public_html/*.*
+sudo chmod --verbose 444 "${L_HOME}"/../"${L_WEB_USER}"/public_html/html/*.*
 printf -- "Links created in 'public_html' pointing to adequate folder '%s'\n" "${L_HOME}/meteo/..."
