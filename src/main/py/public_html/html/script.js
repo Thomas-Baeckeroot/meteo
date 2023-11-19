@@ -1,21 +1,45 @@
 console.log("---Start---");
 const SIZE_LIMIT = 512000;
 
-let current_image = "XXXXXXX";
-let sensorName = "-sensor-";
-let year = 2099;
-let month = 0;
-let day = 0;
-let hour = 0;
-let minute = 0;
+let sensorName = undefined;
+let year = undefined;
+let month = undefined;
+let day = undefined;
+let hour = undefined;
+let minute = undefined;
 
 let picturesData = {};
 let metadata = {};
 
 async function fetchData() {
     console.log(".fetchData() - start method");
+    // Get the current URL
+    const currentUrl = new URL(window.location.href);
+    // Extract parameters using URLSearchParams
+    const paramSensor = currentUrl.searchParams.get("s");
+    const paramYear = currentUrl.searchParams.get("y");
+    const paramMonth = currentUrl.searchParams.get("m");
+    const paramDay = currentUrl.searchParams.get("d");
+    // Construct the URL with parameters for the fetch call
+    let url = "/captures.json";
+    let firstParam = true;
+    if (paramSensor !== null) {
+        url += (firstParam ? "?s=" : "&s=") + paramSensor
+        firstParam = false
+    }
+    if (paramYear !== null) {
+        url += (firstParam ? "?y=" : "&y=") + paramYear
+        firstParam = false
+    }
+    if (paramMonth !== null) {
+        url += (firstParam ? "?m=" : "&m=") + paramMonth
+        firstParam = false
+    }
+    if (paramDay !== null) {
+        url += (firstParam ? "?d=" : "&d=") + paramDay
+    }
     try {
-        const response = await fetch('/captures.json');
+        const response = await fetch(url);
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
@@ -78,22 +102,15 @@ function grayPictureSelectorWithoutEvent() {
             const formattedMinute = minute.toString().padStart(2, '0');
             // Create the time string
             const hh_mm = `${formattedHour}h${formattedMinute}`;
-            console.log("Checking if element '" + hh_mm + "' has listeners...");
             // Assuming hh_mm_element is your HTML element
             const hh_mm_element = document.getElementById(hh_mm);
             // Get the event listeners for the "click" event
 
             const text = hh_mm_element.textContent
-            console.log("content is '" + text + "'")
-
-            const clickListeners = hh_mm_element.onclick;
             // Check if there are click event listeners
             if (text === "-") {
-                console.log("Element '" + hh_mm + "' has a single 'dash' as text content.");
                 document.getElementById(hh_mm).style.backgroundColor = "DarkGray";
                 document.getElementById(hh_mm).style.cursor = "default";
-            } else {
-                console.log("Element '" + hh_mm + "' has text content = '" + text + "'.");
             }
         }
     }
@@ -117,7 +134,7 @@ function updatePictureSelector(hh_mm, pictureData) {
     hh_mm_element.textContent = mm
 
     // Update the displayed current_image
-    console.log("DOMContentLoaded - addEventListener: '" + hh_mm + "' -> '" + pictureData + "'")
+    // console.log("DOMContentLoaded - addEventListener: '" + hh_mm + "' -> '" + pictureData + "'")
     hh_mm_element.addEventListener("click", function () {
         updateCurrentImage(pictureData);
     });
