@@ -21,6 +21,7 @@ source "${L_SCRIPT_DIR}/helper_functions.sh"
 # TODO Create a variable that replaces '${L_HOME}/../${L_WEB_USER}' by direct '${HOME_WEB_USER}' (without '..')
 sudo mkdir --parents "${L_HOME}/../${L_WEB_USER}/public_html/html"
 printf -- "Folder 'public_html' created in home of user '%s'\n" "${L_WEB_USER}"
+# FIXME Should replace ${L_HOME}/meteo by ${PROJECT_FOLDER} (can be done from current script location)
 create_link "${L_HOME}/meteo/src/main/py/public_html/captures.json.py" "${L_HOME}/../${L_WEB_USER}/public_html/captures.json"
 create_link "${L_HOME}/meteo/src/main/py/public_html/index.html.py" "${L_HOME}/../${L_WEB_USER}/public_html/index.html"
 create_link "${L_HOME}/meteo/src/main/py/public_html/favicon.ico" "${L_HOME}/../${L_WEB_USER}/public_html/favicon.ico"

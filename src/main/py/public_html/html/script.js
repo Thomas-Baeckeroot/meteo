@@ -12,6 +12,8 @@ let lastDaylightHhMm = undefined;
 
 let picturesData = {};
 let metadata = {};
+let sortedPictures = undefined;
+let index = undefined;
 
 async function fetchData() {
     console.log(".fetchData() - start method");
@@ -53,6 +55,7 @@ async function fetchData() {
             // Update metadata with data from capture.json
             metadata = data.metadata;
             console.log(".fetchData() - Data updated successfully:", picturesData, metadata);
+            sortedPictures = Object.keys(picturesData).sort();
 
             sensorName = metadata.sensor;
             // FIXME string>int year = metadata.year
@@ -68,10 +71,9 @@ async function fetchData() {
 }
 
 // Function to update the current_image element
-function updateCurrentImage(pictureData) {
+function updateCurrentImage(pictureData, hh_mm) {
     const currentImage = pictureData.img;
     console.log(".updateCurrentImage('" + currentImage + "')");
-
     // Change the src attribute of the main image
     document.getElementById("capture-img").src = "../captures/" + metadata.sensor + "/" + metadata.year + "/" + metadata.month_day + "/" + currentImage;
 
@@ -91,6 +93,18 @@ function updateCurrentImage(pictureData) {
     document.getElementById("current_month").textContent = month;
     document.getElementById("current_year").textContent = year;
     document.getElementById("current_sensorName").textContent = sensorName;
+
+    index = sortedPictures.indexOf(hh_mm);
+    if (index > 0) {
+        makeElementClickable(document.getElementById("previous_hh_mm"));
+    } else {
+        makeElementNotClickable(document.getElementById("previous_hh_mm"));
+    }
+    if (index < sortedPictures.length - 1) {
+        makeElementClickable(document.getElementById("next_hh_mm"));
+    } else {
+        makeElementNotClickable(document.getElementById("next_hh_mm"));
+    }
 
     // TODO Check consistency with metadata
     document.getElementById("error_message").textContent = metadata.error_message; // TODO Implement error message display
@@ -137,7 +151,7 @@ function fillPictureSelectorHhMm(hh_mm, pictureData) {
 
     // console.log("DOMContentLoaded - addEventListener: '" + hh_mm + "' -> '" + pictureData + "'")
     hh_mm_element.addEventListener("click", function () {
-        updateCurrentImage(pictureData);
+        updateCurrentImage(pictureData, hh_mm);
     });
     // Add an event listener to each table cell
 
@@ -162,6 +176,23 @@ function makeElementClickable(element) {
     element.addEventListener("mouseout", function () {
         element.classList.remove("hovered-cell");
     });
+
+    element.classList.remove("buttonDisabled");
+    element.classList.add("buttonEnabled");
+}
+
+function makeElementNotClickable(element) {
+    element.style.cursor = "default";
+
+    // Remove mouseover event listener
+    element.removeEventListener("mouseover", function () {
+    });
+    // Add a mouseout event listener
+    element.removeEventListener("mouseout", function () {
+    });
+
+    element.classList.remove("buttonEnabled");
+    element.classList.add("buttonDisabled");
 }
 
 function fillPictureSelector_deprecated() {
@@ -200,25 +231,33 @@ function fillPicturesSelector() {
                 firstDaylightHhMm = element_hh_mm;
                 const firstDaylightElement = document.getElementById("firstDaylight");
                 firstDaylightElement.addEventListener("click", function () {
-                    updateCurrentImage(pictureData);
+                    updateCurrentImage(pictureData, element_hh_mm);
                 });
-                firstDaylightElement.classList.remove("buttonDisabled");
-                firstDaylightElement.classList.add("buttonEnabled");
                 makeElementClickable(firstDaylightElement);
             }
             if (pictureData.fSize > SIZE_LIMIT) {
                 lastDaylightHhMm = element_hh_mm;
                 const LastDaylightElement = document.getElementById("LastDaylight");
                 LastDaylightElement.addEventListener("click", function () {
-                    updateCurrentImage(pictureData);
+                    updateCurrentImage(pictureData, element_hh_mm);
                 });
-                LastDaylightElement.classList.remove("buttonDisabled");
-                LastDaylightElement.classList.add("buttonEnabled");
                 makeElementClickable(LastDaylightElement);
             }
         }
     }
     grayPictureSelectorWithoutEvent()
+}
+
+function previousHhMm() {
+    const previousKey = index > 0 ?
+        sortedPictures[index - 1] : sortedPictures[0];
+    updateCurrentImage(picturesData[previousKey], previousKey);
+}
+
+function nextHhMm() {
+    const nextKey = index < sortedPictures.length - 1 ?
+        sortedPictures[index + 1] : sortedPictures[sortedPictures.length - 1];
+    updateCurrentImage(picturesData[nextKey], nextKey);
 }
 
 document.addEventListener("DOMContentLoaded", async function () {
@@ -233,7 +272,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     fillPicturesSelector();
     if (lastDaylightHhMm !== undefined) {
         const pictureData = picturesData[lastDaylightHhMm];
-        updateCurrentImage(pictureData);
+        updateCurrentImage(pictureData, lastDaylightHhMm);
     }
 
     console.log("DOMContentLoaded - ---DOMContentLoaded-end---");

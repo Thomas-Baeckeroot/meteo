@@ -70,17 +70,19 @@
 
             <!-- Image browser (next/previous year/month/day) -->
             <table style="width: 100%;">
-                <th colspan="3" id="current_sensorName"><span style="color: grey">▒▒▒▒▒</span></th>
-                <!-- Could have also a previous/next to switch through the difference devices -->
+                <tr>
+                    <th colspan="3" id="current_sensorName"><span style="color: grey">▒▒▒▒▒</span></th>
+                    <!-- Could have also a previous/next to switch through the difference devices -->
+                </tr>
                 <tr>
                     <td id="firstDaylight" class="buttonDisabled">◂</td>
                     <td><!-- ▶▷▹►▻ <button id="playPauseButton" disabled>▶</button> --></td>
                     <td id="LastDaylight" class="buttonDisabled">▸</td>
                 </tr>
                 <tr>
-                    <td id="previous_hh_mm" class="buttonDisabled">&lt;</td>
+                    <td id="previous_hh_mm" class="buttonDisabled" onclick="previousHhMm()">&lt;</td>
                     <td id="current_hh_mm"><span style="color: grey">▒:▒▒</span></td>
-                    <td id="next_hh_mm" class="buttonDisabled">&gt;</td>
+                    <td id="next_hh_mm" class="buttonDisabled" onclick="nextHhMm()">&gt;</td>
                 </tr>
                 <tr>
                     <td id="previous_day" class="buttonDisabled">&lt;</td>
