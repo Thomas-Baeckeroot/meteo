@@ -106,3 +106,11 @@ body {
     text-align: center;
     padding-top: 0.5em;
 }
+
+.buttonDisabled {
+    color: grey;
+}
+
+.buttonEnabled {
+    color: black;
+}

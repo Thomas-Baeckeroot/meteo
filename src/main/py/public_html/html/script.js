@@ -7,6 +7,8 @@ let month = undefined;
 let day = undefined;
 let hour = undefined;
 let minute = undefined;
+let firstDaylightHhMm = undefined;
+let lastDaylightHhMm = undefined;
 
 let picturesData = {};
 let metadata = {};
@@ -52,7 +54,7 @@ async function fetchData() {
             metadata = data.metadata;
             console.log(".fetchData() - Data updated successfully:", picturesData, metadata);
 
-            sensorName = metadata.sensor
+            sensorName = metadata.sensor;
             // FIXME string>int year = metadata.year
             // TODO month = f( metadata.month_day )
             // TODO day = f( metadata.month_day )
@@ -106,7 +108,7 @@ function grayPictureSelectorWithoutEvent() {
             const hh_mm_element = document.getElementById(hh_mm);
             // Get the event listeners for the "click" event
 
-            const text = hh_mm_element.textContent
+            const text = hh_mm_element.textContent;
             // Check if there are click event listeners
             if (text === "-") {
                 document.getElementById(hh_mm).style.backgroundColor = "DarkGray";
@@ -116,24 +118,23 @@ function grayPictureSelectorWithoutEvent() {
     }
 }
 
-function updatePictureSelector(hh_mm, pictureData) {
-    const mm = hh_mm.slice(-2)
-    const mmAsInt = parseInt(mm)
-    let hh_mm15
+function fillPictureSelectorHhMm(hh_mm, pictureData) {
+    const mm = hh_mm.slice(-2);
+    const mmAsInt = parseInt(mm);
+    let hh_mm15;
     if (mmAsInt % 15 === 0) {
         // mmAsInt is a multiple of 15
-        hh_mm15 = hh_mm
+        hh_mm15 = hh_mm;
     } else {
         // mmAsInt is not a multiple of 15
-        hh_mm15 = hh_mm.substring(0, 3) + (mmAsInt - (mmAsInt % 15)).toString()
+        hh_mm15 = hh_mm.substring(0, 3) + (mmAsInt - (mmAsInt % 15)).toString();
     }
 
     // Get the hh_mm_element by its ID
     const hh_mm_element = document.getElementById(hh_mm15);
 
-    hh_mm_element.textContent = mm
+    hh_mm_element.textContent = mm;
 
-    // Update the displayed current_image
     // console.log("DOMContentLoaded - addEventListener: '" + hh_mm + "' -> '" + pictureData + "'")
     hh_mm_element.addEventListener("click", function () {
         updateCurrentImage(pictureData);
@@ -146,21 +147,21 @@ function updatePictureSelector(hh_mm, pictureData) {
     } else {
         hh_mm_element.style.backgroundColor = "Khaki";
     }
-    hh_mm_element.style.cursor = "pointer";
+
+    makeElementClickable(hh_mm_element);
+}
+
+function makeElementClickable(element) {
+    element.style.cursor = "pointer";
 
     // Add a mouseover event listener
-    hh_mm_element.addEventListener("mouseover", function () {
-        hh_mm_element.classList.add("hovered-cell");
+    element.addEventListener("mouseover", function () {
+        element.classList.add("hovered-cell");
     });
     // Add a mouseout event listener
-    hh_mm_element.addEventListener("mouseout", function () {
-        hh_mm_element.classList.remove("hovered-cell");
+    element.addEventListener("mouseout", function () {
+        element.classList.remove("hovered-cell");
     });
-
-    /*
-    * cell:hover {
-background-color: lightblue
-    * */
 }
 
 function fillPictureSelector_deprecated() {
@@ -175,7 +176,7 @@ function fillPictureSelector_deprecated() {
             const pictureData = picturesData[hh_mm];
 
             if (pictureData) {
-                updatePictureSelector(hh_mm, pictureData)
+                fillPictureSelectorHhMm(hh_mm, pictureData);
             } else {
                 console.log("DOMContentLoaded - No 'pictureData' for hh_mm '" + hh_mm + "'.");
                 document.getElementById(hh_mm).style.backgroundColor = "DarkGray";
@@ -185,7 +186,7 @@ function fillPictureSelector_deprecated() {
     }
 }
 
-function fillPictureSelector() {
+function fillPicturesSelector() {
     // Iterate through each element inside "pictures"
     for (const element_hh_mm in picturesData) { // rely on
         if (picturesData.hasOwnProperty(element_hh_mm)) {
@@ -194,12 +195,29 @@ function fillPictureSelector() {
             pictureData.fSize = undefined;
             pictureData = picturesData[element_hh_mm];
             console.log(`Element ${element_hh_mm}:`, pictureData);
-            // Your logic for each element goes here
-
-            updatePictureSelector(element_hh_mm, pictureData)
+            fillPictureSelectorHhMm(element_hh_mm, pictureData);
+            if ((firstDaylightHhMm === undefined) && pictureData.fSize > SIZE_LIMIT) {
+                firstDaylightHhMm = element_hh_mm;
+                const firstDaylightElement = document.getElementById("firstDaylight");
+                firstDaylightElement.addEventListener("click", function () {
+                    updateCurrentImage(pictureData);
+                });
+                firstDaylightElement.classList.remove("buttonDisabled");
+                firstDaylightElement.classList.add("buttonEnabled");
+                makeElementClickable(firstDaylightElement);
+            }
+            if (pictureData.fSize > SIZE_LIMIT) {
+                lastDaylightHhMm = element_hh_mm;
+                const LastDaylightElement = document.getElementById("LastDaylight");
+                LastDaylightElement.addEventListener("click", function () {
+                    updateCurrentImage(pictureData);
+                });
+                LastDaylightElement.classList.remove("buttonDisabled");
+                LastDaylightElement.classList.add("buttonEnabled");
+                makeElementClickable(LastDaylightElement);
+            }
         }
     }
-
     grayPictureSelectorWithoutEvent()
 }
 
@@ -209,10 +227,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Call fetchData function to get data after page loaded:
     await fetchData(); // Wait for fetchData to complete
     console.log("DOMContentLoaded - after fetchData call:", picturesData, metadata);
-    const picturesFolder = "captures/" + metadata.sensor + "/"
+    const picturesFolder = "captures/" + metadata.sensor + "/";
     console.log("DOMContentLoaded - picturesFolder =", picturesFolder);
 
-    fillPictureSelector()
+    fillPicturesSelector();
+    if (lastDaylightHhMm !== undefined) {
+        const pictureData = picturesData[lastDaylightHhMm];
+        updateCurrentImage(pictureData);
+    }
 
     console.log("DOMContentLoaded - ---DOMContentLoaded-end---");
 });

@@ -70,31 +70,33 @@
 
             <!-- Image browser (next/previous year/month/day) -->
             <table style="width: 100%;">
-                <!-- <tr>
-                    <td>◂</td>
-                    <td> ▶▷▹►▻ <button id="playPauseButton" disabled>▶</button></td>
-                    <td>▸</td>
-                </tr> -->
+                <th colspan="3" id="current_sensorName"><span style="color: grey">▒▒▒▒▒</span></th>
+                <!-- Could have also a previous/next to switch through the difference devices -->
                 <tr>
-                    <td id="previous_hh_mm">&lt;</td>
-                    <td id="current_hh_mm">hh:mm</td>
-                    <td id="next_hh_mm">&gt;</td>
+                    <td id="firstDaylight" class="buttonDisabled">◂</td>
+                    <td><!-- ▶▷▹►▻ <button id="playPauseButton" disabled>▶</button> --></td>
+                    <td id="LastDaylight" class="buttonDisabled">▸</td>
                 </tr>
                 <tr>
-                    <td id="previous_day" >&lt;</td>
-                    <td><span id="current_day">{day}</span></td>
-                    <td id="next_day">&gt;</td>
+                    <td id="previous_hh_mm" class="buttonDisabled">&lt;</td>
+                    <td id="current_hh_mm"><span style="color: grey">▒:▒▒</span></td>
+                    <td id="next_hh_mm" class="buttonDisabled">&gt;</td>
                 </tr>
                 <tr>
-                    <td id="previous_month">&lt;&lt;</td>
-                    <td><span id="current_month">{month}</span></td>
-                    <td id="next_month">&gt;&gt;</td>
+                    <td id="previous_day" class="buttonDisabled">&lt;</td>
+                    <td id="current_day"><span style="color: grey">▒▒</span></td>
+                    <td id="next_day" class="buttonDisabled">&gt;</td>
                 </tr>
                 <tr>
-                    <td id="previous_year">&lt;&lt;&lt;</td>
+                    <td id="previous_month" class="buttonDisabled">&lt;&lt;</td>
+                    <td id="current_month"><span style="color: grey">▒▒</span></td>
+                    <td id="next_month" class="buttonDisabled">&gt;&gt;</td>
+                </tr>
+                <tr>
+                    <td id="previous_year" class="buttonDisabled">&lt;&lt;&lt;</td>
                     <!--<td>&lt;&lt;&lt;</td>-->
-                    <td id="current_year">{year}</td>
-                    <td id="next_year">&gt;&gt;&gt;</td>
+                    <td id="current_year"><span style="color: grey">▒▒▒</span></td>
+                    <td id="next_year" class="buttonDisabled">&gt;&gt;&gt;</td>
                 </tr>
             </table>
             <br/>
@@ -123,7 +125,6 @@
                  [ > tilleul   < ]
                  [   grangette   ]
                  -->
-            <p>device: <br/><span id="current_sensorName">{sensorName}</span><br/></p>
         </div>
     </div>
     <div class="footer">
