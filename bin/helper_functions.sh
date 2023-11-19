@@ -58,7 +58,7 @@ create_link() {
   # sudo runuser --login --command "ln -f -s ${HOME}/meteo/src/main/py/public_html/index.html.py ${HOME}/../${WEB_USER}/index.html"
   # Used to be the upper. Why complicated?
   # no command "runuser" on Synology NAS,
-  sudo ln -f -s "${target_file}" "${link_file}"
+  sudo ln --force --symbolic --verbose "${target_file}" "${link_file}"
   sudo chmod 755 "${link_file}"
 }
 
