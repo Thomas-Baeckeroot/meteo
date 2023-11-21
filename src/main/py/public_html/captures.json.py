@@ -16,11 +16,6 @@ logging.basicConfig(
     format='%(asctime)s %(levelname)-8.8s%(name)-14s (%(process)5d) %(message)s')
 log = logging.getLogger("captures.json")
 
-# Get the query string from the environment
-query_string = os.environ.get("QUERY_STRING")
-
-log.info(f"Start building json for capture '{query_string}'")
-
 
 def write_content_type():
     print("Content-type: application/json; charset=utf-8\n")
@@ -93,15 +88,20 @@ def get_first_folder(path, reverse_order=True):
             log.warning(f"No folder found in '{path}'!")
             return None  # Return None if there are no folders in the specified path
     except OSError as e:
-        log.critical(f"OSError occurred when getting folder from {path}: {e}")
+        log.info(f"Working folder is '{os.getcwd()}'")
+        log.critical(f"OSError occurred when getting folder from '{path}': {e}")
         return None
 
 
 def get_json_pictures_from_folder(pictures_folder):
     pictures_in_folder = {}
 
-    # Get a list of filenames sorted alphabetically
-    filenames = sorted(os.listdir(pictures_folder))
+    try:
+        # Get a list of filenames sorted alphabetically
+        filenames = sorted(os.listdir(pictures_folder))
+    except FileNotFoundError as err:
+        log.error(f"FileNotFoundError happened when listing content of folder '{pictures_folder}': {err}")
+        filenames = []
 
     for filename in filenames:
         if filename.endswith(".jpg"):
@@ -120,48 +120,77 @@ def get_json_pictures_from_folder(pictures_folder):
     return pictures_in_folder
 
 
-def get_json_from_folder(l_sensor, l_year, l_month, l_day):
+def get_json_from_folder(sensor, year, month, day):
     # log.debug(os.getcwd())
     error_message = ""
 
-    if l_sensor:
-        if os.path.exists(f"captures/{l_sensor}"):
-            sensor_folder = l_sensor
+    log.info(f"sensor='{sensor}'")
+    if sensor:
+        if os.path.exists(f"captures/{sensor}"):
+            sensor_folder = sensor
         else:
             sensor_folder = get_first_folder("captures", reverse_order=False)
-            message = f"Sensor '{l_sensor}' was not valid, '{sensor_folder}' will be used instead."
+            message = f"Sensor '{sensor}' was not valid, '{sensor_folder}' will be used instead."
             log.warning(message)
-            error_message = message + "<br/>\n"
+            error_message = message + "\n"
     else:
         sensor_folder = get_first_folder("captures", reverse_order=False)
     log.debug(f"sensor_folder = '{sensor_folder}'")
+    if sensor_folder is None:
+        log.error("Unable to get any valid sensor value!")
+        return {"pictures": {},
+                "metadata": {"sensor": sensor_folder,
+                             "year": year,
+                             "month_day": f"{month}-{day}",
+                             "error_message": f"{error_message}Unable to find any folder for device!\n"}}
 
-    if l_year:
-        if os.path.exists(f"captures/{sensor_folder}/{l_year}"):
-            year_folder = l_year
+    if year:
+        if os.path.exists(f"captures/{sensor_folder}/{year}"):
+            year_folder = year
         else:
             year_folder = get_first_folder(f"captures/{sensor_folder}", reverse_order=True)
-            message = f"Given year '{l_year}' was not valid, '{year_folder}' will be used instead."
+            message = f"Given year '{year}' was not valid, '{year_folder}' will be used instead."
             log.warning(message)
-            error_message = error_message + message + "<br/>\n"
+            error_message = error_message + message + "\n"
     else:
         year_folder = get_first_folder(f"captures/{sensor_folder}", reverse_order=True)
     log.debug(f"       + year = '{year_folder}'")
+    if year_folder is None:
+        log.error("Unable to get any valid year value!")
+        return {"pictures": {},
+                "metadata": {"sensor": sensor_folder,
+                             "year": None,
+                             "month_day": f"{month}-{day}",
+                             "error_message":
+                                 f"{error_message}Unable to find any year folder for device '{sensor_folder}'!\n"}}
 
-    if l_month and l_day:
-        if os.path.exists(f"captures/{sensor_folder}/{year_folder}/{l_month}-{l_day}"):
-            month_day_folder = f"{l_month}-{l_day}"
+    if month and day:
+        if os.path.exists(f"captures/{sensor_folder}/{year_folder}/{month}-{day}"):
+            month_day_folder = f"{month}-{day}"
         else:
             month_day_folder = get_first_folder(f"captures/{sensor_folder}/{year_folder}", reverse_order=True)
-            message = f"Given that month-day '{l_month}-{l_day}' was not a valid folder," \
+            message = f"Given that month-day '{month}-{day}' was not valid," \
                       f" '{month_day_folder}' will be used instead"
             log.warning(message)
-            error_message = error_message + message + "<br/>\n"
+            error_message = error_message + message + "\n"
     else:
         month_day_folder = get_first_folder(f"captures/{sensor_folder}/{year_folder}", reverse_order=True)
-    log.debug(f"      + mm-dd = '{month_day_folder}'")
+        if month or day:
+            message = f"Unable to get data without both month and day information, given '{month}-{day}' " \
+                      f"was incorrect. '{month_day_folder}' will be used instead."
+            log.warning(message)
+            error_message = error_message + message + "\n"
 
-    log.info(f"Will get pictures from folder '{month_day_folder}'")
+    log.debug(f"      + mm-dd = '{month_day_folder}'")
+    if month_day_folder is None:
+        log.error("Unable to get any valid year value!")
+        return {"pictures": {},
+                "metadata": {"sensor": sensor_folder,
+                             "year": year_folder,
+                             "month_day": None,
+                             "error_message":
+                                 f"{error_message}Unable to find any month-day folder for device '{sensor_folder}' "
+                                 f"and year '{year_folder}'!\n"}}
 
     pictures_json = get_json_pictures_from_folder(f"captures/{sensor_folder}/{year_folder}/{month_day_folder}")
     metadata_json = {"sensor": sensor_folder,
@@ -173,22 +202,33 @@ def get_json_from_folder(l_sensor, l_year, l_month, l_day):
     return data_json
 
 
-write_content_type()
+def main():
+    # Get the query string from the environment
+    query_string = os.environ.get("QUERY_STRING")
 
-# Parse the query string to extract parameters
-query_params = parse_qsl(query_string)
+    log.info(f"Start building json for capture with arguments='{query_string}'")
 
-# Create a dictionary to store the parameters
-params = dict(query_params)
+    write_content_type()
 
-# Access the values by key
-sensor = params.get("s")
-year = params.get("y")
-month = params.get("m")
-day = params.get("d")
+    # Parse the query string to extract parameters
+    query_params = parse_qsl(query_string)
 
-log.debug(f"sensor='{sensor}'\tyear='{year}'\tmonth-day='{month}-{day}'")
+    # Create a dictionary to store the parameters
+    params = dict(query_params)
 
-data = get_json_from_folder(sensor, year, month, day)
-write_json_content(data)
-log.info("Terminated building json for capture page")
+    # Access the values by key
+    sensor = params.get("s")
+    year = params.get("y")
+    month = params.get("m")
+    day = params.get("d")
+    image = params.get("image")
+
+    log.debug(f"sensor='{sensor}'\tyear='{year}'\tmonth-day='{month}-{day}'\timage='{image}'")
+
+    data = get_json_from_folder(sensor, year, month, day)
+    write_json_content(data)
+    log.info("Terminated building json for capture page")
+
+
+if __name__ == "__main__":
+    main()
