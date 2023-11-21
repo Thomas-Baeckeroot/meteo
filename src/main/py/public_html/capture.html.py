@@ -13,7 +13,7 @@ HOME = get_home()
 logging.basicConfig(
     filename=HOME + "/susanoo-web.log",
     level=logging.DEBUG,
-    format='%(asctime)s\t%(levelname)s\t%(name)s (%(process)d)\t%(message)s')
+    format='%(asctime)s %(levelname)-8.8s%(name)-14s (%(process)5d) %(message)s')
 log = logging.getLogger("capture.html.py")
 
 SIZE_LIMIT = 512000  # 500 kiB. Below this value, image is considered without data (mostly black)

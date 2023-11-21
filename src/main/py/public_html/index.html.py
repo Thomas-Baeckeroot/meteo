@@ -17,7 +17,7 @@ HOME = db_module.get_home()
 logging.basicConfig(
     filename=HOME + "/susanoo-web.log",  # = "/home/web/susanoo-web.log"
     level=logging.DEBUG,
-    format='%(asctime)s\t%(levelname)s\t%(name)s (%(process)d)\t%(message)s')
+    format='%(asctime)s %(levelname)-8.8s%(name)-14s (%(process)5d) %(message)s')
 log = logging.getLogger("index.html.py")
 
 METEO_FOLDER = "/home/pi/meteo/"

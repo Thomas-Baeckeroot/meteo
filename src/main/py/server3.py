@@ -61,7 +61,6 @@ def current_dir_is_valid_working_dir():
 
 
 def check_working_dir():
-
     # Path of Python 3 binary (Virtual Env.):
     log.info("Path to Python binary (expected starting with venv): {0}".format(sys.executable))
 
@@ -112,8 +111,10 @@ HOME = get_home()
 logging.basicConfig(
     filename=HOME + "/susanoo-web.log",
     level=logging.DEBUG,
-    format='%(asctime)s\t%(levelname)s\t%(name)s (%(process)d)\t%(message)s')
+    format='%(asctime)s %(levelname)-8.8s%(name)-14s (%(process)5d) %(message)s')
 log = logging.getLogger("server3.py")
+print(f"HTTP server log is sent to '{HOME}/susanoo-web.log'.")
+log.info("Starting ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
 
 check_working_dir()
 
@@ -129,14 +130,13 @@ server = http.server.HTTPServer
 handler = http.server.CGIHTTPRequestHandler
 # handler.cgi_directories = ["~/public_html/"]  # Should be better if other than '/' but never worked...
 handler.cgi_directories = ["/"]
-log.debug("Serveur P3 actif sur le port: " + str(port))
-log.debug("handler.cgi_directories = ")
-log.debug(handler.cgi_directories)
-log.debug("Launching server from path '{}'".format(os.getcwd()))
+log.debug("Launching server from path '{0}' on port {1}...".format(os.getcwd(), port))
+log.debug(f"Handler.cgi_directories = {handler.cgi_directories}")
 
 httpd = server(server_address, handler)
 try:
     httpd.serve_forever()
 except KeyboardInterrupt:
     log.info("Keyboard interruption intercepted. Exiting gracefully...")
+    log.info("Terminating _____________________________________________\n")
     close_server()

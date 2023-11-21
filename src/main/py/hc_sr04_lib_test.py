@@ -13,7 +13,7 @@ from math import pi
 logging.basicConfig(
     filename=utils.get_home() + "/susanoo-data.log",
     level=logging.DEBUG,
-    format='%(asctime)s\t%(levelname)s\t%(name)s (%(process)d)\t%(message)s')
+    format='%(asctime)s %(levelname)-8.8s%(name)-14s (%(process)5d) %(message)s')
 log = logging.getLogger("hc_sr04_lib_test.py")
 
 # todo Below variables should be stored in config file ~/.config/susanoo_WeatherStation.conf

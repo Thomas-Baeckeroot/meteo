@@ -14,7 +14,7 @@ from utils import get_home
 logging.basicConfig(
     filename=get_home() + "/susanoo-data.log",  # = /home/pi/susanoo-data.log
     level=logging.DEBUG,
-    format='%(asctime)s\t%(levelname)s\t%(name)s (%(process)d)\t%(message)s')
+    format='%(asctime)s %(levelname)-8.8s%(name)-14s (%(process)5d) %(message)s')
 log = logging.getLogger("smtptools.py")
 
 

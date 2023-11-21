@@ -14,7 +14,7 @@ from svg.charts import line
 logging.basicConfig(
     filename=db_module.get_home() + "/susanoo-web.log",  # = /home/pi/susanoo-web.log
     level=logging.DEBUG,
-    format='%(asctime)s\t%(levelname)s\t%(name)s (%(process)d)\t%(message)s')
+    format='%(asctime)s %(levelname)-8.8s%(name)-14s (%(process)5d) %(message)s')
 log = logging.getLogger("graph.svg.py")
 
 SECONDS_IN_ONE_DAY = 86400

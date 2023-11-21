@@ -11,7 +11,7 @@ from gpiozero import CPUTemperature  # If failing: "pip install gpiozero"
 logging.basicConfig(
     filename=utils.get_home() + "/susanoo-data.log",  # = /home/pi/susanoo-data.log
     level=logging.DEBUG,
-    format='%(asctime)s\t%(levelname)s\t%(name)s (%(process)d)\t%(message)s')
+    format='%(asctime)s %(levelname)-8.8s%(name)-14s (%(process)5d) %(message)s')
 log = logging.getLogger("sensors_functions.py")
 
 # todo Below variable should be stored in a config file ~/.config/susanoo_WeatherStation.conf

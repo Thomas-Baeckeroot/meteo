@@ -7,7 +7,7 @@ import utils
 logging.basicConfig(
     filename=utils.get_home() + "/susanoo-data.log",
     level=logging.DEBUG,
-    format='%(asctime)s\t%(levelname)s\t%(name)s (%(process)d)\t%(message)s')
+    format='%(asctime)s %(levelname)-8.8s%(name)-14s (%(process)5d) %(message)s')
 log = logging.getLogger("failed_request.py")
 
 request_file = utils.get_home() + "/meteo/failed_request.sql"
