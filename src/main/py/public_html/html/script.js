@@ -156,10 +156,9 @@ function fillPictureSelectorHhMm(hh_mm, pictureData) {
     // Add an event listener to each table cell
 
     if (pictureData.fSize < SIZE_LIMIT) {
-        //hh_mm_element.style.backgroundColor = rgba(173, 216, 230, 0.5);
-        hh_mm_element.style.backgroundColor = "LightBlue";
+        hh_mm_element.classList.add("night")
     } else {
-        hh_mm_element.style.backgroundColor = "Khaki";
+        hh_mm_element.classList.add("day")
     }
 
     makeElementClickable(hh_mm_element);
