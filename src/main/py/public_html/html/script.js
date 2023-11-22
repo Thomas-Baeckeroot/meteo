@@ -14,6 +14,8 @@ let picturesData = {};
 let metadata = {};
 let sortedPictures = undefined;
 let index = undefined;
+let selectedHhMm15 = undefined;
+let selectedPicture = undefined;
 
 async function fetchData() {
     console.log(".fetchData() - start method");
@@ -74,6 +76,19 @@ async function fetchData() {
 function updateCurrentImage(pictureData, hh_mm) {
     const currentImage = pictureData.img;
     console.log(".updateCurrentImage('" + currentImage + "')");
+
+    // Reset background of top picture selector for currently selected
+    if (selectedHhMm15 !== undefined) {
+        const hh_mm_element = document.getElementById(selectedHhMm15);
+        if (selectedPicture.fSize < SIZE_LIMIT) {
+            hh_mm_element.classList.remove("night-selected")
+            hh_mm_element.classList.add("night")
+        } else {
+            hh_mm_element.classList.remove("day-selected")
+            hh_mm_element.classList.add("day")
+        }
+    }
+
     // Change the src attribute of the main image
     document.getElementById("capture-img").src = "../captures/" + metadata.sensor + "/" + metadata.year + "/" + metadata.month_day + "/" + currentImage;
 
@@ -87,6 +102,17 @@ function updateCurrentImage(pictureData, hh_mm) {
     day = parseInt(parts[3], 10);
     hour = parseInt(parts[4], 10);
     minute = parseInt(parts[5], 10);
+
+    selectedHhMm15 = hhMm15SelectorFor(parts[4] + "h" + parts[5]);
+    selectedPicture = pictureData;
+    const hh_mm_element = document.getElementById(selectedHhMm15);
+    if (pictureData.fSize < SIZE_LIMIT) {
+        hh_mm_element.classList.remove("night")
+        hh_mm_element.classList.add("night-selected")
+    } else {
+        hh_mm_element.classList.remove("day")
+        hh_mm_element.classList.add("day-selected")
+    }
 
     document.getElementById("current_hh_mm").textContent = hour + ":" + minute.toString().padStart(2, '0');
     document.getElementById("current_day").textContent = day;
@@ -132,7 +158,7 @@ function grayPictureSelectorWithoutEvent() {
     }
 }
 
-function fillPictureSelectorHhMm(hh_mm, pictureData) {
+function hhMm15SelectorFor(hh_mm) {
     const mm = hh_mm.slice(-2);
     const mmAsInt = parseInt(mm);
     let hh_mm15;
@@ -143,6 +169,12 @@ function fillPictureSelectorHhMm(hh_mm, pictureData) {
         // mmAsInt is not a multiple of 15
         hh_mm15 = hh_mm.substring(0, 3) + (mmAsInt - (mmAsInt % 15)).toString();
     }
+    return hh_mm15
+}
+
+function fillPictureSelectorHhMm(hh_mm, pictureData) {
+    const mm = hh_mm.slice(-2);
+    const hh_mm15 = hhMm15SelectorFor(hh_mm)
 
     // Get the hh_mm_element by its ID
     const hh_mm_element = document.getElementById(hh_mm15);

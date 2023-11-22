@@ -51,6 +51,14 @@ body {
     background-color: Khaki;
 }
 
+.night-selected {
+    background-color: #47b4d2;
+}
+
+.day-selected {
+    background-color: #dcb700;
+}
+
 .cell-mm {
     padding: 0;
     border: none;
