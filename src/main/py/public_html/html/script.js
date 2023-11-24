@@ -9,6 +9,7 @@ let hour = undefined;
 let minute = undefined;
 let firstDaylightHhMm = undefined;
 let lastDaylightHhMm = undefined;
+let lastHhMm = undefined;
 
 let picturesData = {};
 let metadata = {};
@@ -72,6 +73,13 @@ async function fetchData() {
     }
 }
 
+function updateDateData() {
+    document.getElementById("current_year").textContent = year;
+    document.getElementById("current_month").textContent = month;
+    document.getElementById("current_day").textContent = day;
+    document.getElementById("current_sensorName").textContent = sensorName;
+}
+
 // Function to update the current_image element
 function updateCurrentImage(pictureData, hh_mm) {
     const currentImage = pictureData.img;
@@ -92,14 +100,7 @@ function updateCurrentImage(pictureData, hh_mm) {
     // Change the src attribute of the main image
     document.getElementById("capture-img").src = "../captures/" + metadata.sensor + "/" + metadata.year + "/" + metadata.month_day + "/" + currentImage;
 
-    // Extract sensorName using a regular expression
-    let sensorName = currentImage.match(/^(.*?)_\d{4}-\d{2}-\d{2}/)[1];
-
-    // Extract year, month, day, hour, and minute using string splitting and parsing
     const parts = currentImage.split(/[_-]|Z/g); // Split by '_', '-', and 'Z'
-    year = parseInt(parts[1], 10);
-    month = parseInt(parts[2], 10);
-    day = parseInt(parts[3], 10);
     hour = parseInt(parts[4], 10);
     minute = parseInt(parts[5], 10);
 
@@ -115,10 +116,6 @@ function updateCurrentImage(pictureData, hh_mm) {
     }
 
     document.getElementById("current_hh_mm").textContent = hour + ":" + minute.toString().padStart(2, '0');
-    document.getElementById("current_day").textContent = day;
-    document.getElementById("current_month").textContent = month;
-    document.getElementById("current_year").textContent = year;
-    document.getElementById("current_sensorName").textContent = sensorName;
 
     index = sortedPictures.indexOf(hh_mm);
     if (index > 0) {
@@ -134,6 +131,13 @@ function updateCurrentImage(pictureData, hh_mm) {
 
     // TODO Check consistency with metadata
     document.getElementById("error_message").textContent = metadata.error_message; // TODO Implement error message display
+
+    //sensorName = currentImage.match(/^(.*?)_\d{4}-\d{2}-\d{2}/)[1];
+    sensorName = parts[0];
+    year = parseInt(parts[1], 10);
+    month = parseInt(parts[2], 10);
+    day = parseInt(parts[3], 10);
+    updateDateData();
 }
 
 function grayPictureSelectorWithoutEvent() {
@@ -150,7 +154,7 @@ function grayPictureSelectorWithoutEvent() {
 
             const text = hh_mm_element.textContent;
             // Check if there are click event listeners
-            if (text === "-") {
+            if (text === "—") {
                 document.getElementById(hh_mm).style.backgroundColor = "DarkGray";
                 document.getElementById(hh_mm).style.cursor = "default";
             }
@@ -251,7 +255,7 @@ function fillPictureSelector_deprecated() {
 function fillPicturesSelector() {
     // Iterate through each element inside "pictures"
     for (const element_hh_mm in picturesData) { // rely on
-        if (picturesData.hasOwnProperty(element_hh_mm)) {
+        //if (picturesData.hasOwnProperty(element_hh_mm)) {
             let pictureData = {};
             pictureData.img = undefined;
             pictureData.fSize = undefined;
@@ -274,7 +278,8 @@ function fillPicturesSelector() {
                 });
                 makeElementClickable(LastDaylightElement);
             }
-        }
+        //}
+        lastHhMm = element_hh_mm;
     }
     grayPictureSelectorWithoutEvent()
 }
@@ -304,6 +309,11 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (lastDaylightHhMm !== undefined) {
         const pictureData = picturesData[lastDaylightHhMm];
         updateCurrentImage(pictureData, lastDaylightHhMm);
+    } else if (lastHhMm !== undefined) {
+        const pictureData = picturesData[lastHhMm];
+        updateCurrentImage(pictureData, lastHhMm);
+    } else {
+        document.getElementById("error_message").textContent = "No pictures for this date!";
     }
 
     console.log("DOMContentLoaded - ---DOMContentLoaded-end---");
