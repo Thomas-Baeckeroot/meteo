@@ -43,6 +43,11 @@ body {
     background-color: whitesmoke;
 }
 
+.no-picture-cell {
+    background-color: darkgray;
+    cursor: default;
+}
+
 .night {
     background-color: LightBlue;
 }

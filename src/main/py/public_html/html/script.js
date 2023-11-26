@@ -20,19 +20,19 @@ async function fetchData(sensor, year, month, day) {
     let url = "/captures.json";
     let firstParam = true;
     if (sensor !== null) {
-        url += (firstParam ? "?s=" : "&s=") + sensor
-        firstParam = false
+        url += (firstParam ? "?s=" : "&s=") + sensor;
+        firstParam = false;
     }
     if (year !== null) {
-        url += (firstParam ? "?y=" : "&y=") + year
-        firstParam = false
+        url += (firstParam ? "?y=" : "&y=") + year;
+        firstParam = false;
     }
     if (month !== null) {
-        url += (firstParam ? "?m=" : "&m=") + month
-        firstParam = false
+        url += (firstParam ? "?m=" : "&m=") + month;
+        firstParam = false;
     }
     if (day !== null) {
-        url += (firstParam ? "?d=" : "&d=") + day
+        url += (firstParam ? "?d=" : "&d=") + day;
     }
     try {
         const response = await fetch(url);
@@ -97,11 +97,11 @@ async function unselectPictureSelector() {
     if (selectedHhMm15 !== undefined) {
         const hh_mm_element = document.getElementById(selectedHhMm15);
         if (selectedPicture.fSize < SIZE_LIMIT) {
-            hh_mm_element.classList.remove("night-selected")
-            hh_mm_element.classList.add("night")
+            hh_mm_element.classList.remove("night-selected");
+            hh_mm_element.classList.add("night");
         } else {
-            hh_mm_element.classList.remove("day-selected")
-            hh_mm_element.classList.add("day")
+            hh_mm_element.classList.remove("day-selected");
+            hh_mm_element.classList.add("day");
         }
         selectedHhMm15 = undefined;
     }
@@ -126,11 +126,11 @@ async function updateCurrentImage(pictureData, hh_mm) {
     selectedPicture = pictureData;
     const hh_mm_element = document.getElementById(selectedHhMm15);
     if (pictureData.fSize < SIZE_LIMIT) {
-        hh_mm_element.classList.remove("night")
-        hh_mm_element.classList.add("night-selected")
+        hh_mm_element.classList.remove("night");
+        hh_mm_element.classList.add("night-selected");
     } else {
-        hh_mm_element.classList.remove("day")
-        hh_mm_element.classList.add("day-selected")
+        hh_mm_element.classList.remove("day");
+        hh_mm_element.classList.add("day-selected");
     }
 
     document.getElementById("current_hh_mm").textContent = hour + ":" + minute.toString().padStart(2, '0');
@@ -172,8 +172,8 @@ function grayPictureSelectorWithoutEvent() {
             const text = hh_mm_element.textContent;
             // Check if there are click event listeners
             if (text === "—") {
-                document.getElementById(hh_mm).style.backgroundColor = "DarkGray";
-                document.getElementById(hh_mm).style.cursor = "default";
+                document.getElementById(hh_mm).classList.remove("day", "night");
+                document.getElementById(hh_mm).classList.add("no-picture-cell");
             }
         }
     }
@@ -191,13 +191,13 @@ function hhMm15SelectorFor(hh_mm) {
         // mmAsInt is not a multiple of 15
         hh_mm15 = hh_mm.substring(0, 3) + (mmAsInt - (mmAsInt % 15)).toString();
     }
-    return hh_mm15
+    return hh_mm15;
 }
 
 async function fillPictureSelectorHhMm(hh_mm, pictureData) {
     console.log(".fillPictureSelectorHhMm('" + hh_mm + "', '" + pictureData + "')");
     const mm = hh_mm.slice(-2);
-    const hh_mm15 = hhMm15SelectorFor(hh_mm)
+    const hh_mm15 = hhMm15SelectorFor(hh_mm);
 
     // Get the hh_mm_element by its ID
     const hh_mm_element = document.getElementById(hh_mm15);
@@ -210,10 +210,13 @@ async function fillPictureSelectorHhMm(hh_mm, pictureData) {
     });
     // Add an event listener to each table cell
 
+    hh_mm_element.classList.remove("no-picture-cell");
     if (pictureData.fSize < SIZE_LIMIT) {
-        hh_mm_element.classList.add("night")
+        hh_mm_element.classList.add("night");
+        hh_mm_element.classList.remove("day");
     } else {
-        hh_mm_element.classList.add("day")
+        hh_mm_element.classList.add("day");
+        hh_mm_element.classList.remove("night");
     }
 
     makeElementClickable(hh_mm_element);
@@ -300,7 +303,7 @@ async function nextHhMm() {
 }
 
 async function clearData() {
-    console.log(".clearData()")
+    console.log(".clearData()");
     hour = undefined; // :int
     minute = undefined; // :int
     firstDaylightHhMm = undefined;
@@ -322,9 +325,12 @@ async function clearData() {
             const formattedMinute = minute.toString().padStart(2, '0');
             // Create the time string
             const hh_mm = `${formattedHour}h${formattedMinute}`;
-            document.getElementById(hh_mm).textContent = "—"
+            document.getElementById(hh_mm).textContent = "—";
         }
     }
+
+    // Return a resolved promise to ensure the asynchronous completion
+    return Promise.resolve();
 }
 
 async function refresh() {
@@ -338,6 +344,7 @@ async function refresh() {
 
 async function refreshDate(sensor, year, month, day) {
     console.log(".refreshDate('" + sensor + "', '" + year + "', '" + month + "', '" + day + "')");
+    // Wait for clearData to complete before proceeding
     await clearData();
     // Call fetchData function to get data after page loaded:
     await fetchData(sensor, year, month, day); // Wait for fetchData to complete
@@ -356,6 +363,8 @@ async function refreshDate(sensor, year, month, day) {
         const pictureData = picturesData[lastHhMm];
         await updateCurrentImage(pictureData, lastHhMm);
     } else {
+        // Change the src attribute of the main image
+        document.getElementById("capture-img").src = "../html/undefined_4x3.png";
         document.getElementById("error_message").textContent = "No pictures for this date!";
     }
 
