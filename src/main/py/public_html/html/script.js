@@ -252,55 +252,33 @@ function makeElementNotClickable(element) {
     element.classList.add("buttonDisabled");
 }
 
-function fillPictureSelector_deprecated() {
-    for (let hour = 0; hour <= 23; hour++) {
-        for (let minute = 0; minute < 60; minute += 15) {
-            // Format the hour and minute as "HHhMM"
-            const formattedHour = hour.toString().padStart(2, '0');
-            const formattedMinute = minute.toString().padStart(2, '0');
-            // Create the time string
-            const hh_mm = `${formattedHour}h${formattedMinute}`;
-            // Now, you can use the 'hh_mm' variable in your loop
-            const pictureData = picturesData[hh_mm];
-
-            if (pictureData) {
-                fillPictureSelectorHhMm(hh_mm, pictureData);
-            } else {
-                console.log("DOMContentLoaded - No 'pictureData' for hh_mm '" + hh_mm + "'.");
-                document.getElementById(hh_mm).style.backgroundColor = "DarkGray";
-                document.getElementById(hh_mm).style.cursor = "default";
-            }
-        }
-    }
-}
-
 async function fillPicturesSelector() {
     console.log(".fillPicturesSelector()");
     // Iterate through each element inside "pictures"
     for (const element_hh_mm in picturesData) { // rely on
         //if (picturesData.hasOwnProperty(element_hh_mm)) {
-            let pictureData = {};
-            pictureData.img = undefined;
-            pictureData.fSize = undefined;
-            pictureData = picturesData[element_hh_mm];
-            console.log(`Element ${element_hh_mm}:`, pictureData);
-            await fillPictureSelectorHhMm(element_hh_mm, pictureData);
-            if ((firstDaylightHhMm === undefined) && pictureData.fSize > SIZE_LIMIT) {
-                firstDaylightHhMm = element_hh_mm;
-                const firstDaylightElement = document.getElementById("firstDaylight");
-                firstDaylightElement.addEventListener("click", function () {
-                    updateCurrentImage(pictureData, element_hh_mm);
-                });
-                makeElementClickable(firstDaylightElement);
-            }
-            if (pictureData.fSize > SIZE_LIMIT) {
-                lastDaylightHhMm = element_hh_mm;
-                const LastDaylightElement = document.getElementById("LastDaylight");
-                LastDaylightElement.addEventListener("click", function () {
-                    updateCurrentImage(pictureData, element_hh_mm);
-                });
-                makeElementClickable(LastDaylightElement);
-            }
+        let pictureData = {};
+        pictureData.img = undefined;
+        pictureData.fSize = undefined;
+        pictureData = picturesData[element_hh_mm];
+        console.log(`Element ${element_hh_mm}:`, pictureData);
+        await fillPictureSelectorHhMm(element_hh_mm, pictureData);
+        if ((firstDaylightHhMm === undefined) && pictureData.fSize > SIZE_LIMIT) {
+            firstDaylightHhMm = element_hh_mm;
+            const firstDaylightElement = document.getElementById("firstDaylight");
+            firstDaylightElement.addEventListener("click", function () {
+                updateCurrentImage(pictureData, element_hh_mm);
+            });
+            makeElementClickable(firstDaylightElement);
+        }
+        if (pictureData.fSize > SIZE_LIMIT) {
+            lastDaylightHhMm = element_hh_mm;
+            const LastDaylightElement = document.getElementById("LastDaylight");
+            LastDaylightElement.addEventListener("click", function () {
+                updateCurrentImage(pictureData, element_hh_mm);
+            });
+            makeElementClickable(LastDaylightElement);
+        }
         //}
         lastHhMm = element_hh_mm;
     }

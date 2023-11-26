@@ -88,9 +88,9 @@
                     <td id="next_hh_mm" class="buttonDisabled" onclick="nextHhMm()">&gt;</td>
                 </tr>
                 <tr>
-                    <td id="previous_day" class="buttonDisabled" onclick="handlePreviousDayClick()">&lt;</td>
+                    <td id="previous_day" class="buttonEnabled" onclick="handleDayChangeClick(-1)">&lt;</td>
                     <td id="current_day"><span style="color: grey">▒▒</span></td>
-                    <td id="next_day" class="buttonDisabled">&gt;</td>
+                    <td id="next_day" class="buttonEnabled" onclick="handleDayChangeClick(+1)">&gt;</td>
                 </tr>
                 <tr>
                     <td id="previous_month" class="buttonDisabled">&lt;&lt;</td>
