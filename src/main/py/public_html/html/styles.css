@@ -67,7 +67,7 @@ body {
 .hovered-cell {
     /* background-color: rgba(173, 216, 230, 0.5); not working */
     /* font-weight: bolder; */
-    text-decoration: underline;
+    /* text-decoration: underline; */
     text-shadow: -0.1em -0.1em 0 #FFF, 0.1em -0.1em 0 #FFF, -0.1em 0.1em 0 #FFF, 0.1em 0.1em 0 #FFF;;
 }
 
@@ -126,8 +126,15 @@ body {
 
 .buttonDisabled {
     color: grey;
+    cursor: default;
 }
 
 .buttonEnabled {
     color: black;
+    cursor: pointer;
+}
+
+.buttonEnabled:hover {
+    /* text-decoration: underline; */
+    text-shadow: -0.1em -0.1em 0 #FFF, 0.1em -0.1em 0 #FFF, -0.1em 0.1em 0 #FFF, 0.1em 0.1em 0 #FFF;;
 }

@@ -1,12 +1,8 @@
 console.log("---Start---");
 const SIZE_LIMIT = 512000;
 
-let sensorName = undefined;
-let year = undefined;
-let month = undefined;
-let day = undefined;
-let hour = undefined;
-let minute = undefined;
+let hour = undefined; // :int
+let minute = undefined; // :int
 let firstDaylightHhMm = undefined;
 let lastDaylightHhMm = undefined;
 let lastHhMm = undefined;
@@ -18,32 +14,25 @@ let index = undefined;
 let selectedHhMm15 = undefined;
 let selectedPicture = undefined;
 
-async function fetchData() {
+async function fetchData(sensor, year, month, day) {
     console.log(".fetchData() - start method");
-    // Get the current URL
-    const currentUrl = new URL(window.location.href);
-    // Extract parameters using URLSearchParams
-    const paramSensor = currentUrl.searchParams.get("s");
-    const paramYear = currentUrl.searchParams.get("y");
-    const paramMonth = currentUrl.searchParams.get("m");
-    const paramDay = currentUrl.searchParams.get("d");
     // Construct the URL with parameters for the fetch call
     let url = "/captures.json";
     let firstParam = true;
-    if (paramSensor !== null) {
-        url += (firstParam ? "?s=" : "&s=") + paramSensor
+    if (sensor !== null) {
+        url += (firstParam ? "?s=" : "&s=") + sensor
         firstParam = false
     }
-    if (paramYear !== null) {
-        url += (firstParam ? "?y=" : "&y=") + paramYear
+    if (year !== null) {
+        url += (firstParam ? "?y=" : "&y=") + year
         firstParam = false
     }
-    if (paramMonth !== null) {
-        url += (firstParam ? "?m=" : "&m=") + paramMonth
+    if (month !== null) {
+        url += (firstParam ? "?m=" : "&m=") + month
         firstParam = false
     }
-    if (paramDay !== null) {
-        url += (firstParam ? "?d=" : "&d=") + paramDay
+    if (day !== null) {
+        url += (firstParam ? "?d=" : "&d=") + day
     }
     try {
         const response = await fetch(url);
@@ -60,11 +49,7 @@ async function fetchData() {
             console.log(".fetchData() - Data updated successfully:", picturesData, metadata);
             sortedPictures = Object.keys(picturesData).sort();
 
-            sensorName = metadata.sensor;
-            // FIXME string>int year = metadata.year
-            // TODO month = f( metadata.month_day )
-            // TODO day = f( metadata.month_day )
-            console.log(".fetchData() - interpreted metadata:", sensorName, year);
+            console.log(".fetchData() - interpreted metadata:", metadata.sensorName, metadata.year);
         } else {
             console.error(".fetchData() - Incorrect JSON format.");
         }
@@ -73,19 +58,23 @@ async function fetchData() {
     }
 }
 
-function updateDateData() {
-    document.getElementById("current_year").textContent = year;
+async function updateDateData() {
+    document.getElementById("current_year").textContent = metadata.year;
+    const [month, day] = metadata.month_day.split("-");
     document.getElementById("current_month").textContent = month;
     document.getElementById("current_day").textContent = day;
-    document.getElementById("current_sensorName").textContent = sensorName;
+    document.getElementById("current_sensorName").textContent = metadata.sensor;
+
+    document.getElementById("previous_day").addEventListener("click", function () {
+        console.log("previous_day"); // FIXME Continue here...
+        refreshDate(metadata.sensor ,metadata.year, month, parseInt(day)-1 );
+    });
 }
 
-// Function to update the current_image element
-function updateCurrentImage(pictureData, hh_mm) {
-    const currentImage = pictureData.img;
-    console.log(".updateCurrentImage('" + currentImage + "')");
-
-    // Reset background of top picture selector for currently selected
+/**
+ Reset background of top picture selector for currently selected
+ */
+async function unselectPictureSelector() {
     if (selectedHhMm15 !== undefined) {
         const hh_mm_element = document.getElementById(selectedHhMm15);
         if (selectedPicture.fSize < SIZE_LIMIT) {
@@ -95,7 +84,16 @@ function updateCurrentImage(pictureData, hh_mm) {
             hh_mm_element.classList.remove("day-selected")
             hh_mm_element.classList.add("day")
         }
+        selectedHhMm15 = undefined;
     }
+}
+
+// Function to update the current_image element
+async function updateCurrentImage(pictureData, hh_mm) {
+    const currentImage = pictureData.img;
+    console.log(".updateCurrentImage('" + currentImage + "')");
+
+    await unselectPictureSelector();
 
     // Change the src attribute of the main image
     document.getElementById("capture-img").src = "../captures/" + metadata.sensor + "/" + metadata.year + "/" + metadata.month_day + "/" + currentImage;
@@ -132,12 +130,7 @@ function updateCurrentImage(pictureData, hh_mm) {
     // TODO Check consistency with metadata
     document.getElementById("error_message").textContent = metadata.error_message; // TODO Implement error message display
 
-    //sensorName = currentImage.match(/^(.*?)_\d{4}-\d{2}-\d{2}/)[1];
-    sensorName = parts[0];
-    year = parseInt(parts[1], 10);
-    month = parseInt(parts[2], 10);
-    day = parseInt(parts[3], 10);
-    updateDateData();
+    await updateDateData();
 }
 
 function grayPictureSelectorWithoutEvent() {
@@ -176,7 +169,7 @@ function hhMm15SelectorFor(hh_mm) {
     return hh_mm15
 }
 
-function fillPictureSelectorHhMm(hh_mm, pictureData) {
+async function fillPictureSelectorHhMm(hh_mm, pictureData) {
     const mm = hh_mm.slice(-2);
     const hh_mm15 = hhMm15SelectorFor(hh_mm)
 
@@ -203,6 +196,7 @@ function fillPictureSelectorHhMm(hh_mm, pictureData) {
 function makeElementClickable(element) {
     element.style.cursor = "pointer";
 
+    // todo Replaceable with .buttonEnabled ?
     // Add a mouseover event listener
     element.addEventListener("mouseover", function () {
         element.classList.add("hovered-cell");
@@ -252,7 +246,7 @@ function fillPictureSelector_deprecated() {
     }
 }
 
-function fillPicturesSelector() {
+async function fillPicturesSelector() {
     // Iterate through each element inside "pictures"
     for (const element_hh_mm in picturesData) { // rely on
         //if (picturesData.hasOwnProperty(element_hh_mm)) {
@@ -261,7 +255,7 @@ function fillPicturesSelector() {
             pictureData.fSize = undefined;
             pictureData = picturesData[element_hh_mm];
             console.log(`Element ${element_hh_mm}:`, pictureData);
-            fillPictureSelectorHhMm(element_hh_mm, pictureData);
+            await fillPictureSelectorHhMm(element_hh_mm, pictureData);
             if ((firstDaylightHhMm === undefined) && pictureData.fSize > SIZE_LIMIT) {
                 firstDaylightHhMm = element_hh_mm;
                 const firstDaylightElement = document.getElementById("firstDaylight");
@@ -284,37 +278,88 @@ function fillPicturesSelector() {
     grayPictureSelectorWithoutEvent()
 }
 
-function previousHhMm() {
+async function previousHhMm() {
     const previousKey = index > 0 ?
         sortedPictures[index - 1] : sortedPictures[0];
-    updateCurrentImage(picturesData[previousKey], previousKey);
+    await updateCurrentImage(picturesData[previousKey], previousKey);
 }
 
-function nextHhMm() {
+async function nextHhMm() {
     const nextKey = index < sortedPictures.length - 1 ?
         sortedPictures[index + 1] : sortedPictures[sortedPictures.length - 1];
-    updateCurrentImage(picturesData[nextKey], nextKey);
+    await updateCurrentImage(picturesData[nextKey], nextKey);
 }
 
-document.addEventListener("DOMContentLoaded", async function () {
-    console.log("DOMContentLoaded - ---DOMContentLoaded-start---");
+async function clearData() {
+    hour = undefined; // :int
+    minute = undefined; // :int
+    firstDaylightHhMm = undefined;
+    lastDaylightHhMm = undefined;
+    lastHhMm = undefined;
+
+    picturesData = {};
+    metadata = {};
+    sortedPictures = undefined;
+    index = undefined;
+    await unselectPictureSelector();
+    selectedPicture = undefined;
+
+    // Reset content of Top Picture Selector
+    for (let hour = 0; hour <= 23; hour++) {
+        for (let minute = 0; minute < 60; minute += 15) {
+            // Format the hour and minute as "HHhMM"
+            const formattedHour = hour.toString().padStart(2, '0');
+            const formattedMinute = minute.toString().padStart(2, '0');
+            // Create the time string
+            const hh_mm = `${formattedHour}h${formattedMinute}`;
+            document.getElementById(hh_mm).textContent = "—"
+        }
+    }
+}
+
+async function refresh() {
+    console.log("Refresh...")
+    const sensor = metadata.sensor;
+    const year = metadata.year;
+    const [month, day] = metadata.month_day.split("-");
+
+    await clearData();
+
+    await refreshDate(sensor, year, month, day)
+}
+
+async function refreshDate(sensor, year, month, day) {
 
     // Call fetchData function to get data after page loaded:
-    await fetchData(); // Wait for fetchData to complete
+    await fetchData(sensor, year, month, day); // Wait for fetchData to complete
     console.log("DOMContentLoaded - after fetchData call:", picturesData, metadata);
     const picturesFolder = "captures/" + metadata.sensor + "/";
     console.log("DOMContentLoaded - picturesFolder =", picturesFolder);
 
-    fillPicturesSelector();
+    await fillPicturesSelector();
     if (lastDaylightHhMm !== undefined) {
         const pictureData = picturesData[lastDaylightHhMm];
-        updateCurrentImage(pictureData, lastDaylightHhMm);
+        await updateCurrentImage(pictureData, lastDaylightHhMm);
     } else if (lastHhMm !== undefined) {
         const pictureData = picturesData[lastHhMm];
-        updateCurrentImage(pictureData, lastHhMm);
+        await updateCurrentImage(pictureData, lastHhMm);
     } else {
         document.getElementById("error_message").textContent = "No pictures for this date!";
+        await updateDateData()
     }
+}
+
+document.addEventListener("DOMContentLoaded", async function () {
+    console.log("DOMContentLoaded - ---DOMContentLoaded-start---");
+    // Get the current URL
+    const currentUrl = new URL(window.location.href);
+    // Extract parameters using URLSearchParams
+    const paramSensor = currentUrl.searchParams.get("s");
+    const paramYear = currentUrl.searchParams.get("y");
+    const paramMonth = currentUrl.searchParams.get("m");
+    const paramDay = currentUrl.searchParams.get("d");
+
+    await refreshDate(paramSensor, paramYear, paramMonth, paramDay);
 
     console.log("DOMContentLoaded - ---DOMContentLoaded-end---");
 });

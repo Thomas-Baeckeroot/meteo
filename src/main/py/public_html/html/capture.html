@@ -71,21 +71,24 @@
             <!-- Image browser (next/previous year/month/day) -->
             <table style="width: 100%;">
                 <tr>
-                    <th colspan="3" id="current_sensorName"><span style="color: grey">▒▒▒▒▒</span></th>
+                    <td></td>
+                    <th id="current_sensorName"><span style="color: grey">▒▒▒▒▒</span></th>
+                    <td class="buttonEnabled" onclick="refresh()">&#10226; <sub>R</sub></td>
                     <!-- Could have also a previous/next to switch through the difference devices -->
                 </tr>
                 <tr>
-                    <td id="firstDaylight" class="buttonDisabled"> |⏴ ☼ </td>
+                    <!--  |⏴ ☼   ☼ ⏵|   Ok on Mac, not on Linux/Firefox -->
+                    <td id="firstDaylight" class="buttonDisabled">&#9621;< ☼</td>
                     <td><!-- ▶▷▹►▻ <button id="playPauseButton" disabled>▶</button> --></td>
-                    <td id="LastDaylight" class="buttonDisabled"> ☼ ⏵| </td>
+                    <td id="LastDaylight" class="buttonDisabled">☼ >&#9615;</td>
                 </tr>
                 <tr>
                     <td id="previous_hh_mm" class="buttonDisabled" onclick="previousHhMm()">&lt;</td>
-                    <td id="current_hh_mm"><span style="color: grey">▒:▒▒</span></td>
+                    <td><span><span id="current_hh_mm"><span style="color: grey">▒:▒▒</span></span><br/><sup>GMT</sup></td>
                     <td id="next_hh_mm" class="buttonDisabled" onclick="nextHhMm()">&gt;</td>
                 </tr>
                 <tr>
-                    <td id="previous_day" class="buttonDisabled">&lt;</td>
+                    <td id="previous_day" class="buttonDisabled" >&lt;</td>
                     <td id="current_day"><span style="color: grey">▒▒</span></td>
                     <td id="next_day" class="buttonDisabled">&gt;</td>
                 </tr>
