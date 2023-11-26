@@ -15,7 +15,7 @@ let selectedHhMm15 = undefined;
 let selectedPicture = undefined;
 
 async function fetchData(sensor, year, month, day) {
-    console.log(".fetchData() - start method");
+    console.log(".fetchData('" + sensor + "', '" + year + "', '" + month + "', '" + day + "') - start method");
     // Construct the URL with parameters for the fetch call
     let url = "/captures.json";
     let firstParam = true;
@@ -49,7 +49,7 @@ async function fetchData(sensor, year, month, day) {
             console.log(".fetchData() - Data updated successfully:", picturesData, metadata);
             sortedPictures = Object.keys(picturesData).sort();
 
-            console.log(".fetchData() - interpreted metadata:", metadata.sensorName, metadata.year);
+            console.log(".fetchData() - interpreted metadata:", metadata.sensor, metadata.year);
         } else {
             console.error(".fetchData() - Incorrect JSON format.");
         }
@@ -58,23 +58,32 @@ async function fetchData(sensor, year, month, day) {
     }
 }
 
+async function handlePreviousDayClick() {
+    console.log(".handlePreviousDayClick() - Event 'click' on element #previous_day");
+    console.log("metadata.sensor = " + metadata.sensor);
+    console.log("metadata.year = " + metadata.year);
+    console.log("metadata.month_day (current) = " + metadata.month_day);
+    const [month, day] = metadata.month_day.split("-");
+    await refreshDate(metadata.sensor, metadata.year, month, parseInt(day) - 1);
+}
+
 async function updateDateData() {
+    console.log(".updateDateData()");
     document.getElementById("current_year").textContent = metadata.year;
     const [month, day] = metadata.month_day.split("-");
     document.getElementById("current_month").textContent = month;
     document.getElementById("current_day").textContent = day;
-    document.getElementById("current_sensorName").textContent = metadata.sensor;
+    document.getElementById("current_sensor").textContent = metadata.sensor;
 
-    document.getElementById("previous_day").addEventListener("click", function () {
-        console.log("previous_day"); // FIXME Continue here...
-        refreshDate(metadata.sensor ,metadata.year, month, parseInt(day)-1 );
-    });
+    makeElementClickable(document.getElementById("previous_day"));
+    //document.getElementById("previous_day").addEventListener("click", handlePreviousDayClick());
 }
 
 /**
  Reset background of top picture selector for currently selected
  */
 async function unselectPictureSelector() {
+    console.log(".unselectPictureSelector()");
     if (selectedHhMm15 !== undefined) {
         const hh_mm_element = document.getElementById(selectedHhMm15);
         if (selectedPicture.fSize < SIZE_LIMIT) {
@@ -90,8 +99,9 @@ async function unselectPictureSelector() {
 
 // Function to update the current_image element
 async function updateCurrentImage(pictureData, hh_mm) {
+    console.log(".updateCurrentImage('" + pictureData + "', '" + hh_mm + "')");
     const currentImage = pictureData.img;
-    console.log(".updateCurrentImage('" + currentImage + "')");
+    console.log("\t-> currentImage = " + currentImage);
 
     await unselectPictureSelector();
 
@@ -129,11 +139,15 @@ async function updateCurrentImage(pictureData, hh_mm) {
 
     // TODO Check consistency with metadata
     document.getElementById("error_message").textContent = metadata.error_message; // TODO Implement error message display
+    if (metadata.error_message !== "") {
+        alert("Error:\n" + metadata.error_message);
+    }
 
-    await updateDateData();
+    // await updateDateData(); // NOT TO DO WITHIN .updateCurrentImage()
 }
 
 function grayPictureSelectorWithoutEvent() {
+    console.log(".grayPictureSelectorWithoutEvent()");
     for (let hour = 0; hour <= 23; hour++) {
         for (let minute = 0; minute < 60; minute += 15) {
             // Format the hour and minute as "HHhMM"
@@ -156,6 +170,7 @@ function grayPictureSelectorWithoutEvent() {
 }
 
 function hhMm15SelectorFor(hh_mm) {
+    console.log(".hhMm15SelectorFor('" + hh_mm + "')");
     const mm = hh_mm.slice(-2);
     const mmAsInt = parseInt(mm);
     let hh_mm15;
@@ -170,6 +185,7 @@ function hhMm15SelectorFor(hh_mm) {
 }
 
 async function fillPictureSelectorHhMm(hh_mm, pictureData) {
+    console.log(".fillPictureSelectorHhMm('" + hh_mm + "', '" + pictureData + "')");
     const mm = hh_mm.slice(-2);
     const hh_mm15 = hhMm15SelectorFor(hh_mm)
 
@@ -194,6 +210,7 @@ async function fillPictureSelectorHhMm(hh_mm, pictureData) {
 }
 
 function makeElementClickable(element) {
+    console.log(".makeElementClickable(-> element.id='" + element.id + "')");
     element.style.cursor = "pointer";
 
     // todo Replaceable with .buttonEnabled ?
@@ -211,6 +228,7 @@ function makeElementClickable(element) {
 }
 
 function makeElementNotClickable(element) {
+    console.log(".makeElementNotClickable(...)");
     element.style.cursor = "default";
 
     // Remove mouseover event listener
@@ -247,6 +265,7 @@ function fillPictureSelector_deprecated() {
 }
 
 async function fillPicturesSelector() {
+    console.log(".fillPicturesSelector()");
     // Iterate through each element inside "pictures"
     for (const element_hh_mm in picturesData) { // rely on
         //if (picturesData.hasOwnProperty(element_hh_mm)) {
@@ -279,18 +298,21 @@ async function fillPicturesSelector() {
 }
 
 async function previousHhMm() {
+    console.log(".previousHhMm()");
     const previousKey = index > 0 ?
         sortedPictures[index - 1] : sortedPictures[0];
     await updateCurrentImage(picturesData[previousKey], previousKey);
 }
 
 async function nextHhMm() {
+    console.log(".nextHhMm()");
     const nextKey = index < sortedPictures.length - 1 ?
         sortedPictures[index + 1] : sortedPictures[sortedPictures.length - 1];
     await updateCurrentImage(picturesData[nextKey], nextKey);
 }
 
 async function clearData() {
+    console.log(".clearData()")
     hour = undefined; // :int
     minute = undefined; // :int
     firstDaylightHhMm = undefined;
@@ -318,35 +340,38 @@ async function clearData() {
 }
 
 async function refresh() {
-    console.log("Refresh...")
+    console.log(".refresh()");
     const sensor = metadata.sensor;
     const year = metadata.year;
     const [month, day] = metadata.month_day.split("-");
 
-    await clearData();
-
-    await refreshDate(sensor, year, month, day)
+    await refreshDate(sensor, year, month, day);
 }
 
 async function refreshDate(sensor, year, month, day) {
-
+    console.log(".refreshDate('" + sensor + "', '" + year + "', '" + month + "', '" + day + "')");
+    await clearData();
     // Call fetchData function to get data after page loaded:
     await fetchData(sensor, year, month, day); // Wait for fetchData to complete
-    console.log("DOMContentLoaded - after fetchData call:", picturesData, metadata);
+    console.log("\tafter fetchData call:", picturesData, metadata);
     const picturesFolder = "captures/" + metadata.sensor + "/";
-    console.log("DOMContentLoaded - picturesFolder =", picturesFolder);
+    console.log("\tpicturesFolder =", picturesFolder);
 
     await fillPicturesSelector();
+    console.log("picturesData = " + picturesData);
     if (lastDaylightHhMm !== undefined) {
+        console.log("lastDaylightHhMm = " + lastDaylightHhMm);
         const pictureData = picturesData[lastDaylightHhMm];
+        console.log("pictureData = ", pictureData)
         await updateCurrentImage(pictureData, lastDaylightHhMm);
     } else if (lastHhMm !== undefined) {
         const pictureData = picturesData[lastHhMm];
         await updateCurrentImage(pictureData, lastHhMm);
     } else {
         document.getElementById("error_message").textContent = "No pictures for this date!";
-        await updateDateData()
     }
+
+    await updateDateData();
 }
 
 document.addEventListener("DOMContentLoaded", async function () {

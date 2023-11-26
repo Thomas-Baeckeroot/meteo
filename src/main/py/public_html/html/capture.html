@@ -72,7 +72,7 @@
             <table style="width: 100%;">
                 <tr>
                     <td></td>
-                    <th id="current_sensorName"><span style="color: grey">▒▒▒▒▒</span></th>
+                    <th id="current_sensor"><span style="color: grey">▒▒▒▒▒</span></th>
                     <td class="buttonEnabled" onclick="refresh()">&#10226; <sub>R</sub></td>
                     <!-- Could have also a previous/next to switch through the difference devices -->
                 </tr>
@@ -88,7 +88,7 @@
                     <td id="next_hh_mm" class="buttonDisabled" onclick="nextHhMm()">&gt;</td>
                 </tr>
                 <tr>
-                    <td id="previous_day" class="buttonDisabled" >&lt;</td>
+                    <td id="previous_day" class="buttonDisabled" onclick="handlePreviousDayClick()">&lt;</td>
                     <td id="current_day"><span style="color: grey">▒▒</span></td>
                     <td id="next_day" class="buttonDisabled">&gt;</td>
                 </tr>
