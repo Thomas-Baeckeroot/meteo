@@ -139,10 +139,10 @@ def get_json_from_folder(sensor, year, month, day):
     if sensor_folder is None:
         log.error("Unable to get any valid sensor value!")
         return {"pictures": {},
-                "metadata": {"sensor": sensor_folder,
-                             "year": year,
-                             "month_day": f"{month}-{day}",
-                             "error_message": f"{error_message}Unable to find any folder for device!\n"}}
+                "picturesProperties": {"sensor": sensor_folder,
+                                       "year": year,
+                                       "month_day": f"{month}-{day}",
+                                       "error_message": f"{error_message}Unable to find any folder for device!\n"}}
 
     if year:
         if os.path.exists(f"captures/{sensor_folder}/{year}"):
@@ -158,11 +158,12 @@ def get_json_from_folder(sensor, year, month, day):
     if year_folder is None:
         log.error("Unable to get any valid year value!")
         return {"pictures": {},
-                "metadata": {"sensor": sensor_folder,
-                             "year": None,
-                             "month_day": f"{month}-{day}",
-                             "error_message":
-                                 f"{error_message}Unable to find any year folder for device '{sensor_folder}'!\n"}}
+                "picturesProperties": {"sensor": sensor_folder,
+                                       "year": None,
+                                       "month_day": f"{month}-{day}",
+                                       "error_message":
+                                           f"{error_message}Unable to find any year folder "
+                                           f"for device '{sensor_folder}'!\n"}}
 
     if month and day:
         if os.path.exists(f"captures/{sensor_folder}/{year_folder}/{month}-{day}"):
@@ -185,20 +186,21 @@ def get_json_from_folder(sensor, year, month, day):
     if month_day_folder is None:
         log.error("Unable to get any valid year value!")
         return {"pictures": {},
-                "metadata": {"sensor": sensor_folder,
-                             "year": year_folder,
-                             "month_day": None,
-                             "error_message":
-                                 f"{error_message}Unable to find any month-day folder for device '{sensor_folder}' "
-                                 f"and year '{year_folder}'!\n"}}
+                "picturesProperties": {"sensor": sensor_folder,
+                                       "year": year_folder,
+                                       "month_day": None,
+                                       "error_message":
+                                           f"{error_message}Unable to find any month-day folder "
+                                           f"for device '{sensor_folder}' "
+                                           f"and year '{year_folder}'!\n"}}
 
     pictures_json = get_json_pictures_from_folder(f"captures/{sensor_folder}/{year_folder}/{month_day_folder}")
-    metadata_json = {"sensor": sensor_folder,
-                     "year": year_folder,
-                     "month_day": month_day_folder,
-                     "error_message": error_message}
+    pictures_properties_json = {"sensor": sensor_folder,
+                                "year": year_folder,
+                                "month_day": month_day_folder,
+                                "error_message": error_message}
     data_json = {"pictures": pictures_json,
-                 "metadata": metadata_json}
+                 "picturesProperties": pictures_properties_json}
     return data_json
 
 

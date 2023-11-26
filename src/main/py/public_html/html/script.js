@@ -8,7 +8,7 @@ let lastDaylightHhMm = undefined;
 let lastHhMm = undefined;
 
 let picturesData = {};
-let metadata = {};
+let picturesProperties = {};
 let sortedPictures = undefined;
 let index = undefined;
 let selectedHhMm15 = undefined;
@@ -41,15 +41,15 @@ async function fetchData(sensor, year, month, day) {
         }
 
         const data = await response.json();
-        if (data.pictures && data.metadata) {
+        if (data.pictures && data.picturesProperties) {
             // Update picturesData with data from capture.json
             picturesData = data.pictures;
-            // Update metadata with data from capture.json
-            metadata = data.metadata;
-            console.log(".fetchData() - Data updated successfully:", picturesData, metadata);
+            // Update picturesProperties with data from capture.json
+            picturesProperties = data.picturesProperties;
+            console.log(".fetchData() - Data updated successfully:", picturesData, picturesProperties);
             sortedPictures = Object.keys(picturesData).sort();
 
-            console.log(".fetchData() - interpreted metadata:", metadata.sensor, metadata.year);
+            console.log(".fetchData() - interpreted picturesProperties:", picturesProperties.sensor, picturesProperties.year);
         } else {
             console.error(".fetchData() - Incorrect JSON format.");
         }
@@ -60,20 +60,20 @@ async function fetchData(sensor, year, month, day) {
 
 async function handlePreviousDayClick() {
     console.log(".handlePreviousDayClick() - Event 'click' on element #previous_day");
-    console.log("metadata.sensor = " + metadata.sensor);
-    console.log("metadata.year = " + metadata.year);
-    console.log("metadata.month_day (current) = " + metadata.month_day);
-    const [month, day] = metadata.month_day.split("-");
-    await refreshDate(metadata.sensor, metadata.year, month, parseInt(day) - 1);
+    console.log("picturesProperties.sensor = " + picturesProperties.sensor);
+    console.log("picturesProperties.year = " + picturesProperties.year);
+    console.log("picturesProperties.month_day (current) = " + picturesProperties.month_day);
+    const [month, day] = picturesProperties.month_day.split("-");
+    await refreshDate(picturesProperties.sensor, picturesProperties.year, month, parseInt(day) - 1);
 }
 
 async function updateDateData() {
     console.log(".updateDateData()");
-    document.getElementById("current_year").textContent = metadata.year;
-    const [month, day] = metadata.month_day.split("-");
+    document.getElementById("current_year").textContent = picturesProperties.year;
+    const [month, day] = picturesProperties.month_day.split("-");
     document.getElementById("current_month").textContent = month;
     document.getElementById("current_day").textContent = day;
-    document.getElementById("current_sensor").textContent = metadata.sensor;
+    document.getElementById("current_sensor").textContent = picturesProperties.sensor;
 
     makeElementClickable(document.getElementById("previous_day"));
     //document.getElementById("previous_day").addEventListener("click", handlePreviousDayClick());
@@ -106,7 +106,7 @@ async function updateCurrentImage(pictureData, hh_mm) {
     await unselectPictureSelector();
 
     // Change the src attribute of the main image
-    document.getElementById("capture-img").src = "../captures/" + metadata.sensor + "/" + metadata.year + "/" + metadata.month_day + "/" + currentImage;
+    document.getElementById("capture-img").src = "../captures/" + picturesProperties.sensor + "/" + picturesProperties.year + "/" + picturesProperties.month_day + "/" + currentImage;
 
     const parts = currentImage.split(/[_-]|Z/g); // Split by '_', '-', and 'Z'
     hour = parseInt(parts[4], 10);
@@ -137,10 +137,10 @@ async function updateCurrentImage(pictureData, hh_mm) {
         makeElementNotClickable(document.getElementById("next_hh_mm"));
     }
 
-    // TODO Check consistency with metadata
-    document.getElementById("error_message").textContent = metadata.error_message; // TODO Implement error message display
-    if (metadata.error_message !== "") {
-        alert("Error:\n" + metadata.error_message);
+    // TODO Check consistency with picturesProperties
+    document.getElementById("error_message").textContent = picturesProperties.error_message; // TODO Implement error message display
+    if (picturesProperties.error_message !== "") {
+        alert("Error:\n" + picturesProperties.error_message);
     }
 
     // await updateDateData(); // NOT TO DO WITHIN .updateCurrentImage()
@@ -320,7 +320,7 @@ async function clearData() {
     lastHhMm = undefined;
 
     picturesData = {};
-    metadata = {};
+    picturesProperties = {};
     sortedPictures = undefined;
     index = undefined;
     await unselectPictureSelector();
@@ -341,9 +341,9 @@ async function clearData() {
 
 async function refresh() {
     console.log(".refresh()");
-    const sensor = metadata.sensor;
-    const year = metadata.year;
-    const [month, day] = metadata.month_day.split("-");
+    const sensor = picturesProperties.sensor;
+    const year = picturesProperties.year;
+    const [month, day] = picturesProperties.month_day.split("-");
 
     await refreshDate(sensor, year, month, day);
 }
@@ -353,8 +353,8 @@ async function refreshDate(sensor, year, month, day) {
     await clearData();
     // Call fetchData function to get data after page loaded:
     await fetchData(sensor, year, month, day); // Wait for fetchData to complete
-    console.log("\tafter fetchData call:", picturesData, metadata);
-    const picturesFolder = "captures/" + metadata.sensor + "/";
+    console.log("\tafter fetchData call:", picturesData, picturesProperties);
+    const picturesFolder = "captures/" + picturesProperties.sensor + "/";
     console.log("\tpicturesFolder =", picturesFolder);
 
     await fillPicturesSelector();
