@@ -37,7 +37,16 @@ async function fetchData(sensor, year, month, day) {
     try {
         const response = await fetch(url);
         if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+            // const err = `Error while getting list of pictures of sensor '${sensor}' for ISO date '${year}-${month}-${day}'! Got HTTP status '${response.status}'`;
+            const err = `Error while getting list of pictures with url '${url}': received HTTP status '${response.status}'`;
+            console.error(".fetchData - " + err);
+            picturesData = {};
+            picturesProperties = {
+                "sensor": null,
+                "year": null,
+                "month_day": null, "error_message": err
+            };
+            sortedPictures = {};
         }
 
         const data = await response.json();
@@ -58,13 +67,14 @@ async function fetchData(sensor, year, month, day) {
     }
 }
 
-async function handlePreviousDayClick() {
-    console.log(".handlePreviousDayClick() - Event 'click' on element #previous_day");
+async function handleDayChangeClick(nDays) {
+    console.log(".handleDayChangeClick(" + nDays + ") - Event 'click' on element #previous_day");
     console.log("picturesProperties.sensor = " + picturesProperties.sensor);
     console.log("picturesProperties.year = " + picturesProperties.year);
     console.log("picturesProperties.month_day (current) = " + picturesProperties.month_day);
     const [month, day] = picturesProperties.month_day.split("-");
-    await refreshDate(picturesProperties.sensor, picturesProperties.year, month, parseInt(day) - 1);
+    // TODO Manage calendar (end/begin of months, etc...)
+    await refreshDate(picturesProperties.sensor, picturesProperties.year, month, parseInt(day) + nDays);
 }
 
 async function updateDateData() {
@@ -75,8 +85,8 @@ async function updateDateData() {
     document.getElementById("current_day").textContent = day;
     document.getElementById("current_sensor").textContent = picturesProperties.sensor;
 
-    makeElementClickable(document.getElementById("previous_day"));
-    //document.getElementById("previous_day").addEventListener("click", handlePreviousDayClick());
+    //makeElementClickable(document.getElementById("previous_day"));
+    //document.getElementById("previous_day").addEventListener("click", handleDayChangeClick());
 }
 
 /**
