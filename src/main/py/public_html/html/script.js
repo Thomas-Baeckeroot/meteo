@@ -255,6 +255,16 @@ function makeElementNotClickable(element) {
     element.classList.add("buttonDisabled");
 }
 
+function firstDaylightClickHandler() {
+    console.log(".firstDaylightClickHandler()");
+    updateCurrentImage(picturesData[firstDaylightHhMm], firstDaylightHhMm);
+}
+
+function lastDaylightClickHandler() {
+    console.log(".lastDaylightClickHandler()");
+    updateCurrentImage(picturesData[lastDaylightHhMm], lastDaylightHhMm);
+}
+
 async function fillPicturesSelector() {
     console.log(".fillPicturesSelector()");
     // Iterate through each element inside "pictures"
@@ -269,17 +279,13 @@ async function fillPicturesSelector() {
         if ((firstDaylightHhMm === undefined) && pictureData.fSize > SIZE_LIMIT) {
             firstDaylightHhMm = element_hh_mm;
             const firstDaylightElement = document.getElementById("firstDaylight");
-            firstDaylightElement.addEventListener("click", function () {
-                updateCurrentImage(pictureData, element_hh_mm);
-            });
+            firstDaylightElement.addEventListener("click", firstDaylightClickHandler);
             makeElementClickable(firstDaylightElement);
         }
         if (pictureData.fSize > SIZE_LIMIT) {
             lastDaylightHhMm = element_hh_mm;
-            const LastDaylightElement = document.getElementById("LastDaylight");
-            LastDaylightElement.addEventListener("click", function () {
-                updateCurrentImage(pictureData, element_hh_mm);
-            });
+            const LastDaylightElement = document.getElementById("lastDaylight");
+            LastDaylightElement.addEventListener("click", lastDaylightClickHandler);
             makeElementClickable(LastDaylightElement);
         }
         //}
@@ -328,6 +334,14 @@ async function clearData() {
             document.getElementById(hh_mm).textContent = "—";
         }
     }
+
+    // Reset first/last day-light selection button:
+    const firstDaylightElement = document.getElementById("firstDaylight");
+    firstDaylightElement.removeEventListener("click", firstDaylightClickHandler);
+    makeElementNotClickable(firstDaylightElement);
+    const lastDaylightElement = document.getElementById("lastDaylight");
+    lastDaylightElement.removeEventListener("click", lastDaylightClickHandler);
+    makeElementNotClickable(lastDaylightElement);
 
     // Return a resolved promise to ensure the asynchronous completion
     return Promise.resolve();
