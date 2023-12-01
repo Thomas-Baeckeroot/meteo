@@ -68,13 +68,24 @@ async function fetchData(sensor, year, month, day) {
 }
 
 async function handleDayChangeClick(nDays) {
-    console.log(".handleDayChangeClick(" + nDays + ") - Event 'click' on element #previous_day");
+    console.log(".handleDayChangeClick(" + nDays + ") - Event 'click' on element #previous|next_day");
     console.log("picturesProperties.sensor = " + picturesProperties.sensor);
     console.log("picturesProperties.year = " + picturesProperties.year);
     console.log("picturesProperties.month_day (current) = " + picturesProperties.month_day);
     const [month, day] = picturesProperties.month_day.split("-");
-    // TODO Manage calendar (end/begin of months, etc...)
-    await refreshDate(picturesProperties.sensor, picturesProperties.year, month, parseInt(day) + nDays);
+    const shiftedDate = new Date(parseInt(picturesProperties.year), parseInt(month) - 1, parseInt(day) + nDays);
+    await refreshDate(picturesProperties.sensor, shiftedDate.getFullYear(), shiftedDate.getMonth() + 1, shiftedDate.getDate());
+}
+
+async function monthChange(nMonths) {
+    console.log(".handleDayChangeClick(" + nMonths + ") - Event 'click' on element #previous|next_month");
+    console.log("picturesProperties.sensor = " + picturesProperties.sensor);
+    console.log("picturesProperties.year = " + picturesProperties.year);
+    console.log("picturesProperties.month_day (current) = " + picturesProperties.month_day);
+    const [month, day] = picturesProperties.month_day.split("-");
+    const shiftedDate = new Date(parseInt(picturesProperties.year), parseInt(month) + nMonths - 1, parseInt(day));
+    // todo "Next month" from date 31st/Jan. returns 3rd/March. It would be more logical to return last day of next month (February) instead.
+    await refreshDate(picturesProperties.sensor, shiftedDate.getFullYear(), shiftedDate.getMonth() + 1, shiftedDate.getDate());
 }
 
 async function updateDateData() {
