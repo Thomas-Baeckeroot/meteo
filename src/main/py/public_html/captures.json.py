@@ -141,7 +141,7 @@ def get_json_from_folder(sensor, year, month, day):
         return {"pictures": {},
                 "picturesProperties": {"sensor": sensor_folder,
                                        "year": year,
-                                       "month_day": f"{month}-{day}",
+                                       "month_day": f"{month:02}-{day:02}",
                                        "error_message": f"{error_message}Unable to find any folder for device!\n"}}
 
     if year:
@@ -160,24 +160,24 @@ def get_json_from_folder(sensor, year, month, day):
         return {"pictures": {},
                 "picturesProperties": {"sensor": sensor_folder,
                                        "year": None,
-                                       "month_day": f"{month}-{day}",
+                                       "month_day": f"{month:02}-{day:02}",
                                        "error_message":
                                            f"{error_message}Unable to find any year folder "
                                            f"for device '{sensor_folder}'!\n"}}
 
     if month and day:
-        if os.path.exists(f"captures/{sensor_folder}/{year_folder}/{month}-{day}"):
-            month_day_folder = f"{month}-{day}"
+        if os.path.exists(f"captures/{sensor_folder}/{year_folder}/{month:02}-{day:02}"):
+            month_day_folder = f"{month:02}-{day:02}"
         else:
             month_day_folder = get_first_folder(f"captures/{sensor_folder}/{year_folder}", reverse_order=True)
-            message = f"Given that month-day '{month}-{day}' was not valid," \
+            message = f"Given that month-day '{month:02}-{day:02}' was not valid," \
                       f" '{month_day_folder}' will be used instead"
             log.warning(message)
             error_message = error_message + message + "\n"
     else:
         month_day_folder = get_first_folder(f"captures/{sensor_folder}/{year_folder}", reverse_order=True)
         if month or day:
-            message = f"Unable to get data without both month and day information, given '{month}-{day}' " \
+            message = f"Unable to get data without both month and day information, given '{month:02}-{day:02}' " \
                       f"was incorrect. '{month_day_folder}' will be used instead."
             log.warning(message)
             error_message = error_message + message + "\n"
@@ -220,9 +220,12 @@ def main():
 
     # Access the values by key
     sensor = params.get("s")
-    year = params.get("y")
-    month = params.get("m")
-    day = params.get("d")
+    year_param = params.get("y")
+    year = int(year_param)
+    month_param = params.get("m")
+    month = int(month_param)
+    day_param = params.get("d")
+    day = int(day_param)
     image = params.get("image")
 
     log.debug(f"sensor='{sensor}'\tyear='{year}'\tmonth-day='{month}-{day}'\timage='{image}'")
