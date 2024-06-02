@@ -221,11 +221,23 @@ def main():
     # Access the values by key
     sensor = params.get("s")
     year_param = params.get("y")
-    year = int(year_param)
+    try:
+        year = int(year_param)
+    except (TypeError, ValueError):
+        year = None
+        log.warning("Invalid or missing 'y'ear  parameter")
     month_param = params.get("m")
-    month = int(month_param)
+    try:
+        month = int(month_param)
+    except (TypeError, ValueError):
+        month = None
+        log.warning("Invalid or missing 'm'onth parameter")
     day_param = params.get("d")
-    day = int(day_param)
+    try:
+        day = int(day_param)
+    except (TypeError, ValueError):
+        day = None
+        log.warning("Invalid or missing 'd'ay parameter")
     image = params.get("image")
 
     log.debug(f"sensor='{sensor}'\tyear='{year}'\tmonth-day='{month}-{day}'\timage='{image}'")

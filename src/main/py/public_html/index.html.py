@@ -89,12 +89,14 @@ try:
         if unit == "picture":  # Below 10, sensors are not displayed in top list (ie: pictures from camera)
             arguments = {'image': filepath_data}
             result = urllib.parse.urlencode(arguments, quote_via=urllib.parse.quote_plus)
+            # TODO From index.html, link to the image should point to "html/capture.html" without further parameters
+            # (letting capture.html showing the default date/time)
 
             # 'password=xyz&username=administrator'   # "image=" + urllib.parse.quote(filepath_data)
-            # "<td><a href=\"capture.html?image=" + urllib.parse.quote(filepath_data) + \
+            # "<td><a href=\"/html/capture.html?image=" + urllib.parse.quote(filepath_data) + \
             camera_row = \
                 camera_row + \
-                "<td><a href=\"capture.html?" + result + \
+                "<td><a href=\"/html/capture.html?" + result + \
                 "\"><img src=\"captures/" + filepath_data + \
                 "\" width=\"360em\" height=\"270em\" style=\"background-color: lightgray\" /></a><br/>" + \
                 sensor_label + "<br/>" + re.findall(r"(\d{4}-\d{2}-\d{2}.\d{2}-\d{2})", filepath_data)[0] + "</td>"
