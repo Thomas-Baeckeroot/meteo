@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Health-check</title>
+    <style>
+        body {
+            /* font-family: Arial, sans-serif; */
+            background-color: lightsteelblue;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+        .status {
+            display: flex;
+            align-items: center;
+            margin-right: 10px;
+            width: 6em;
+        }
+        .status span {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .pending span {
+            background-color: grey;
+        }
+        .passed span {
+            background-color: green;
+        }
+        .failed span {
+            background-color: red;
+        }
+        .status-text {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<ul>
+    <li>
+        <div class="status passed" id="static-html">
+            <span></span>
+            <div class="status-text">passed</div>
+        </div>
+        Loading static html
+    </li>
+    <li>
+        <div class="status pending" id="run-js">
+            <span></span>
+            <div class="status-text">pending</div>
+        </div>
+        Running Javascript
+    </li>
+    <li>
+        <div class="status pending" id="db-access">
+            <span></span>
+            <div class="status-text">pending</div>
+        </div>
+        Database access
+    </li>
+    <li>
+        <div class="status pending" id="disk-space">
+            <span></span>
+            <div class="status-text">pending</div>
+        </div>
+        Disk (space left)
+    </li>
+</ul>
+
+<script>
+    // To update the status of each step:
+    function updateStatus(step, status) {
+        var element = document.getElementById(step);
+        element.className = 'status ' + status;
+        element.querySelector('.status-text').textContent = status;
+    }
+
+    // Call updateStatus for step2 when the page is fully loaded
+    window.onload = function() {
+        updateStatus('run-js', 'passed');
+    }
+</script>
+
+</body>
+</html>
+
