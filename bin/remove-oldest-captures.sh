@@ -14,7 +14,7 @@ METEO_FOLDER=$(grep "MeteoFolder" "$config_file" | cut -d'=' -f2 | tr -d ' ')
 
 # Combine the METEO_FOLDER with the base captures folder
 captures_dir="${METEO_FOLDER}${base_captures_folder}"
-printf -- "%s Script '%s' will remove oldest sub-folder from path '%s'" "${PREFIX}" "${0}" "${captures_dir}"
+printf -- "%s Script '%s' will remove oldest sub-folder from path '%s'\n" "${PREFIX}" "${0}" "${captures_dir}"
 
 # Step 2: Function to check disk usage
 check_disk_usage() {
