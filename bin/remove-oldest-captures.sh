@@ -1,5 +1,10 @@
 #!/bin/bash
 
+PID=$$
+timestamp=$(date +"%Y-%m-%d %H:%M:%S,%3N")
+# timestamp=$(date +"%Y-%m-%d %H:%M"):xx,xxx
+PREFIX="${timestamp} INFO    remove-oldest-captures.sh (${PID})"
+
 # Configuration
 config_file="$HOME/.config/susanoo_WeatherStation.conf"
 base_captures_folder="captures"
@@ -9,7 +14,7 @@ METEO_FOLDER=$(grep "MeteoFolder" "$config_file" | cut -d'=' -f2 | tr -d ' ')
 
 # Combine the METEO_FOLDER with the base captures folder
 captures_dir="${METEO_FOLDER}${base_captures_folder}"
-printf -- "Will remove oldest sub-folder from path %s" "${captures_dir}"
+printf -- "%s Script '%s' will remove oldest sub-folder from path '%s'" "${PREFIX}" "${0}" "${captures_dir}"
 
 # Step 2: Function to check disk usage
 check_disk_usage() {
@@ -22,10 +27,10 @@ remove_oldest_folder() {
     oldest_folder=$(find "$captures_dir" -mindepth 3 -maxdepth 3 -type d -printf '%T+ %p\n' | sort | head -n 1 | awk '{print $2}')
 
     if [ -n "${oldest_folder}" ]; then
-        printf -- "Removing oldest folder: %s\n" "${oldest_folder}"
+        printf -- "%s Removing oldest folder: %s\n" "${PREFIX}" "${oldest_folder}"
         rm -rf "${oldest_folder}"
     else
-        printf -- "No more folders to delete.\n"
+        printf -- "%s No more folders to delete.\n" "${PREFIX}"
         exit 1
     fi
 }
@@ -37,7 +42,7 @@ remove_oldest_folder() {
 # current_iteration=0
 while [ "$(check_disk_usage)" -gt 80 ]; do
     # && [ "$current_iteration" -lt "$max_iterations" ]
-    printf -- "Disk usage is over 80%%. Proceeding to remove the oldest folder.\n"
+    printf -- "%s Disk usage is over 80%%. Proceeding to remove the oldest folder.\n" "${PREFIX}"
 
     # Step 5: Call the function to remove the oldest folder
     remove_oldest_folder
@@ -49,4 +54,4 @@ while [ "$(check_disk_usage)" -gt 80 ]; do
     sleep 2
 done
 
-printf -- "Disk usage is now under control.\n"
+printf -- "%s Disk usage is now under control.\n" "${PREFIX}"
