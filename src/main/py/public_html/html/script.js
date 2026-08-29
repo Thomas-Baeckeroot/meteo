@@ -253,7 +253,7 @@ function hhMm15SelectorFor(hh_mm) {
         hh_mm15 = hh_mm;
     } else {
         // mmAsInt is not a multiple of 15
-        hh_mm15 = hh_mm.substring(0, 3) + (mmAsInt - (mmAsInt % 15)).toString();
+        hh_mm15 = hh_mm.substring(0, 3) + (mmAsInt - (mmAsInt % 15)).toString().padStart(2, '0');
     }
     return hh_mm15;
 }
